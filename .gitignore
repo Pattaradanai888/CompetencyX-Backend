@@ -27,3 +27,8 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+
+.uv-cache/
+.tmp/
+.ruff_cache/

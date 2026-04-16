@@ -8,4 +8,122 @@ dependencies = [
     "django>=6.0.4",
     "django-cors-headers>=4.9.0",
     "djangorestframework>=3.17.1",
+    "drf-spectacular>=0.28.0",
 ]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.8.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "pytest-django>=4.11.1",
+    "pytest-xdist>=3.6.1",
+    "ruff>=0.14.0",
+]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+minversion = "8.3"
+addopts = "-p no:cacheprovider --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
+python_files = ["tests.py", "test_*.py"]
+testpaths = ["api", "roadmaps", "assessments", "recommendations"]
+tmp_path_retention_count = 1
+tmp_path_retention_policy = "failed"
+norecursedirs = [
+    ".codex-pytest-tmp",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tmp",
+    ".uv-cache",
+    ".venv",
+    "build",
+    "coverage",
+    "dist",
+]
+
+[tool.coverage.run]
+relative_files = true
+source = ["api", "assessments", "config", "recommendations", "roadmaps"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    ".venv/*",
+    "manage.py",
+    "config/asgi.py",
+    "config/wsgi.py",
+]
+
+[tool.coverage.xml]
+output = "coverage/coverage.xml"
+
+[tool.ruff]
+line-length = 150
+target-version = "py312"
+extend-exclude = ["*/migrations/*.py", "static_root/*"]
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "C90",
+    "I",
+    "N",
+    "UP",
+    "YTT",
+    "ASYNC",
+    "S",
+    "BLE",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "T10",
+    "DJ",
+    "EM",
+    "FA",
+    "ISC",
+    "ICN",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "PT",
+    "RSE",
+    "RET",
+    "SIM",
+    "TID",
+    "TC",
+    "INT",
+    "PTH",
+    "ERA",
+    "PGH",
+    "PL",
+    "TRY",
+    "FLY",
+    "PERF",
+    "RUF",
+]
+ignore = ["S101", "COM812", "TRY003", "RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests.py" = ["S105", "S106", "S107", "PLR2004", "PT009"]
+"**/migrations/*.py" = ["ALL"]
+"manage.py" = ["INP001", "PLC0415", "EM101"]
+"config/settings/__init__.py" = ["F403"]
+"config/settings/base.py" = ["S105"]
+"config/settings/app.py" = ["F403", "F405"]
+"config/settings/test.py" = ["F403", "F405", "S105"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+force-single-line = false
+
+[tool.ruff.format]
+quote-style = "single"
