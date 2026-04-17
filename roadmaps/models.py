@@ -37,6 +37,10 @@ class RoadmapTopic(models.Model):
     slug = models.SlugField(max_length=96)
     title = models.CharField(max_length=160)
     description = models.TextField(blank=True)
+    external_source = models.CharField(max_length=64, blank=True)
+    external_id = models.CharField(max_length=128, blank=True)
+    external_slug = models.CharField(max_length=128, blank=True)
+    source_version = models.CharField(max_length=64, blank=True)
     difficulty = models.CharField(
         max_length=16,
         choices=Difficulty.choices,
@@ -131,8 +135,6 @@ class QuestionOption(models.Model):
     label = models.CharField(max_length=160)
     value = models.CharField(max_length=64, blank=True)
     display_order = models.PositiveIntegerField(default=0)
-    mastery_value = models.FloatField(default=0.0)
-    role_weights = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ['display_order', 'id']
@@ -140,3 +142,45 @@ class QuestionOption(models.Model):
 
     def __str__(self) -> str:
         return f'{self.question.code}:{self.key}'
+
+
+class QuestionRoleSignal(models.Model):
+    question_option = models.ForeignKey(
+        QuestionOption,
+        on_delete=models.CASCADE,
+        related_name='role_signals',
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='question_role_signals',
+    )
+    weight = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['question_option__question__code', 'role__slug']
+        unique_together = [('question_option', 'role')]
+
+    def __str__(self) -> str:
+        return f'{self.question_option} -> {self.role.slug}: {self.weight}'
+
+
+class QuestionTopicSignal(models.Model):
+    question_option = models.ForeignKey(
+        QuestionOption,
+        on_delete=models.CASCADE,
+        related_name='topic_signals',
+    )
+    topic = models.ForeignKey(
+        RoadmapTopic,
+        on_delete=models.CASCADE,
+        related_name='question_topic_signals',
+    )
+    mastery_delta = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['question_option__question__code', 'topic__slug']
+        unique_together = [('question_option', 'topic')]
+
+    def __str__(self) -> str:
+        return f'{self.question_option} -> {self.topic.slug}: {self.mastery_delta}'

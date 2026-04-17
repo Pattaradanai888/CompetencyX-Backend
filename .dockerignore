@@ -1,0 +1,12 @@
+.git
+.ruff_cache
+.tmp
+.uv-cache
+.venv
+__pycache__
+*.pyc
+*.pyo
+.coverage
+coverage
+db.sqlite3
+pytest-cache-files-xhmvejqh

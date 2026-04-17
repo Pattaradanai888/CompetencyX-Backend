@@ -9,6 +9,7 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "djangorestframework>=3.17.1",
     "drf-spectacular>=0.28.0",
+    "psycopg[binary]>=3.2.9",
 ]
 
 [dependency-groups]
@@ -29,7 +30,7 @@ default-groups = ["dev"]
 minversion = "8.3"
 addopts = "-p no:cacheprovider --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
 python_files = ["tests.py", "test_*.py"]
-testpaths = ["api", "roadmaps", "assessments", "recommendations"]
+testpaths = ["api", "roadmaps", "assessments", "recommendations", "config"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 norecursedirs = [
@@ -118,7 +119,7 @@ ignore = ["S101", "COM812", "TRY003", "RUF012"]
 "manage.py" = ["INP001", "PLC0415", "EM101"]
 "config/settings/__init__.py" = ["F403"]
 "config/settings/base.py" = ["S105"]
-"config/settings/app.py" = ["F403", "F405"]
+"config/settings/runtime.py" = ["F403", "F405"]
 "config/settings/test.py" = ["F403", "F405", "S105"]
 
 [tool.ruff.lint.isort]

@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {"id": "backend-http", "label": "HTTP", "slug": "http"},
+    {"id": "backend-databases", "label": "Databases", "slug": "databases"},
+    {"id": "backend-apis", "label": "API Design", "slug": "apis"}
+  ],
+  "edges": [
+    {"source": "backend-http", "target": "backend-databases"},
+    {"source": "backend-databases", "target": "backend-apis"}
+  ]
+}

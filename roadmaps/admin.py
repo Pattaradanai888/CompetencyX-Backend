@@ -1,11 +1,29 @@
 from django.contrib import admin
 
-from .models import Question, QuestionOption, RoadmapTopic, Role, TopicPrerequisite
+from .models import (
+    Question,
+    QuestionOption,
+    QuestionRoleSignal,
+    QuestionTopicSignal,
+    RoadmapTopic,
+    Role,
+    TopicPrerequisite,
+)
 
 
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
     extra = 1
+
+
+class QuestionRoleSignalInline(admin.TabularInline):
+    model = QuestionRoleSignal
+    extra = 0
+
+
+class QuestionTopicSignalInline(admin.TabularInline):
+    model = QuestionTopicSignal
+    extra = 0
 
 
 @admin.register(Role)
@@ -38,3 +56,10 @@ class QuestionAdmin(admin.ModelAdmin):
     search_fields = ('code', 'prompt')
     list_select_related = ('role', 'topic')
     inlines = [QuestionOptionInline]
+
+
+@admin.register(QuestionOption)
+class QuestionOptionAdmin(admin.ModelAdmin):
+    list_display = ('question', 'key', 'label', 'display_order')
+    list_select_related = ('question',)
+    inlines = [QuestionRoleSignalInline, QuestionTopicSignalInline]

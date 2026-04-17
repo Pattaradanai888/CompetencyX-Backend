@@ -1,0 +1,25 @@
+roles:
+  - slug: frontend-engineer
+    name: Frontend Engineer
+    description: Builds browser-based user interfaces and application experiences.
+  - slug: backend-engineer
+    name: Backend Engineer
+    description: Builds APIs, data flows, and server-side application logic.
+  - slug: full-stack-engineer
+    name: Full-Stack Engineer
+    description: Builds user-facing features and the backend systems behind them.
+  - slug: devops-engineer
+    name: DevOps Engineer
+    description: Owns deployment, automation, observability, and platform reliability.
+  - slug: data-engineer
+    name: Data Engineer
+    description: Builds data pipelines, storage, and processing systems.
+  - slug: mobile-engineer
+    name: Mobile Engineer
+    description: Builds native or cross-platform mobile applications.
+  - slug: qa-test-engineer
+    name: QA / Test Engineer
+    description: Designs quality strategies, automation, and release validation.
+  - slug: cybersecurity-engineer
+    name: Cybersecurity Engineer
+    description: Protects systems through secure design, detection, and incident response.

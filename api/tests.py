@@ -6,123 +6,178 @@ from rest_framework.test import APITestCase
 
 from assessments.models import AssessmentSession, TopicMastery
 from recommendations.models import Recommendation
-from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role, TopicPrerequisite
+from roadmaps.models import (
+    Question,
+    QuestionOption,
+    QuestionRoleSignal,
+    QuestionTopicSignal,
+    RoadmapTopic,
+    Role,
+    TopicPrerequisite,
+)
 
 
 class AssessmentFlowTests(APITestCase):
+    def _create_skill_question_config(self, **config):
+        return {'discrimination_score': 1.5, **config}
+
     def setUp(self):
         self.backend_role = Role.objects.create(
             slug='backend-engineer',
             name='Backend Engineer',
             description='Builds APIs and backend services.',
         )
+        self.qa_role = Role.objects.create(
+            slug='qa-test-engineer',
+            name='QA / Test Engineer',
+            description='Improves quality with testing and release validation.',
+        )
         self.frontend_role = Role.objects.create(
             slug='frontend-engineer',
             name='Frontend Engineer',
             description='Builds web user interfaces.',
         )
-        self.http_topic = RoadmapTopic.objects.create(
+        self.backend_http = RoadmapTopic.objects.create(role=self.backend_role, slug='http', title='HTTP Fundamentals', display_order=1)
+        self.backend_databases = RoadmapTopic.objects.create(
             role=self.backend_role,
-            slug='http',
-            title='HTTP Fundamentals',
-            display_order=1,
-        )
-        self.apis_topic = RoadmapTopic.objects.create(
-            role=self.backend_role,
-            slug='apis',
-            title='API Design',
+            slug='databases',
+            title='Databases',
             display_order=2,
         )
-        TopicPrerequisite.objects.create(
-            topic=self.apis_topic,
-            prerequisite=self.http_topic,
-            required_mastery_threshold=0.7,
+        self.backend_apis = RoadmapTopic.objects.create(role=self.backend_role, slug='apis', title='API Design', display_order=3)
+        self.qa_design = RoadmapTopic.objects.create(role=self.qa_role, slug='test-design', title='Test Design', display_order=1)
+        self.qa_automation = RoadmapTopic.objects.create(
+            role=self.qa_role,
+            slug='test-automation',
+            title='Test Automation',
+            display_order=2,
         )
+        self.qa_release = RoadmapTopic.objects.create(
+            role=self.qa_role,
+            slug='release-quality',
+            title='Release Quality',
+            display_order=3,
+        )
+        TopicPrerequisite.objects.create(topic=self.backend_databases, prerequisite=self.backend_http, required_mastery_threshold=0.7)
+        TopicPrerequisite.objects.create(topic=self.backend_apis, prerequisite=self.backend_databases, required_mastery_threshold=0.7)
+        TopicPrerequisite.objects.create(topic=self.qa_automation, prerequisite=self.qa_design, required_mastery_threshold=0.7)
+        TopicPrerequisite.objects.create(topic=self.qa_release, prerequisite=self.qa_automation, required_mastery_threshold=0.7)
 
-        role_question = Question.objects.create(
-            code='role-http-interest',
+        role_question_1 = Question.objects.create(
+            code='role-primary-interest',
             stage=Question.Stage.ROLE,
             question_type=Question.Type.SINGLE_CHOICE,
-            prompt='Which kind of work sounds more interesting?',
+            prompt='Which work sounds most interesting?',
             display_order=1,
-            discrimination_score=2.0,
+            discrimination_score=3.0,
         )
-        QuestionOption.objects.create(
-            question=role_question,
-            key='api',
-            label='Designing APIs and integrations',
+        self.backend_interest_option = self._add_role_option(
+            role_question_1,
+            key='backend',
+            label='Designing APIs and backend services',
             display_order=1,
-            role_weights={'backend-engineer': 2, 'frontend-engineer': 0},
+            weights={self.backend_role.slug: 4.0},
         )
-        QuestionOption.objects.create(
-            question=role_question,
-            key='ui',
-            label='Building polished interfaces',
+        self.qa_interest_option = self._add_role_option(
+            role_question_1,
+            key='qa',
+            label='Improving quality with test strategy and automation',
             display_order=2,
-            role_weights={'backend-engineer': 0, 'frontend-engineer': 2},
+            weights={self.qa_role.slug: 4.0},
         )
 
-        skill_question_1 = Question.objects.create(
-            code='http-basics',
-            stage=Question.Stage.SKILL,
-            question_type=Question.Type.YES_NO_MAYBE,
-            prompt='Are you comfortable with HTTP methods and status codes?',
-            role=self.backend_role,
-            topic=self.http_topic,
-            display_order=1,
-        )
-        QuestionOption.objects.create(
-            question=skill_question_1,
-            key='yes',
-            label='Yes',
-            display_order=1,
-            mastery_value=1.0,
-        )
-        QuestionOption.objects.create(
-            question=skill_question_1,
-            key='maybe',
-            label='Maybe',
+        role_question_2 = Question.objects.create(
+            code='role-working-style',
+            stage=Question.Stage.ROLE,
+            question_type=Question.Type.SINGLE_CHOICE,
+            prompt='Which working style sounds most satisfying?',
             display_order=2,
-            mastery_value=0.5,
+            discrimination_score=2.5,
         )
-        QuestionOption.objects.create(
-            question=skill_question_1,
-            key='no',
-            label='No',
-            display_order=3,
-            mastery_value=0.0,
+        self.backend_style_option = self._add_role_option(
+            role_question_2,
+            key='system-backbone',
+            label='Building the system backbone that powers features',
+            display_order=1,
+            weights={self.backend_role.slug: 3.0, self.frontend_role.slug: 1.0},
+        )
+        self.qa_style_option = self._add_role_option(
+            role_question_2,
+            key='ship-safely',
+            label='Making delivery safer with tests and predictable releases',
+            display_order=2,
+            weights={self.qa_role.slug: 3.0},
         )
 
-        skill_question_2 = Question.objects.create(
-            code='api-design',
+        self._add_skill_question(
+            self._create_skill_question_config(
+                code='backend-http-basics',
+                role=self.backend_role,
+                topic=self.backend_http,
+                prompt='Are you comfortable with HTTP methods and status codes?',
+                display_order=11,
+            )
+        )
+        self._add_skill_question(
+            self._create_skill_question_config(
+                code='backend-database-basics',
+                role=self.backend_role,
+                topic=self.backend_databases,
+                prompt='Can you write basic SQL queries and explain joins?',
+                display_order=12,
+                discrimination_score=2.0,
+            )
+        )
+        self._add_skill_question(
+            self._create_skill_question_config(
+                code='qa-test-design',
+                role=self.qa_role,
+                topic=self.qa_design,
+                prompt='Can you derive useful test cases from requirements?',
+                display_order=21,
+            )
+        )
+        self._add_skill_question(
+            self._create_skill_question_config(
+                code='qa-test-automation',
+                role=self.qa_role,
+                topic=self.qa_automation,
+                prompt='Have you written or maintained automated tests?',
+                display_order=22,
+                discrimination_score=2.0,
+            )
+        )
+
+    def _add_role_option(self, question, *, key, label, display_order, weights):
+        option = QuestionOption.objects.create(question=question, key=key, label=label, display_order=display_order)
+        for role_slug, weight in weights.items():
+            QuestionRoleSignal.objects.create(
+                question_option=option,
+                role=Role.objects.get(slug=role_slug),
+                weight=weight,
+            )
+        return option
+
+    def _add_skill_question(self, config):
+        question = Question.objects.create(
+            code=config['code'],
             stage=Question.Stage.SKILL,
             question_type=Question.Type.YES_NO_MAYBE,
-            prompt='Have you built or documented a REST API before?',
-            role=self.backend_role,
-            topic=self.apis_topic,
-            display_order=2,
+            prompt=config['prompt'],
+            role=config['role'],
+            topic=config['topic'],
+            display_order=config['display_order'],
+            discrimination_score=config['discrimination_score'],
         )
-        QuestionOption.objects.create(
-            question=skill_question_2,
-            key='yes',
-            label='Yes',
-            display_order=1,
-            mastery_value=1.0,
-        )
-        QuestionOption.objects.create(
-            question=skill_question_2,
-            key='maybe',
-            label='Maybe',
-            display_order=2,
-            mastery_value=0.5,
-        )
-        QuestionOption.objects.create(
-            question=skill_question_2,
-            key='no',
-            label='No',
-            display_order=3,
-            mastery_value=0.0,
-        )
+        for option_key, mastery_delta, option_order in (('yes', 1.0, 1), ('maybe', 0.5, 2), ('no', 0.0, 3)):
+            option = QuestionOption.objects.create(
+                question=question,
+                key=option_key,
+                label=option_key.capitalize(),
+                display_order=option_order,
+            )
+            QuestionTopicSignal.objects.create(question_option=option, topic=config['topic'], mastery_delta=mastery_delta)
+        return question
 
     def test_health_endpoint(self):
         response = self.client.get(reverse('health-check'))
@@ -130,14 +185,19 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(response.json(), {'status': 'ok'})
 
     def test_openapi_schema_and_swagger_endpoints(self):
-        schema_response = self.client.get(
-            reverse('api-schema'),
-            HTTP_ACCEPT='application/json',
-        )
+        schema_response = self.client.get(reverse('api-schema'), HTTP_ACCEPT='application/json')
         self.assertEqual(schema_response.status_code, status.HTTP_200_OK)
         schema_payload = json.loads(schema_response.content)
         self.assertEqual(schema_payload['info']['title'], 'CompetencyX API')
         self.assertEqual(schema_payload['openapi'], '3.0.3')
+        self.assertEqual(schema_payload['paths']['/api/health/']['get']['operationId'], 'healthCheck')
+        self.assertEqual(schema_payload['paths']['/api/catalog/roles/']['get']['operationId'], 'listCatalogRoles')
+        self.assertEqual(
+            schema_payload['paths']['/api/assessment-sessions/{id}/answers/']['post']['operationId'],
+            'submitAssessmentAnswer',
+        )
+        self.assertIn('409', schema_payload['paths']['/api/assessment-sessions/{id}/history/']['get']['responses'])
+        self.assertIn('AssessmentSession', schema_payload['components']['schemas'])
 
         swagger_response = self.client.get(reverse('api-swagger-ui'))
         self.assertEqual(swagger_response.status_code, status.HTTP_200_OK)
@@ -146,96 +206,129 @@ class AssessmentFlowTests(APITestCase):
     def test_catalog_roles_and_topics(self):
         roles_response = self.client.get(reverse('role-list'))
         self.assertEqual(roles_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(roles_response.json()), 2)
+        self.assertEqual(len(roles_response.json()), 3)
 
         topics_response = self.client.get(reverse('role-topic-list', kwargs={'role_slug': self.backend_role.slug}))
         self.assertEqual(topics_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(topics_response.json()), 2)
-        self.assertEqual(
-            topics_response.json()[1]['prerequisites'][0]['topic_id'],
-            self.http_topic.id,
-        )
+        self.assertEqual(len(topics_response.json()), 3)
+        self.assertEqual(topics_response.json()[1]['prerequisites'][0]['topic_id'], self.backend_http.id)
 
-    def test_assessment_session_flow_with_selected_role_generates_mastery_and_recommendation(self):
+    def test_preferred_role_is_preserved_while_best_fit_can_differ(self):
         create_response = self.client.post(
             reverse('assessment-session-create'),
-            {
-                'selected_role_slug': self.backend_role.slug,
-                'profile': {'education_level': 'student'},
-            },
+            {'preferred_role_slug': self.backend_role.slug, 'profile': {'education_level': 'student'}},
             format='json',
         )
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        payload = create_response.json()
+        self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
+        self.assertEqual(payload['preferred_role']['slug'], self.backend_role.slug)
+        self.assertNotIn('mastery_scores', payload)
+
+        first_answer = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': payload['current_question']['id'], 'option_id': self.qa_interest_option.id},
+            format='json',
+        )
+        self.assertEqual(first_answer.status_code, status.HTTP_200_OK)
+        second_question = first_answer.json()['current_question']
+        self.assertEqual(first_answer.json()['best_fit_role']['slug'], self.qa_role.slug)
+
+        second_answer = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': second_question['id'], 'option_id': self.qa_style_option.id},
+            format='json',
+        )
+        self.assertEqual(second_answer.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_answer.json()['phase'], AssessmentSession.Phase.SKILL_ASSESSMENT)
+        self.assertEqual(second_answer.json()['best_fit_role']['slug'], self.qa_role.slug)
+        self.assertEqual(second_answer.json()['preferred_role']['slug'], self.backend_role.slug)
+        self.assertEqual(second_answer.json()['role_alignment_status'], 'mismatch')
+        self.assertIn('but you can still pursue Backend Engineer', second_answer.json()['guidance_summary'])
+        self.assertEqual(second_answer.json()['current_question']['code'], 'backend-http-basics')
+
+    def test_completed_results_return_dual_path_recommendations(self):
+        create_response = self.client.post(
+            reverse('assessment-session-create'),
+            {'preferred_role_slug': self.backend_role.slug},
+            format='json',
+        )
         session_id = create_response.json()['id']
-        self.assertEqual(create_response.json()['phase'], AssessmentSession.Phase.SKILL_ASSESSMENT)
+
         current_question = create_response.json()['current_question']
-        self.assertEqual(current_question['code'], 'http-basics')
+        role_answers = [self.qa_interest_option.id, self.qa_style_option.id]
+        for option_id in role_answers:
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {'question_id': current_question['id'], 'option_id': option_id},
+                format='json',
+            )
+            self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
+            current_question = answer_response.json()['current_question']
 
-        yes_option_id = Question.objects.get(code='http-basics').options.get(key='yes').id
-        answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {
-                'question_id': current_question['id'],
-                'option_id': yes_option_id,
-                'response_time_ms': 1200,
-                'confidence_indicator': 'high',
-            },
-            format='json',
-        )
-        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(answer_response.json()['current_question']['code'], 'api-design')
-        self.assertEqual(TopicMastery.objects.filter(session_id=session_id).count(), 1)
+        backend_yes = Question.objects.get(code='backend-http-basics').options.get(key='yes').id
+        backend_maybe = Question.objects.get(code='backend-database-basics').options.get(key='maybe').id
+        for option_id in (backend_yes, backend_maybe):
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {'question_id': current_question['id'], 'option_id': option_id},
+                format='json',
+            )
+            self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
+            current_question = answer_response.json()['current_question']
 
-        maybe_option_id = Question.objects.get(code='api-design').options.get(key='maybe').id
-        final_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {
-                'question_id': Question.objects.get(code='api-design').id,
-                'option_id': maybe_option_id,
-            },
-            format='json',
-        )
-        self.assertEqual(final_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(final_response.json()['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
-        self.assertIsNone(final_response.json()['current_question'])
-        self.assertEqual(final_response.json()['latest_recommendation']['topic_slug'], 'apis')
-        self.assertEqual(Recommendation.objects.filter(session_id=session_id).count(), 1)
+        final_payload = answer_response.json()
+        self.assertEqual(final_payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
+        self.assertIsNone(final_payload['current_question'])
+        self.assertNotIn('latest_recommendation', final_payload)
 
-    def test_role_inference_flow_without_selected_role(self):
-        create_response = self.client.post(
-            reverse('assessment-session-create'),
-            {'profile': {'current_stage': 'beginner'}},
-            format='json',
-        )
+        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
+        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
+        results = results_response.json()
+        self.assertEqual(results['preferred_role']['slug'], self.backend_role.slug)
+        self.assertEqual(results['best_fit_role']['slug'], self.qa_role.slug)
+        self.assertEqual(results['role_alignment_status'], 'mismatch')
+        self.assertEqual(results['preferred_path_recommendation']['path_kind'], 'preferred')
+        self.assertEqual(results['preferred_path_recommendation']['role_slug'], self.backend_role.slug)
+        self.assertEqual(results['preferred_path_recommendation']['topic_slug'], 'databases')
+        self.assertEqual(results['best_fit_path_recommendation']['path_kind'], 'best_fit')
+        self.assertEqual(results['best_fit_path_recommendation']['role_slug'], self.qa_role.slug)
+        self.assertEqual(results['best_fit_path_recommendation']['topic_slug'], 'test-design')
+        self.assertEqual([topic['slug'] for topic in results['preferred_role_gap_topics']], ['apis', 'databases', 'http'])
+        self.assertNotIn('answers', results)
+        self.assertEqual(TopicMastery.objects.filter(session_id=session_id).count(), 2)
+        self.assertEqual(Recommendation.objects.filter(session_id=session_id).count(), 2)
+
+    def test_role_inference_without_preferred_role_uses_best_fit_path(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        question = create_response.json()['current_question']
-        selected_option_id = Question.objects.get(code='role-http-interest').options.get(key='api').id
+        payload = create_response.json()
+        self.assertIsNone(payload['preferred_role'])
 
-        answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': create_response.json()['id']}),
-            {'question_id': question['id'], 'option_id': selected_option_id},
+        first_answer = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': payload['current_question']['id'], 'option_id': self.backend_interest_option.id},
             format='json',
         )
-        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            answer_response.json()['inferred_role']['slug'],
-            self.backend_role.slug,
+        second_answer = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': first_answer.json()['current_question']['id'], 'option_id': self.backend_style_option.id},
+            format='json',
         )
-        self.assertGreater(answer_response.json()['role_confidence'], 0.0)
+        self.assertEqual(second_answer.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_answer.json()['best_fit_role']['slug'], self.backend_role.slug)
+        self.assertEqual(second_answer.json()['role_alignment_status'], 'aligned')
+        self.assertEqual(second_answer.json()['current_question']['code'], 'backend-http-basics')
 
     def test_answer_submission_rejects_out_of_order_question(self):
-        create_response = self.client.post(
-            reverse('assessment-session-create'),
-            {'selected_role_slug': self.backend_role.slug},
-            format='json',
-        )
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
+        backend_question = Question.objects.get(code='backend-http-basics')
+        maybe_option_id = backend_question.options.get(key='maybe').id
 
-        api_design_question = Question.objects.get(code='api-design')
-        maybe_option_id = api_design_question.options.get(key='maybe').id
         answer_response = self.client.post(
             reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {'question_id': api_design_question.id, 'option_id': maybe_option_id},
+            {'question_id': backend_question.id, 'option_id': maybe_option_id},
             format='json',
         )
 
@@ -243,91 +336,81 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('Out-of-order submission', answer_response.json()['question_id'][0])
         self.assertEqual(TopicMastery.objects.filter(session_id=session_id).count(), 0)
 
-    def test_next_question_prefers_higher_discrimination_when_topic_uncertainty_matches(self):
-        Question.objects.create(
-            code='http-scenario-analysis',
-            stage=Question.Stage.SKILL,
-            question_type=Question.Type.YES_NO_MAYBE,
-            prompt='Can you reason through HTTP caching, idempotency, and REST constraints?',
-            role=self.backend_role,
-            topic=self.http_topic,
-            display_order=99,
-            discrimination_score=3.5,
-        )
-        advanced_http_question = Question.objects.get(code='http-scenario-analysis')
-        QuestionOption.objects.create(
-            question=advanced_http_question,
-            key='yes',
-            label='Yes',
-            display_order=1,
-            mastery_value=1.0,
-        )
-        QuestionOption.objects.create(
-            question=advanced_http_question,
-            key='maybe',
-            label='Maybe',
-            display_order=2,
-            mastery_value=0.5,
-        )
-        QuestionOption.objects.create(
-            question=advanced_http_question,
-            key='no',
-            label='No',
-            display_order=3,
-            mastery_value=0.0,
-        )
+    def test_history_endpoint_requires_completion(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        response = self.client.get(reverse('assessment-session-history', kwargs={'pk': create_response.json()['id']}))
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
-        create_response = self.client.post(
-            reverse('assessment-session-create'),
-            {'selected_role_slug': self.backend_role.slug},
-            format='json',
-        )
-
-        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(create_response.json()['current_question']['code'], 'http-scenario-analysis')
-
-    def test_results_and_history_endpoints_return_session_snapshot(self):
-        create_response = self.client.post(
-            reverse('assessment-session-create'),
-            {'selected_role_slug': self.backend_role.slug},
-            format='json',
-        )
+    def test_history_returns_answers_and_recommendations_after_completion(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
+        current_question = create_response.json()['current_question']
 
-        http_question = create_response.json()['current_question']
-        http_yes_option_id = Question.objects.get(code='http-basics').options.get(key='yes').id
-        first_answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {'question_id': http_question['id'], 'option_id': http_yes_option_id},
-            format='json',
-        )
-        self.assertEqual(first_answer_response.status_code, status.HTTP_200_OK)
+        for option_id in (self.backend_interest_option.id, self.backend_style_option.id):
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {'question_id': current_question['id'], 'option_id': option_id},
+                format='json',
+            )
+            current_question = answer_response.json()['current_question']
 
-        api_question = first_answer_response.json()['current_question']
-        api_maybe_option_id = Question.objects.get(code='api-design').options.get(key='maybe').id
-        second_answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {'question_id': api_question['id'], 'option_id': api_maybe_option_id},
-            format='json',
-        )
-        self.assertEqual(second_answer_response.status_code, status.HTTP_200_OK)
+        for option_id in (
+            Question.objects.get(code='backend-http-basics').options.get(key='yes').id,
+            Question.objects.get(code='backend-database-basics').options.get(key='maybe').id,
+        ):
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {'question_id': current_question['id'], 'option_id': option_id},
+                format='json',
+            )
+            current_question = answer_response.json()['current_question']
 
-        results_response = self.client.get(
-            reverse('assessment-session-results', kwargs={'pk': session_id}),
-        )
-        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(results_response.json()['milestones']['answered_skill_questions'], 2)
-        self.assertEqual(len(results_response.json()['answers']), 2)
-        self.assertEqual(len(results_response.json()['recommendations']), 1)
-        self.assertEqual(results_response.json()['recommendations'][0]['topic_slug'], 'apis')
-
-        history_response = self.client.get(
-            reverse('assessment-session-history', kwargs={'pk': session_id}),
-        )
+        history_response = self.client.get(reverse('assessment-session-history', kwargs={'pk': session_id}))
         self.assertEqual(history_response.status_code, status.HTTP_200_OK)
         self.assertEqual(history_response.json()['status'], AssessmentSession.Status.COMPLETED)
-        self.assertEqual(
-            [answer['question_code'] for answer in history_response.json()['answers']],
-            ['http-basics', 'api-design'],
-        )
-        self.assertEqual(history_response.json()['recommendations'][0]['topic_slug'], 'apis')
+        self.assertEqual(len(history_response.json()['answers']), 4)
+        self.assertEqual(len(history_response.json()['recommendations']), 1)
+
+    def test_assessment_flow_emits_info_logs_for_survey_and_calculation(self):
+        with self.assertLogs('assessments.services', level='INFO') as captured_logs:
+            create_response = self.client.post(
+                reverse('assessment-session-create'),
+                {'preferred_role_slug': self.backend_role.slug, 'profile': {'current_stage': 'beginner'}},
+                format='json',
+            )
+            self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+            session_id = create_response.json()['id']
+            current_question = create_response.json()['current_question']
+
+            first_answer = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {
+                    'question_id': current_question['id'],
+                    'option_id': self.backend_interest_option.id,
+                    'response_time_ms': 4200,
+                    'confidence_indicator': 'high',
+                },
+                format='json',
+            )
+            self.assertEqual(first_answer.status_code, status.HTTP_200_OK)
+            second_question = first_answer.json()['current_question']
+
+            second_answer = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                {
+                    'question_id': second_question['id'],
+                    'option_id': self.backend_style_option.id,
+                    'response_time_ms': 3100,
+                    'confidence_indicator': 'medium',
+                },
+                format='json',
+            )
+            self.assertEqual(second_answer.status_code, status.HTTP_200_OK)
+
+        joined_logs = '\n'.join(captured_logs.output)
+        self.assertIn('assessment.session_created', joined_logs)
+        self.assertIn('assessment.answer_submission_received', joined_logs)
+        self.assertIn('assessment.answer_recorded', joined_logs)
+        self.assertIn('assessment.best_fit_recomputed', joined_logs)
+        self.assertIn('assessment.mastery_recomputed', joined_logs)
+        self.assertIn('assessment.phase_updated', joined_logs)

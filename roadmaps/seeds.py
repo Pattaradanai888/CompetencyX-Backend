@@ -1,359 +1,172 @@
-from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role, TopicPrerequisite
+import json
+from pathlib import Path
+
+import yaml
+
+from roadmaps.models import (
+    Question,
+    QuestionOption,
+    QuestionRoleSignal,
+    QuestionTopicSignal,
+    RoadmapTopic,
+    Role,
+    TopicPrerequisite,
+)
 
 
-ROLE_SEEDS = [
-    {
-        'slug': 'frontend-engineer',
-        'name': 'Frontend Engineer',
-        'description': 'Builds browser-based user interfaces and application experiences.',
-        'topics': [
-            {
-                'slug': 'html-css',
-                'title': 'HTML and CSS Fundamentals',
-                'description': 'Structure pages and style interfaces with maintainable CSS.',
-                'difficulty': RoadmapTopic.Difficulty.BEGINNER,
-                'display_order': 1,
-            },
-            {
-                'slug': 'javascript',
-                'title': 'JavaScript Fundamentals',
-                'description': 'Work with core language features, DOM APIs, and browser execution.',
-                'difficulty': RoadmapTopic.Difficulty.BEGINNER,
-                'display_order': 2,
-                'prerequisites': ['html-css'],
-            },
-            {
-                'slug': 'frontend-testing',
-                'title': 'Frontend Testing',
-                'description': 'Validate UI behavior with component and end-to-end testing.',
-                'difficulty': RoadmapTopic.Difficulty.INTERMEDIATE,
-                'display_order': 3,
-                'prerequisites': ['javascript'],
-            },
-        ],
-    },
-    {
-        'slug': 'backend-engineer',
-        'name': 'Backend Engineer',
-        'description': 'Builds APIs, data flows, and server-side application logic.',
-        'topics': [
-            {
-                'slug': 'git',
-                'title': 'Git Fundamentals',
-                'description': 'Track changes, branch safely, and collaborate on code.',
-                'difficulty': RoadmapTopic.Difficulty.BEGINNER,
-                'display_order': 1,
-            },
-            {
-                'slug': 'http',
-                'title': 'HTTP Fundamentals',
-                'description': 'Understand requests, responses, status codes, and API semantics.',
-                'difficulty': RoadmapTopic.Difficulty.BEGINNER,
-                'display_order': 2,
-            },
-            {
-                'slug': 'databases',
-                'title': 'Databases',
-                'description': 'Model data, query efficiently, and understand relational concepts.',
-                'difficulty': RoadmapTopic.Difficulty.INTERMEDIATE,
-                'display_order': 3,
-                'prerequisites': ['git'],
-            },
-            {
-                'slug': 'apis',
-                'title': 'API Design',
-                'description': 'Design web APIs with clear resources, validation, and versioning.',
-                'difficulty': RoadmapTopic.Difficulty.INTERMEDIATE,
-                'display_order': 4,
-                'prerequisites': ['http', 'databases'],
-            },
-        ],
-    },
-    {
-        'slug': 'full-stack-engineer',
-        'name': 'Full-Stack Engineer',
-        'description': 'Builds user-facing features and the backend systems behind them.',
-        'topics': [],
-    },
-    {
-        'slug': 'devops-engineer',
-        'name': 'DevOps Engineer',
-        'description': 'Owns deployment, automation, observability, and platform reliability.',
-        'topics': [],
-    },
-    {
-        'slug': 'data-engineer',
-        'name': 'Data Engineer',
-        'description': 'Builds data pipelines, storage, and processing systems.',
-        'topics': [],
-    },
-    {
-        'slug': 'mobile-engineer',
-        'name': 'Mobile Engineer',
-        'description': 'Builds native or cross-platform mobile applications.',
-        'topics': [],
-    },
-    {
-        'slug': 'qa-test-engineer',
-        'name': 'QA / Test Engineer',
-        'description': 'Designs quality strategies, automation, and release validation.',
-        'topics': [],
-    },
-    {
-        'slug': 'cybersecurity-engineer',
-        'name': 'Cybersecurity Engineer',
-        'description': 'Protects systems through secure design, detection, and incident response.',
-        'topics': [],
-    },
-]
-
-QUESTION_SEEDS = [
-    {
-        'code': 'role-preference-systems-vs-ui',
-        'stage': Question.Stage.ROLE,
-        'question_type': Question.Type.SINGLE_CHOICE,
-        'prompt': 'Which kind of work sounds more interesting right now?',
-        'help_text': 'Pick the work you would rather spend time learning first.',
-        'difficulty': 1,
-        'discrimination_score': 2.5,
-        'display_order': 1,
-        'options': [
-            {
-                'key': 'ui',
-                'label': 'Building polished browser interfaces',
-                'display_order': 1,
-                'role_weights': {
-                    'frontend-engineer': 3,
-                    'full-stack-engineer': 1,
-                    'mobile-engineer': 1,
-                },
-            },
-            {
-                'key': 'systems',
-                'label': 'Designing APIs, data flows, and backend services',
-                'display_order': 2,
-                'role_weights': {
-                    'backend-engineer': 3,
-                    'full-stack-engineer': 1,
-                    'data-engineer': 1,
-                },
-            },
-            {
-                'key': 'platform',
-                'label': 'Automating deployments and operating infrastructure',
-                'display_order': 3,
-                'role_weights': {
-                    'devops-engineer': 3,
-                    'cybersecurity-engineer': 1,
-                },
-            },
-        ],
-    },
-    {
-        'code': 'role-preference-data-vs-quality',
-        'stage': Question.Stage.ROLE,
-        'question_type': Question.Type.SINGLE_CHOICE,
-        'prompt': 'Which problem space feels more natural to you?',
-        'help_text': 'Choose the area where you would be most motivated to improve.',
-        'difficulty': 1,
-        'discrimination_score': 2.0,
-        'display_order': 2,
-        'options': [
-            {
-                'key': 'data',
-                'label': 'Transforming and modeling data',
-                'display_order': 1,
-                'role_weights': {
-                    'data-engineer': 3,
-                    'backend-engineer': 1,
-                },
-            },
-            {
-                'key': 'quality',
-                'label': 'Finding edge cases and improving reliability',
-                'display_order': 2,
-                'role_weights': {
-                    'qa-test-engineer': 3,
-                    'devops-engineer': 1,
-                },
-            },
-            {
-                'key': 'security',
-                'label': 'Preventing vulnerabilities and strengthening defenses',
-                'display_order': 3,
-                'role_weights': {
-                    'cybersecurity-engineer': 3,
-                    'devops-engineer': 1,
-                },
-            },
-        ],
-    },
-    {
-        'code': 'backend-git-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Can you create branches, merge changes, and resolve simple Git conflicts?',
-        'difficulty': 1,
-        'discrimination_score': 1.5,
-        'display_order': 10,
-        'role_slug': 'backend-engineer',
-        'topic_slug': 'git',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'backend-http-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Are you comfortable with HTTP methods, status codes, and request/response structure?',
-        'difficulty': 1,
-        'discrimination_score': 1.7,
-        'display_order': 11,
-        'role_slug': 'backend-engineer',
-        'topic_slug': 'http',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'backend-database-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Can you write basic SQL queries and explain tables, joins, and indexes?',
-        'difficulty': 2,
-        'discrimination_score': 1.9,
-        'display_order': 12,
-        'role_slug': 'backend-engineer',
-        'topic_slug': 'databases',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'backend-api-design',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Have you designed or documented an API with authentication, validation, and clear endpoints?',
-        'difficulty': 2,
-        'discrimination_score': 2.0,
-        'display_order': 13,
-        'role_slug': 'backend-engineer',
-        'topic_slug': 'apis',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'frontend-html-css-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Can you build responsive layouts with semantic HTML and reusable CSS?',
-        'difficulty': 1,
-        'discrimination_score': 1.5,
-        'display_order': 20,
-        'role_slug': 'frontend-engineer',
-        'topic_slug': 'html-css',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'frontend-javascript-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Are you comfortable with JavaScript fundamentals, DOM updates, and asynchronous requests?',
-        'difficulty': 1,
-        'discrimination_score': 1.8,
-        'display_order': 21,
-        'role_slug': 'frontend-engineer',
-        'topic_slug': 'javascript',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-    {
-        'code': 'frontend-testing-basics',
-        'stage': Question.Stage.SKILL,
-        'question_type': Question.Type.YES_NO_MAYBE,
-        'prompt': 'Have you written component, integration, or end-to-end tests for frontend code?',
-        'difficulty': 2,
-        'discrimination_score': 1.6,
-        'display_order': 22,
-        'role_slug': 'frontend-engineer',
-        'topic_slug': 'frontend-testing',
-        'options': [
-            {'key': 'yes', 'label': 'Yes', 'display_order': 1, 'mastery_value': 1.0},
-            {'key': 'maybe', 'label': 'Maybe', 'display_order': 2, 'mastery_value': 0.5},
-            {'key': 'no', 'label': 'No', 'display_order': 3, 'mastery_value': 0.0},
-        ],
-    },
-]
+BASE_DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
+CURATED_CONTENT_DIR = BASE_DATA_DIR / 'content'
+UPSTREAM_SNAPSHOT_DIR = BASE_DATA_DIR / 'upstream' / 'roadmap_sh'
 
 
 def seed_mvp_content(*, stdout=None):
-    roles_by_slug: dict[str, Role] = {}
-    topics_by_key: dict[tuple[str, str], RoadmapTopic] = {}
+    load_curated_content(stdout=stdout)
 
-    for role_seed in ROLE_SEEDS:
+
+def load_curated_content(*, stdout=None):
+    roles_data = _load_yaml(CURATED_CONTENT_DIR / 'roles.yaml')
+    topics_data = _load_yaml(CURATED_CONTENT_DIR / 'topics.yaml')
+    questions_data = _load_yaml(CURATED_CONTENT_DIR / 'questions.yaml')
+
+    roles_by_slug = _sync_roles(roles_data['roles'])
+    topics_by_key = _sync_topics(topics_data['topics'], roles_by_slug)
+    _sync_questions(
+        role_questions=questions_data['role_questions'],
+        skill_questions=questions_data['skill_questions'],
+        roles_by_slug=roles_by_slug,
+        topics_by_key=topics_by_key,
+    )
+
+    if stdout is not None:
+        stdout.write(
+            f'Seeded {Role.objects.count()} roles, '
+            f'{RoadmapTopic.objects.count()} topics, '
+            f'{Question.objects.count()} questions, and '
+            f'{QuestionOption.objects.count()} options.'
+        )
+
+
+def import_roadmap_snapshot(*, snapshot_path: Path, role_slug: str, source='roadmap.sh', source_version=''):
+    snapshot = json.loads(snapshot_path.read_text(encoding='utf-8'))
+    role = Role.objects.get(slug=role_slug)
+
+    nodes = _extract_snapshot_nodes(snapshot)
+    edges = _extract_snapshot_edges(snapshot)
+
+    topics_by_external_id: dict[str, RoadmapTopic] = {}
+    for index, node in enumerate(nodes, start=1):
+        topic, _created = RoadmapTopic.objects.update_or_create(
+            role=role,
+            slug=node['slug'],
+            defaults={
+                'title': node['title'],
+                'description': node.get('description', ''),
+                'difficulty': RoadmapTopic.Difficulty.BEGINNER,
+                'display_order': index,
+                'is_active': True,
+                'parent': None,
+                'external_source': source,
+                'external_id': node['id'],
+                'external_slug': node['slug'],
+                'source_version': source_version,
+            },
+        )
+        topics_by_external_id[node['id']] = topic
+
+    TopicPrerequisite.objects.filter(topic__role=role, topic__external_source=source).delete()
+    for edge in edges:
+        source_topic = topics_by_external_id.get(edge['source'])
+        target_topic = topics_by_external_id.get(edge['target'])
+        if source_topic is None or target_topic is None:
+            continue
+        TopicPrerequisite.objects.update_or_create(
+            topic=target_topic,
+            prerequisite=source_topic,
+            defaults={
+                'required_mastery_threshold': 0.7,
+                'dependency_weight': 1.0,
+            },
+        )
+
+
+def _sync_roles(role_seeds: list[dict]):
+    roles_by_slug: dict[str, Role] = {}
+    for role_seed in role_seeds:
         role, _created = Role.objects.update_or_create(
             slug=role_seed['slug'],
             defaults={
                 'name': role_seed['name'],
-                'description': role_seed['description'],
+                'description': role_seed.get('description', ''),
                 'is_active': True,
             },
         )
         roles_by_slug[role.slug] = role
+    return roles_by_slug
 
-        for topic_seed in role_seed['topics']:
-            topic, _created = RoadmapTopic.objects.update_or_create(
-                role=role,
-                slug=topic_seed['slug'],
-                defaults={
-                    'title': topic_seed['title'],
-                    'description': topic_seed['description'],
-                    'difficulty': topic_seed['difficulty'],
-                    'display_order': topic_seed['display_order'],
-                    'is_active': True,
-                    'parent': None,
-                },
-            )
-            topics_by_key[(role.slug, topic.slug)] = topic
+
+def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
+    topics_by_key: dict[tuple[str, str], RoadmapTopic] = {}
+    for topic_seed in topic_seeds:
+        role = roles_by_slug[topic_seed['role_slug']]
+        topic, _created = RoadmapTopic.objects.update_or_create(
+            role=role,
+            slug=topic_seed['slug'],
+            defaults={
+                'title': topic_seed['title'],
+                'description': topic_seed.get('description', ''),
+                'difficulty': topic_seed.get('difficulty', RoadmapTopic.Difficulty.BEGINNER),
+                'display_order': topic_seed['display_order'],
+                'is_active': True,
+                'parent': None,
+                'external_source': topic_seed.get('external_source', ''),
+                'external_id': topic_seed.get('external_id', ''),
+                'external_slug': topic_seed.get('external_slug', ''),
+                'source_version': topic_seed.get('source_version', ''),
+            },
+        )
+        topics_by_key[(role.slug, topic.slug)] = topic
 
     TopicPrerequisite.objects.all().delete()
-    for role_seed in ROLE_SEEDS:
-        role_slug = role_seed['slug']
-        for topic_seed in role_seed['topics']:
-            for prerequisite_slug in topic_seed.get('prerequisites', []):
-                TopicPrerequisite.objects.update_or_create(
-                    topic=topics_by_key[(role_slug, topic_seed['slug'])],
-                    prerequisite=topics_by_key[(role_slug, prerequisite_slug)],
-                    defaults={
-                        'required_mastery_threshold': 0.7,
-                        'dependency_weight': 1.0,
-                    },
-                )
+    for topic_seed in topic_seeds:
+        role_slug = topic_seed['role_slug']
+        for prerequisite_slug in topic_seed.get('prerequisites', []):
+            TopicPrerequisite.objects.update_or_create(
+                topic=topics_by_key[(role_slug, topic_seed['slug'])],
+                prerequisite=topics_by_key[(role_slug, prerequisite_slug)],
+                defaults={
+                    'required_mastery_threshold': 0.7,
+                    'dependency_weight': 1.0,
+                },
+            )
+    return topics_by_key
 
-    for question_seed in QUESTION_SEEDS:
-        role = roles_by_slug.get(question_seed.get('role_slug')) if question_seed.get('role_slug') else None
-        topic = topics_by_key.get((question_seed['role_slug'], question_seed['topic_slug'])) if question_seed.get('topic_slug') else None
+
+def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], roles_by_slug, topics_by_key):
+    for question_seed in role_questions:
         question, _created = Question.objects.update_or_create(
             code=question_seed['code'],
             defaults={
-                'stage': question_seed['stage'],
+                'stage': Question.Stage.ROLE,
+                'question_type': question_seed['question_type'],
+                'prompt': question_seed['prompt'],
+                'help_text': question_seed.get('help_text', ''),
+                'role': None,
+                'topic': None,
+                'difficulty': question_seed['difficulty'],
+                'discrimination_score': question_seed['discrimination_score'],
+                'display_order': question_seed['display_order'],
+                'is_active': True,
+            },
+        )
+        _sync_question_options(question, question_seed['options'], roles_by_slug=roles_by_slug, topics_by_key=topics_by_key)
+
+    for question_seed in skill_questions:
+        role = roles_by_slug[question_seed['role_slug']]
+        topic = topics_by_key[(question_seed['role_slug'], question_seed['topic_slug'])]
+        question, _created = Question.objects.update_or_create(
+            code=question_seed['code'],
+            defaults={
+                'stage': Question.Stage.SKILL,
                 'question_type': question_seed['question_type'],
                 'prompt': question_seed['prompt'],
                 'help_text': question_seed.get('help_text', ''),
@@ -365,28 +178,118 @@ def seed_mvp_content(*, stdout=None):
                 'is_active': True,
             },
         )
-        existing_keys = set(question.options.values_list('key', flat=True))
-        seed_keys = set()
-        for option_seed in question_seed['options']:
-            seed_keys.add(option_seed['key'])
-            QuestionOption.objects.update_or_create(
-                question=question,
-                key=option_seed['key'],
-                defaults={
-                    'label': option_seed['label'],
-                    'value': option_seed.get('value', ''),
-                    'display_order': option_seed['display_order'],
-                    'mastery_value': option_seed.get('mastery_value', 0.0),
-                    'role_weights': option_seed.get('role_weights', {}),
-                },
-            )
-        if existing_keys - seed_keys:
-            question.options.exclude(key__in=seed_keys).delete()
+        _sync_question_options(question, question_seed['options'], roles_by_slug=roles_by_slug, topics_by_key=topics_by_key)
 
-    if stdout is not None:
-        stdout.write(
-            f'Seeded {Role.objects.count()} roles, '
-            f'{RoadmapTopic.objects.count()} topics, '
-            f'{Question.objects.count()} questions, and '
-            f'{QuestionOption.objects.count()} options.'
+
+def _sync_question_options(question: Question, option_seeds: list[dict], *, roles_by_slug, topics_by_key):
+    existing_keys = set(question.options.values_list('key', flat=True))
+    seed_keys = set()
+    for option_seed in option_seeds:
+        _validate_option_seed(option_seed, question=question)
+        seed_keys.add(option_seed['key'])
+        option, _created = QuestionOption.objects.update_or_create(
+            question=question,
+            key=option_seed['key'],
+            defaults={
+                'label': option_seed['label'],
+                'value': option_seed.get('value', ''),
+                'display_order': option_seed['display_order'],
+            },
         )
+        _sync_role_signals(option, option_seed.get('role_signals', {}), roles_by_slug)
+        _sync_topic_signals(
+            option,
+            option_seed.get('topic_signals', []),
+            question=question,
+            topics_by_key=topics_by_key,
+        )
+    if existing_keys - seed_keys:
+        question.options.exclude(key__in=seed_keys).delete()
+
+
+def _validate_option_seed(option_seed: dict, *, question: Question) -> None:
+    unsupported_fields = {'mastery_value', 'role_weights'} & option_seed.keys()
+    if not unsupported_fields:
+        return
+
+    fields = ', '.join(sorted(unsupported_fields))
+    msg = f'Unsupported option seed field(s) for question "{question.code}": {fields}'
+    raise ValueError(msg)
+
+
+def _sync_role_signals(option: QuestionOption, role_signals: dict[str, float], roles_by_slug: dict[str, Role]):
+    QuestionRoleSignal.objects.filter(question_option=option).exclude(role__slug__in=role_signals.keys()).delete()
+    for role_slug, weight in role_signals.items():
+        QuestionRoleSignal.objects.update_or_create(
+            question_option=option,
+            role=roles_by_slug[role_slug],
+            defaults={'weight': float(weight)},
+        )
+
+
+def _sync_topic_signals(option: QuestionOption, topic_signals: list[dict], *, question: Question, topics_by_key):
+    signal_keys = set()
+    for signal in topic_signals:
+        role_slug = signal.get('role_slug') or (question.role.slug if question.role else None)
+        if role_slug is None:
+            continue
+        topic = topics_by_key[(role_slug, signal['topic_slug'])]
+        signal_keys.add(topic.id)
+        QuestionTopicSignal.objects.update_or_create(
+            question_option=option,
+            topic=topic,
+            defaults={'mastery_delta': float(signal['mastery_delta'])},
+        )
+    if signal_keys:
+        QuestionTopicSignal.objects.filter(question_option=option).exclude(topic_id__in=signal_keys).delete()
+    else:
+        QuestionTopicSignal.objects.filter(question_option=option).delete()
+
+
+def _load_yaml(path: Path):
+    return yaml.safe_load(path.read_text(encoding='utf-8'))
+
+
+def _extract_snapshot_nodes(snapshot: dict):
+    nodes = snapshot.get('nodes', [])
+    if isinstance(nodes, dict):
+        nodes = list(nodes.values())
+    normalized = []
+    for node in nodes:
+        node_id = str(node['id'])
+        title = node.get('title') or node.get('label') or node_id
+        slug = node.get('slug') or _slugify(title)
+        normalized.append(
+            {
+                'id': node_id,
+                'title': title,
+                'slug': slug,
+                'description': node.get('description', ''),
+            }
+        )
+    return normalized
+
+
+def _extract_snapshot_edges(snapshot: dict):
+    edges = snapshot.get('edges', [])
+    if isinstance(edges, dict):
+        edges = list(edges.values())
+    return [
+        {
+            'source': str(edge['source']),
+            'target': str(edge['target']),
+        }
+        for edge in edges
+    ]
+
+
+def _slugify(value: str):
+    return (
+        value.lower()
+        .replace('&', 'and')
+        .replace('/', ' ')
+        .replace('_', ' ')
+        .replace('-', ' ')
+        .strip()
+        .replace(' ', '-')
+    )

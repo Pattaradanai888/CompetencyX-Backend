@@ -1,0 +1,156 @@
+topics:
+  - role_slug: frontend-engineer
+    slug: html-css
+    title: HTML and CSS Fundamentals
+    description: Structure pages and style interfaces with maintainable CSS.
+    display_order: 1
+  - role_slug: frontend-engineer
+    slug: javascript
+    title: JavaScript Fundamentals
+    description: Work with core language features, DOM APIs, and browser execution.
+    display_order: 2
+    prerequisites: [html-css]
+  - role_slug: frontend-engineer
+    slug: frontend-testing
+    title: Frontend Testing
+    description: Validate UI behavior with component and end-to-end testing.
+    display_order: 3
+    prerequisites: [javascript]
+
+  - role_slug: backend-engineer
+    slug: http
+    title: HTTP Fundamentals
+    description: Understand requests, responses, status codes, and API semantics.
+    display_order: 1
+    external_source: roadmap.sh
+    external_id: backend-http
+    external_slug: http
+    source_version: demo-v1
+  - role_slug: backend-engineer
+    slug: databases
+    title: Databases
+    description: Model data, query efficiently, and understand relational concepts.
+    display_order: 2
+    prerequisites: [http]
+    external_source: roadmap.sh
+    external_id: backend-databases
+    external_slug: databases
+    source_version: demo-v1
+  - role_slug: backend-engineer
+    slug: apis
+    title: API Design
+    description: Design web APIs with clear resources, validation, and versioning.
+    display_order: 3
+    prerequisites: [databases]
+    external_source: roadmap.sh
+    external_id: backend-apis
+    external_slug: apis
+    source_version: demo-v1
+
+  - role_slug: full-stack-engineer
+    slug: ui-foundations
+    title: UI Foundations
+    description: Build interfaces with semantic markup and component thinking.
+    display_order: 1
+  - role_slug: full-stack-engineer
+    slug: api-foundations
+    title: API Foundations
+    description: Create backend routes and handle common integration patterns.
+    display_order: 2
+    prerequisites: [ui-foundations]
+  - role_slug: full-stack-engineer
+    slug: full-stack-integration
+    title: Full-Stack Integration
+    description: Connect frontend and backend features into complete user flows.
+    display_order: 3
+    prerequisites: [api-foundations]
+
+  - role_slug: devops-engineer
+    slug: linux-shell
+    title: Linux and Shell Basics
+    description: Navigate systems, inspect processes, and automate simple shell tasks.
+    display_order: 1
+  - role_slug: devops-engineer
+    slug: ci-cd
+    title: CI/CD Foundations
+    description: Build and ship code changes safely with automated pipelines.
+    display_order: 2
+    prerequisites: [linux-shell]
+  - role_slug: devops-engineer
+    slug: deployment-observability
+    title: Deployment and Observability
+    description: Deploy services and observe health, logs, and runtime behavior.
+    display_order: 3
+    prerequisites: [ci-cd]
+
+  - role_slug: data-engineer
+    slug: sql-foundations
+    title: SQL Foundations
+    description: Query and transform structured data with relational tools.
+    display_order: 1
+  - role_slug: data-engineer
+    slug: data-modeling
+    title: Data Modeling
+    description: Design schemas and reason about reliable analytical structures.
+    display_order: 2
+    prerequisites: [sql-foundations]
+  - role_slug: data-engineer
+    slug: data-pipelines
+    title: Data Pipelines
+    description: Move, schedule, and validate data through repeatable workflows.
+    display_order: 3
+    prerequisites: [data-modeling]
+
+  - role_slug: mobile-engineer
+    slug: mobile-ui
+    title: Mobile UI Basics
+    description: Build layouts and navigation patterns suited to mobile devices.
+    display_order: 1
+  - role_slug: mobile-engineer
+    slug: mobile-state
+    title: Mobile State Management
+    description: Manage local UI state and asynchronous screen updates.
+    display_order: 2
+    prerequisites: [mobile-ui]
+  - role_slug: mobile-engineer
+    slug: mobile-api-integration
+    title: Mobile API Integration
+    description: Connect mobile apps to backend APIs and synchronize data.
+    display_order: 3
+    prerequisites: [mobile-state]
+
+  - role_slug: qa-test-engineer
+    slug: test-design
+    title: Test Design
+    description: Turn requirements into concrete, high-signal test cases.
+    display_order: 1
+  - role_slug: qa-test-engineer
+    slug: test-automation
+    title: Test Automation
+    description: Automate validation for repeatable product and regression checks.
+    display_order: 2
+    prerequisites: [test-design]
+  - role_slug: qa-test-engineer
+    slug: release-quality
+    title: Release Quality
+    description: Assess release risk and verify product quality before shipping.
+    display_order: 3
+    prerequisites: [test-automation]
+
+  - role_slug: cybersecurity-engineer
+    slug: security-basics
+    title: Security Basics
+    description: Understand common threats, attack surfaces, and secure design concepts.
+    display_order: 1
+  - role_slug: cybersecurity-engineer
+    slug: web-security
+    title: Web Security
+    description: Identify and mitigate common web application vulnerabilities.
+    display_order: 2
+    prerequisites: [security-basics]
+  - role_slug: cybersecurity-engineer
+    slug: incident-response
+    title: Incident Response
+    description: Triage suspicious activity and respond to concrete security events.
+    display_order: 3
+    prerequisites: [web-security]

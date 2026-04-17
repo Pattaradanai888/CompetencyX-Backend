@@ -25,19 +25,19 @@ class AssessmentSession(models.Model):
         on_delete=models.SET_NULL,
         related_name='assessment_sessions',
     )
-    selected_role = models.ForeignKey(
+    preferred_role = models.ForeignKey(
         Role,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name='selected_sessions',
+        related_name='preferred_sessions',
     )
-    inferred_role = models.ForeignKey(
+    best_fit_role = models.ForeignKey(
         Role,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name='inferred_sessions',
+        related_name='best_fit_sessions',
     )
     status = models.CharField(
         max_length=24,
@@ -49,7 +49,7 @@ class AssessmentSession(models.Model):
         choices=Phase.choices,
         default=Phase.ROLE_DISCOVERY,
     )
-    role_confidence = models.FloatField(default=0.0)
+    best_fit_confidence = models.FloatField(default=0.0)
     profile = models.JSONField(default=dict, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

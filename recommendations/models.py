@@ -4,6 +4,10 @@ from roadmaps.models import RoadmapTopic, Role
 
 
 class Recommendation(models.Model):
+    class PathKind(models.TextChoices):
+        PREFERRED = 'preferred', 'Preferred Role Path'
+        BEST_FIT = 'best_fit', 'Best-Fit Role Path'
+
     class PolicyType(models.TextChoices):
         RULE_BASED = 'rule_based', 'Rule Based'
         BANDIT = 'bandit', 'Bandit'
@@ -27,6 +31,11 @@ class Recommendation(models.Model):
         related_name='recommendations',
     )
     reason = models.TextField()
+    path_kind = models.CharField(
+        max_length=24,
+        choices=PathKind.choices,
+        default=PathKind.PREFERRED,
+    )
     policy_type = models.CharField(
         max_length=32,
         choices=PolicyType.choices,

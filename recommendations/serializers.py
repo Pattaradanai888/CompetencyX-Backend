@@ -17,6 +17,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
             'topic_slug',
             'topic_title',
             'reason',
+            'path_kind',
             'policy_type',
             'score',
             'created_at',

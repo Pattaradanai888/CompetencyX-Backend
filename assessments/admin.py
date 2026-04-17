@@ -5,10 +5,10 @@ from .models import Answer, AssessmentSession, TopicMastery
 
 @admin.register(AssessmentSession)
 class AssessmentSessionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'selected_role', 'inferred_role', 'phase', 'status', 'started_at')
-    list_filter = ('phase', 'status', 'selected_role', 'inferred_role')
+    list_display = ('id', 'preferred_role', 'best_fit_role', 'phase', 'status', 'started_at')
+    list_filter = ('phase', 'status', 'preferred_role', 'best_fit_role')
     readonly_fields = ('id', 'started_at', 'updated_at', 'completed_at')
-    list_select_related = ('selected_role', 'inferred_role')
+    list_select_related = ('preferred_role', 'best_fit_role')
 
 
 @admin.register(Answer)
