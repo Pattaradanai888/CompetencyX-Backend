@@ -1,43 +1,43 @@
 skill_questions:
-  - code: data-analyst-querying
+  - code: data-analyst-analytical-requirements
     role_slug: data-analyst
-    topic_slug: data-querying
+    topic_slug: analytical-requirements
     question_type: yes_no_maybe
-    prompt: Can you query source data and reshape it into something useful for analysis?
+    prompt: Can you explain the basic work involved in analytical requirements?
     difficulty: 1
     discrimination_score: 1.8
-    display_order: 271
+    display_order: 21
     options:
       - key: "yes"
         label: Yes
         display_order: 1
-        topic_signals: [{topic_slug: data-querying, mastery_delta: 1.0}]
+        topic_signals: [{topic_slug: analytical-requirements, mastery_delta: 1.0}]
       - key: "maybe"
         label: Maybe
         display_order: 2
-        topic_signals: [{topic_slug: data-querying, mastery_delta: 0.5}]
+        topic_signals: [{topic_slug: analytical-requirements, mastery_delta: 0.5}]
       - key: "no"
         label: No
         display_order: 3
-        topic_signals: [{topic_slug: data-querying, mastery_delta: 0.0}]
-  - code: data-analyst-dashboarding
+        topic_signals: [{topic_slug: analytical-requirements, mastery_delta: 0.0}]
+  - code: data-analyst-data-analysis-foundations
     role_slug: data-analyst
-    topic_slug: dashboarding
+    topic_slug: data-analysis-foundations
     question_type: yes_no_maybe
-    prompt: Can you build or interpret dashboards that help others make better decisions?
+    prompt: Have you practiced a small task related to data analysis foundations?
     difficulty: 2
     discrimination_score: 2.0
-    display_order: 272
+    display_order: 22
     options:
       - key: "yes"
         label: Yes
         display_order: 1
-        topic_signals: [{topic_slug: dashboarding, mastery_delta: 1.0}]
+        topic_signals: [{topic_slug: data-analysis-foundations, mastery_delta: 1.0}]
       - key: "maybe"
         label: Maybe
         display_order: 2
-        topic_signals: [{topic_slug: dashboarding, mastery_delta: 0.5}]
+        topic_signals: [{topic_slug: data-analysis-foundations, mastery_delta: 0.5}]
       - key: "no"
         label: No
         display_order: 3
-        topic_signals: [{topic_slug: dashboarding, mastery_delta: 0.0}]
+        topic_signals: [{topic_slug: data-analysis-foundations, mastery_delta: 0.0}]

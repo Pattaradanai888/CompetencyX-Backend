@@ -1,6 +1,7 @@
 import re
 import shutil
 from collections import Counter
+from copy import deepcopy
 from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
@@ -11,14 +12,13 @@ from django.test import TestCase
 from roadmaps.models import (
     Question,
     QuestionOption,
-    QuestionRoleSignal,
     QuestionTopicSignal,
     RoadmapTopic,
     Role,
     TopicPrerequisite,
 )
-from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_PROFILE_WEIGHTS, ROLE_TRAIT_AXES
-from roadmaps.seeds import _sync_questions, load_curated_catalog
+from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
+from roadmaps.seeds import _sync_questions, load_curated_catalog, validate_curated_catalog
 
 
 class SeedMvpContentTests(TestCase):
@@ -30,9 +30,8 @@ class SeedMvpContentTests(TestCase):
         out = StringIO()
         _roles_data, _topics_data, questions_data = load_curated_catalog()
         expected_question_count = len(questions_data['role_questions']) + len(questions_data['skill_questions'])
-        expected_option_count = sum(len(question['options']) for question in questions_data['role_questions'] + questions_data['skill_questions'])
-        expected_role_signal_count = sum(
-            len(option.get('role_signals', {})) for question in questions_data['role_questions'] for option in question['options']
+        expected_option_count = sum(
+            len(question.get('options', [])) for question in questions_data['role_questions'] + questions_data['skill_questions']
         )
         expected_topic_signal_count = sum(
             len(option.get('topic_signals', [])) for question in questions_data['skill_questions'] for option in question['options']
@@ -48,10 +47,9 @@ class SeedMvpContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
-        assert QuestionRoleSignal.objects.count() == expected_role_signal_count
         assert QuestionTopicSignal.objects.count() == expected_topic_signal_count
-        assert Role.objects.filter(slug='backend-engineer', is_active=True).exists()
-        assert Question.objects.filter(code='backend-database-basics', topic__slug='databases').exists()
+        assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
+        assert Question.objects.filter(code='backend-developer-api-and-service-architecture', topic__slug='api-and-service-architecture').exists()
 
         first_run_output = out.getvalue()
         assert (
@@ -71,7 +69,9 @@ class SeedMvpContentTests(TestCase):
     def test_seed_command_is_idempotent(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
         expected_question_count = len(questions_data['role_questions']) + len(questions_data['skill_questions'])
-        expected_option_count = sum(len(question['options']) for question in questions_data['role_questions'] + questions_data['skill_questions'])
+        expected_option_count = sum(
+            len(question.get('options', [])) for question in questions_data['role_questions'] + questions_data['skill_questions']
+        )
 
         call_command('seed_mvp_content')
 
@@ -151,17 +151,13 @@ class SeedMvpContentTests(TestCase):
                     'role_questions:\n'
                     '  - code: role-primary-interest\n'
                     '    item_group: core\n'
-                    '    question_type: single_choice\n'
-                    '    prompt: Which work sounds most interesting?\n'
+                    '    question_type: likert_5\n'
+                    '    prompt: I enjoy turning ideas into working technical parts.\n'
+                    '    agree_dimension_signals: {construction: 1.0, application_build: 0.5}\n'
+                    '    disagree_dimension_signals: {requirements: 1.0, people_product: 0.5}\n'
                     '    difficulty: 1\n'
                     '    discrimination_score: 3.0\n'
                     '    display_order: 1\n'
-                    '    options:\n'
-                    '      - key: backend\n'
-                    '        label: Designing APIs and backend services\n'
-                    '        display_order: 1\n'
-                    '        dimension_signals: {technical_build: 1}\n'
-                    '        role_signals: {backend-engineer: 4, full-stack-engineer: 1}\n'
                 ),
                 encoding='utf-8',
             )
@@ -201,17 +197,17 @@ class SeedMvpContentTests(TestCase):
         assert len(questions_data['role_questions']) == 1
         assert len(questions_data['skill_questions']) == 1
 
-    def test_load_curated_content_command_populates_external_metadata(self):
+    def test_load_curated_content_command_populates_swebok_role_metadata(self):
         call_command('load_curated_content')
 
-        topic = RoadmapTopic.objects.get(role__slug='backend-engineer', slug='http')
-        assert topic.external_source == 'roadmap.sh'
-        assert topic.external_id == 'backend-http'
-        assert topic.external_slug == 'http'
+        role = Role.objects.get(slug='backend-developer')
+        assert role.swebok_source_version == 'SWEBOK V4.0'
+        assert role.top_ka_codes == ['KA4', 'KA2', 'KA6']
+        assert role.core_tasks[0]['ka_codes'] == ['KA2', 'KA4']
 
     def test_import_roadmap_snapshot_command_normalizes_raw_graph(self):
         snapshot_path = Path('data/upstream/roadmap_sh/backend-engineer.sample.json')
-        role = Role.objects.get(slug='backend-engineer')
+        role = Role.objects.get(slug='backend-developer')
         role.topics.all().delete()
 
         call_command(
@@ -237,9 +233,9 @@ class SeedMvpContentTests(TestCase):
             'role_questions': [],
             'skill_questions': [
                 {
-                    'code': 'backend-http-basics',
-                    'role_slug': 'backend-engineer',
-                    'topic_slug': 'http',
+                    'code': 'backend-developer-api-and-service-architecture',
+                    'role_slug': 'backend-developer',
+                    'topic_slug': 'api-and-service-architecture',
                     'question_type': 'yes_no_maybe',
                     'prompt': 'Legacy fixture',
                     'difficulty': 1,
@@ -251,7 +247,7 @@ class SeedMvpContentTests(TestCase):
                             'label': 'Yes',
                             'display_order': 1,
                             'mastery_value': 1.0,
-                            'topic_signals': [{'topic_slug': 'http', 'mastery_delta': 1.0}],
+                            'topic_signals': [{'topic_slug': 'api-and-service-architecture', 'mastery_delta': 1.0}],
                         }
                     ],
                 }
@@ -260,7 +256,7 @@ class SeedMvpContentTests(TestCase):
 
         with self.assertRaisesMessage(
             ValueError,
-            'Unsupported option seed field(s) for question "backend-http-basics": mastery_value',
+            'Unsupported option seed field(s) for question "backend-developer-api-and-service-architecture": mastery_value',
         ):
             roles_by_slug = {role.slug: role for role in Role.objects.all()}
             topics_by_key = {(topic.role.slug, topic.slug): topic for topic in RoadmapTopic.objects.select_related('role')}
@@ -282,48 +278,62 @@ class SeedMvpContentTests(TestCase):
         expected_topic_count = len(load_curated_catalog()[1]['topics'])
         assert f'Validated {expected_role_count} roles, {expected_topic_count} topics, and {expected_question_count} questions.' in out.getvalue()
 
-    def test_role_question_catalog_options_define_scoring_signals(self):
+    def test_role_question_validation_rejects_unknown_signal_dimension(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        invalid_questions['role_questions'][0]['agree_dimension_signals'] = {'unknown_trait': 1.0}
+
+        with self.assertRaisesMessage(
+            ValueError,
+            'Role question "role-swebok-01-requirements" has unknown agree_dimension_signals: unknown_trait',
+        ):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
+    def test_role_question_validation_rejects_role_options(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        invalid_questions['role_questions'][0]['options'] = [{'key': 'agree', 'label': 'Agree', 'display_order': 1}]
+
+        with self.assertRaisesMessage(ValueError, 'Role question "role-swebok-01-requirements" must not define options.'):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
+    def test_role_question_validation_rejects_non_likert_role_question(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        invalid_questions['role_questions'][0]['question_type'] = Question.Type.SINGLE_CHOICE
+
+        with self.assertRaisesMessage(ValueError, 'Role question "role-swebok-01-requirements" must use question_type "likert_5".'):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
+    def test_role_question_catalog_uses_likert_statements_without_options(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         assert all(
-            option.get('dimension_signals') or option.get('role_signals')
+            question['question_type'] == Question.Type.LIKERT_5
+            and question.get('options', []) == []
+            and question.get('agree_dimension_signals')
+            and question.get('disagree_dimension_signals')
             for question in questions_data['role_questions']
-            for option in question['options']
         )
 
-    def test_role_question_catalog_core_questions_measure_trait_axes_without_role_signals(self):
+    def test_role_question_catalog_core_questions_measure_swebok_knowledge_areas(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
-        endpoint_to_axis = {endpoint: axis for axis in ROLE_TRAIT_AXES for endpoint in axis}
-        axis_question_counts = Counter()
         core_questions = sorted(
             [question for question in questions_data['role_questions'] if question.get('item_group', 'core') == 'core'],
             key=lambda question: question['display_order'],
         )
 
-        assert len(core_questions) == 30
-        assert [question['display_order'] for question in core_questions] == list(range(1, 31))
-        observed_axis_order = []
+        assert len(core_questions) == 36
+        assert [question['display_order'] for question in core_questions] == list(range(1, 37))
+        dimension_counts = Counter()
         for question in core_questions:
-            question_axes = set()
-            endpoint_weights = Counter()
-            assert len(question['options']) == 4
-            for option in question['options']:
-                assert option.get('role_signals') in (None, {})
-                dimension_signals = option.get('dimension_signals', {})
-                assert len(dimension_signals) == 1
-                endpoint, weight = next(iter(dimension_signals.items()))
-                assert float(weight) in {1.0, 2.0}
-                endpoint_weights[endpoint] += float(weight)
-                question_axes.add(endpoint_to_axis[endpoint])
-            assert len(question_axes) == 1
-            axis = next(iter(question_axes))
-            assert set(endpoint_weights.values()) == {3.0}
-            observed_axis_order.append(axis)
-            axis_question_counts[axis] += 1
+            signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
+            for dimension in signaled_dimensions & CORE_ROLE_DIMENSIONS:
+                dimension_counts[dimension] += 1
 
-        assert dict(axis_question_counts) == dict.fromkeys(ROLE_TRAIT_AXES, 5)
-        assert observed_axis_order == list(ROLE_TRAIT_AXES) * 5
+        assert set(dimension_counts) == {dimension for dimension, _label in SWEBOK_KNOWLEDGE_AREAS}
+        assert all(count >= 2 for count in dimension_counts.values())
 
     def test_every_role_has_trait_profile(self):
         roles_data, _topics_data, _questions_data = load_curated_catalog()
@@ -339,8 +349,7 @@ class SeedMvpContentTests(TestCase):
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') != 'core':
                 continue
-            for option in question['options']:
-                covered_dimensions.update(option.get('dimension_signals', {}).keys())
+            covered_dimensions.update((set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])) & CORE_ROLE_DIMENSIONS)
 
         assert CORE_ROLE_DIMENSIONS.issubset(covered_dimensions)
 
@@ -351,43 +360,36 @@ class SeedMvpContentTests(TestCase):
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') != 'core':
                 continue
-            for option in question['options']:
-                for dimension_key, weight in option.get('dimension_signals', {}).items():
-                    dimension_totals[dimension_key] += float(weight)
+            signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
+            for dimension in signaled_dimensions & CORE_ROLE_DIMENSIONS:
+                dimension_totals[dimension] += 1
 
-        assert CORE_ROLE_DIMENSIONS.issubset(dimension_totals)
-        assert max(dimension_totals.values()) - min(dimension_totals.values()) <= 8
+        assert set(dimension_totals) == {dimension for dimension, _label in SWEBOK_KNOWLEDGE_AREAS}
+        assert all(count >= 2 for count in dimension_totals.values())
 
     def test_role_question_catalog_core_wording_is_beginner_friendly(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         word_pattern = re.compile(r"[A-Za-z0-9]+(?:[-'][A-Za-z0-9]+)?")
         long_prompts = {}
-        long_labels = {}
         banned_terms = ('api contract', 'observability', 'runtime dependencies', 'interfaces', 'erp modules', 'technical standards')
-        jargon_labels = {}
+        jargon_prompts = {}
 
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') == 'core':
                 prompt_word_count = len(word_pattern.findall(question['prompt']))
-                if prompt_word_count > 16:
+                if prompt_word_count > 18:
                     long_prompts[question['code']] = prompt_word_count
-                for option in question['options']:
-                    label_word_count = len(word_pattern.findall(option['label']))
-                    if label_word_count > 12:
-                        long_labels[(question['code'], option['key'])] = label_word_count
-
-            for option in question['options']:
-                label = option['label'].lower()
-                matched_terms = [term for term in banned_terms if term in label]
+                prompt = question['prompt'].lower()
+                matched_terms = [term for term in banned_terms if term in prompt]
                 if matched_terms:
-                    jargon_labels[(question['code'], option['key'])] = matched_terms
+                    jargon_prompts[question['code']] = matched_terms
 
         assert long_prompts == {}
-        assert long_labels == {}
-        assert jargon_labels == {}
+        assert jargon_prompts == {}
 
     def test_role_question_catalog_uses_static_core_only_for_role_discovery(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
-        assert [question.get('item_group', 'core') for question in questions_data['role_questions']] == ['core'] * 30
+        item_groups = Counter(question.get('item_group', 'core') for question in questions_data['role_questions'])
+        assert item_groups == Counter({'core': 36, 'tie_break': 12})

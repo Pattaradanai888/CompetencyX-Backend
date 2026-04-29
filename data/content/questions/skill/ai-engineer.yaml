@@ -1,43 +1,43 @@
 skill_questions:
-  - code: aiengineer-ml-foundations
+  - code: ai-engineer-ai-product-architecture
     role_slug: ai-engineer
-    topic_slug: ml-foundations
+    topic_slug: ai-product-architecture
     question_type: yes_no_maybe
-    prompt: Can you explain the difference between training and testing a model?
-    difficulty: 1
-    discrimination_score: 1.6
-    display_order: 71
-    options:
-      - key: "yes"
-        label: Yes
-        display_order: 1
-        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 1.0}]
-      - key: "maybe"
-        label: Maybe
-        display_order: 2
-        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 0.5}]
-      - key: "no"
-        label: No
-        display_order: 3
-        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 0.0}]
-  - code: aiengineer-model-engineering
-    role_slug: ai-engineer
-    topic_slug: model-engineering
-    question_type: yes_no_maybe
-    prompt: Have you trained a simple model (like linear regression or a decision tree) on real data?
+    prompt: Can you explain the basic work involved in ai product architecture?
     difficulty: 1
     discrimination_score: 1.8
-    display_order: 72
+    display_order: 21
     options:
       - key: "yes"
         label: Yes
         display_order: 1
-        topic_signals: [{topic_slug: model-engineering, mastery_delta: 1.0}]
+        topic_signals: [{topic_slug: ai-product-architecture, mastery_delta: 1.0}]
       - key: "maybe"
         label: Maybe
         display_order: 2
-        topic_signals: [{topic_slug: model-engineering, mastery_delta: 0.5}]
+        topic_signals: [{topic_slug: ai-product-architecture, mastery_delta: 0.5}]
       - key: "no"
         label: No
         display_order: 3
-        topic_signals: [{topic_slug: model-engineering, mastery_delta: 0.0}]
+        topic_signals: [{topic_slug: ai-product-architecture, mastery_delta: 0.0}]
+  - code: ai-engineer-ai-feature-construction
+    role_slug: ai-engineer
+    topic_slug: ai-feature-construction
+    question_type: yes_no_maybe
+    prompt: Have you practiced a small task related to ai feature construction?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 22
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ai-feature-construction, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ai-feature-construction, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ai-feature-construction, mastery_delta: 0.0}]

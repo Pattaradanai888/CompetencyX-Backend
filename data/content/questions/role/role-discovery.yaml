@@ -1,841 +1,661 @@
 role_questions:
-- code: role-trait-user-interviews-or-service-code
+- code: role-swebok-01-requirements
   item_group: core
-  question_type: single_choice
-  prompt: A team is unsure what to improve next. Which work would you choose?
+  question_type: likert_5
+  prompt: When work is unclear, I first clarify the user problem before choosing a solution.
+  agree_dimension_signals:
+    requirements: 1
+    people_product: 0.8
+  disagree_dimension_signals:
+    architecture: 0.4
   difficulty: 1
   discrimination_score: 4.0
   display_order: 1
-  options:
-  - key: strong-talk-to-users
-    label: 'Strongly prefer: Study people using the workflow'
-    display_order: 1
-    dimension_signals:
-      people_discovery: 2
-  - key: slight-talk-to-users
-    label: 'Slightly prefer: Study people using the workflow'
-    display_order: 2
-    dimension_signals:
-      people_discovery: 1
-  - key: slight-build-service
-    label: 'Slightly prefer: Build the technical piece that supports the workflow'
-    display_order: 3
-    dimension_signals:
-      technical_build: 1
-  - key: strong-build-service
-    label: 'Strongly prefer: Build the technical piece that supports the workflow'
-    display_order: 4
-    dimension_signals:
-      technical_build: 2
-- code: role-trait-align-room-or-solve-alone
+- code: role-swebok-02-architecture
   item_group: core
-  question_type: single_choice
-  prompt: Progress is blocked. Which contribution fits you better?
+  question_type: likert_5
+  prompt: I prefer settling the system shape before refining individual screens or task details.
+  agree_dimension_signals:
+    architecture: 1
+    backend_platform: 0.7
+  disagree_dimension_signals:
+    design: 0.6
   difficulty: 1
   discrimination_score: 4.0
   display_order: 2
-  options:
-  - key: strong-align-room
-    label: 'Strongly prefer: Bring people together and agree on next steps'
-    display_order: 1
-    dimension_signals:
-      influence_coordination: 2
-  - key: slight-align-room
-    label: 'Slightly prefer: Bring people together and agree on next steps'
-    display_order: 2
-    dimension_signals:
-      influence_coordination: 1
-  - key: slight-solve-alone
-    label: 'Slightly prefer: Work deeply until you understand the hard part'
-    display_order: 3
-    dimension_signals:
-      independent_deep_work: 1
-  - key: strong-solve-alone
-    label: 'Strongly prefer: Work deeply until you understand the hard part'
-    display_order: 4
-    dimension_signals:
-      independent_deep_work: 2
-- code: role-trait-department-process-or-user-journey
+- code: role-swebok-03-design
   item_group: core
-  question_type: single_choice
-  prompt: A workflow needs improvement. What do you map first?
+  question_type: likert_5
+  prompt: I enjoy shaping user journeys and interaction flow before implementation details.
+  agree_dimension_signals:
+    design: 1
+    people_product: 0.6
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 3
-  options:
-  - key: strong-department-process
-    label: 'Strongly prefer: Map the business process, rules, and handoffs'
-    display_order: 1
-    dimension_signals:
-      business_process: 2
-  - key: slight-department-process
-    label: 'Slightly prefer: Map the business process, rules, and handoffs'
-    display_order: 2
-    dimension_signals:
-      business_process: 1
-  - key: slight-user-journey
-    label: 'Slightly prefer: Map the user journey and moments of friction'
-    display_order: 3
-    dimension_signals:
-      product_experience: 1
-  - key: strong-user-journey
-    label: 'Strongly prefer: Map the user journey and moments of friction'
-    display_order: 4
-    dimension_signals:
-      product_experience: 2
-- code: role-trait-analyze-patterns-or-keep-running
+- code: role-swebok-04-construction
   item_group: core
-  question_type: single_choice
-  prompt: A service has mixed signals. What draws you?
+  question_type: likert_5
+  prompt: I would rather build working features than mainly coordinate plans.
+  agree_dimension_signals:
+    construction: 1
+    application_build: 0.7
+  disagree_dimension_signals:
+    management: 0.7
+    leadership_process: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 4
-  options:
-  - key: strong-analyze-patterns
-    label: 'Strongly prefer: Analyze data to explain what is happening'
-    display_order: 1
-    dimension_signals:
-      data_investigation: 2
-  - key: slight-analyze-patterns
-    label: 'Slightly prefer: Analyze data to explain what is happening'
-    display_order: 2
-    dimension_signals:
-      data_investigation: 1
-  - key: slight-keep-running
-    label: 'Slightly prefer: Keep the system stable, available, and recoverable'
-    display_order: 3
-    dimension_signals:
-      systems_operation: 1
-  - key: strong-keep-running
-    label: 'Strongly prefer: Keep the system stable, available, and recoverable'
-    display_order: 4
-    dimension_signals:
-      systems_operation: 2
-- code: role-trait-model-requirements-or-ship-feature
+- code: role-swebok-05-testing
   item_group: core
-  question_type: single_choice
-  prompt: A team is ready to start. What would you rather own?
+  question_type: likert_5
+  prompt: I like proving behavior with tests before I fully trust a feature.
+  agree_dimension_signals:
+    testing: 1
+    quality: 0.6
+    leadership_process: 0.4
+  disagree_dimension_signals:
+    construction: 0.6
   difficulty: 1
   discrimination_score: 4.0
   display_order: 5
-  options:
-  - key: strong-model-requirements
-    label: 'Strongly prefer: Model requirements, rules, and acceptance examples'
-    display_order: 1
-    dimension_signals:
-      requirements_modeling: 2
-  - key: slight-model-requirements
-    label: 'Slightly prefer: Model requirements, rules, and acceptance examples'
-    display_order: 2
-    dimension_signals:
-      requirements_modeling: 1
-  - key: slight-ship-feature
-    label: 'Slightly prefer: Implement and ship the working feature'
-    display_order: 3
-    dimension_signals:
-      implementation_delivery: 1
-  - key: strong-ship-feature
-    label: 'Strongly prefer: Implement and ship the working feature'
-    display_order: 4
-    dimension_signals:
-      implementation_delivery: 2
-- code: role-trait-reduce-risk-or-test-idea
+- code: role-swebok-06-operations
   item_group: core
-  question_type: single_choice
-  prompt: A new idea is promising but uncertain. Choose.
+  question_type: likert_5
+  prompt: I care a lot about how software behaves after it has been released.
+  agree_dimension_signals:
+    operations: 1
+    operations_security: 0.8
+  disagree_dimension_signals:
+    requirements: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 6
-  options:
-  - key: strong-reduce-risk
-    label: 'Strongly prefer: Reduce risks before the team commits'
-    display_order: 1
-    dimension_signals:
-      risk_control: 2
-  - key: slight-reduce-risk
-    label: 'Slightly prefer: Reduce risks before the team commits'
-    display_order: 2
-    dimension_signals:
-      risk_control: 1
-  - key: slight-test-idea
-    label: 'Slightly prefer: Test the idea quickly to learn what is possible'
-    display_order: 3
-    dimension_signals:
-      innovation_experiment: 1
-  - key: strong-test-idea
-    label: 'Strongly prefer: Test the idea quickly to learn what is possible'
-    display_order: 4
-    dimension_signals:
-      innovation_experiment: 2
-- code: role-trait-customer-pain-or-system-bug
+- code: role-swebok-07-maintenance
   item_group: core
-  question_type: single_choice
-  prompt: A product has a recurring problem. Where do you start?
+  question_type: likert_5
+  prompt: I prefer improving existing systems over starting fresh projects.
+  agree_dimension_signals:
+    maintenance: 1
+    quality: 0.5
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 7
-  options:
-  - key: strong-find-customer-pain
-    label: 'Strongly prefer: Find where people struggle and why it matters'
-    display_order: 1
-    dimension_signals:
-      people_discovery: 2
-  - key: slight-find-customer-pain
-    label: 'Slightly prefer: Find where people struggle and why it matters'
-    display_order: 2
-    dimension_signals:
-      people_discovery: 1
-  - key: slight-fix-system-bug
-    label: 'Slightly prefer: Trace the technical cause and make it work'
-    display_order: 3
-    dimension_signals:
-      technical_build: 1
-  - key: strong-fix-system-bug
-    label: 'Strongly prefer: Trace the technical cause and make it work'
-    display_order: 4
-    dimension_signals:
-      technical_build: 2
-- code: role-trait-coordinate-launch-or-deepen-design
+- code: role-swebok-08-configuration-management
   item_group: core
-  question_type: single_choice
-  prompt: A launch needs attention. Choose your focus.
+  question_type: likert_5
+  prompt: I like keeping environments, versions, and releases orderly and predictable.
+  agree_dimension_signals:
+    configuration_management: 1
+    operations_security: 0.7
+  disagree_dimension_signals:
+    application_build: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 8
-  options:
-  - key: strong-coordinate-launch
-    label: 'Strongly prefer: Coordinate owners, timing, and communication'
-    display_order: 1
-    dimension_signals:
-      influence_coordination: 2
-  - key: slight-coordinate-launch
-    label: 'Slightly prefer: Coordinate owners, timing, and communication'
-    display_order: 2
-    dimension_signals:
-      influence_coordination: 1
-  - key: slight-deepen-design
-    label: 'Slightly prefer: Deepen the design of the hardest technical detail'
-    display_order: 3
-    dimension_signals:
-      independent_deep_work: 1
-  - key: strong-deepen-design
-    label: 'Strongly prefer: Deepen the design of the hardest technical detail'
-    display_order: 4
-    dimension_signals:
-      independent_deep_work: 2
-- code: role-trait-policy-change-or-product-flow
+- code: role-swebok-09-management
   item_group: core
-  question_type: single_choice
-  prompt: A change request arrives. Which impact interests you more?
+  question_type: likert_5
+  prompt: I enjoy aligning people, risks, and delivery plans.
+  agree_dimension_signals:
+    management: 1
+    leadership_process: 0.9
+    people_product: 0.5
+  disagree_dimension_signals:
+    construction: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 9
-  options:
-  - key: strong-policy-change
-    label: 'Strongly prefer: How the change affects operations and decisions'
-    display_order: 1
-    dimension_signals:
-      business_process: 2
-  - key: slight-policy-change
-    label: 'Slightly prefer: How the change affects operations and decisions'
-    display_order: 2
-    dimension_signals:
-      business_process: 1
-  - key: slight-product-flow
-    label: 'Slightly prefer: How the change affects the product experience'
-    display_order: 3
-    dimension_signals:
-      product_experience: 1
-  - key: strong-product-flow
-    label: 'Strongly prefer: How the change affects the product experience'
-    display_order: 4
-    dimension_signals:
-      product_experience: 2
-- code: role-trait-metric-question-or-runtime-health
+- code: role-swebok-10-process
   item_group: core
-  question_type: single_choice
-  prompt: Leaders ask for confidence. Which evidence do you provide?
+  question_type: likert_5
+  prompt: I pay attention to how team workflow changes delivery quality.
+  agree_dimension_signals:
+    process: 1
+    leadership_process: 0.8
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 10
-  options:
-  - key: strong-metric-question
-    label: 'Strongly prefer: Metrics and cuts that reveal the pattern'
-    display_order: 1
-    dimension_signals:
-      data_investigation: 2
-  - key: slight-metric-question
-    label: 'Slightly prefer: Metrics and cuts that reveal the pattern'
-    display_order: 2
-    dimension_signals:
-      data_investigation: 1
-  - key: slight-runtime-health
-    label: 'Slightly prefer: Operational checks that show the system is healthy'
-    display_order: 3
-    dimension_signals:
-      systems_operation: 1
-  - key: strong-runtime-health
-    label: 'Strongly prefer: Operational checks that show the system is healthy'
-    display_order: 4
-    dimension_signals:
-      systems_operation: 2
-- code: role-trait-write-spec-or-build-slice
+- code: role-swebok-11-models-methods
   item_group: core
-  question_type: single_choice
-  prompt: Which finished artifact feels more valuable?
+  question_type: likert_5
+  prompt: I like choosing a clear method before solving a problem.
+  agree_dimension_signals:
+    models_methods: 1
+    data_ai: 0.6
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 11
-  options:
-  - key: strong-write-spec
-    label: 'Strongly prefer: A precise spec that removes confusion'
-    display_order: 1
-    dimension_signals:
-      requirements_modeling: 2
-  - key: slight-write-spec
-    label: 'Slightly prefer: A precise spec that removes confusion'
-    display_order: 2
-    dimension_signals:
-      requirements_modeling: 1
-  - key: slight-build-slice
-    label: 'Slightly prefer: A working slice that people can use'
-    display_order: 3
-    dimension_signals:
-      implementation_delivery: 1
-  - key: strong-build-slice
-    label: 'Strongly prefer: A working slice that people can use'
-    display_order: 4
-    dimension_signals:
-      implementation_delivery: 2
-- code: role-trait-guardrails-or-prototype
+- code: role-swebok-12-quality
   item_group: core
-  question_type: single_choice
-  prompt: Which early work sounds better?
+  question_type: likert_5
+  prompt: I pay attention to reliability and maintainability, not only what users see first.
+  agree_dimension_signals:
+    quality: 1
+    leadership_process: 0.4
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 12
-  options:
-  - key: strong-guardrails
-    label: 'Strongly prefer: Set guardrails for quality, access, and failure cases'
-    display_order: 1
-    dimension_signals:
-      risk_control: 2
-  - key: slight-guardrails
-    label: 'Slightly prefer: Set guardrails for quality, access, and failure cases'
-    display_order: 2
-    dimension_signals:
-      risk_control: 1
-  - key: slight-prototype
-    label: 'Slightly prefer: Build a prototype and learn from trying it'
-    display_order: 3
-    dimension_signals:
-      innovation_experiment: 1
-  - key: strong-prototype
-    label: 'Strongly prefer: Build a prototype and learn from trying it'
-    display_order: 4
-    dimension_signals:
-      innovation_experiment: 2
-- code: role-trait-feedback-session-or-code-session
+- code: role-swebok-13-security
   item_group: core
-  question_type: single_choice
-  prompt: You have a free afternoon on a product team. Pick the session.
+  question_type: likert_5
+  prompt: I naturally look for misuse, risk, and abuse cases.
+  agree_dimension_signals:
+    security: 1
+    operations_security: 0.9
+  disagree_dimension_signals:
+    design: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 13
-  options:
-  - key: strong-feedback-session
-    label: 'Strongly prefer: Run a feedback session with users or stakeholders'
-    display_order: 1
-    dimension_signals:
-      people_discovery: 2
-  - key: slight-feedback-session
-    label: 'Slightly prefer: Run a feedback session with users or stakeholders'
-    display_order: 2
-    dimension_signals:
-      people_discovery: 1
-  - key: slight-code-session
-    label: 'Slightly prefer: Work through code until the feature behaves correctly'
-    display_order: 3
-    dimension_signals:
-      technical_build: 1
-  - key: strong-code-session
-    label: 'Strongly prefer: Work through code until the feature behaves correctly'
-    display_order: 4
-    dimension_signals:
-      technical_build: 2
-- code: role-trait-stakeholder-update-or-focused-analysis
+- code: role-swebok-14-professional-practice
   item_group: core
-  question_type: single_choice
-  prompt: The team needs clarity by tomorrow. What do you prepare?
+  question_type: likert_5
+  prompt: I enjoy explaining technical choices in a way others can use.
+  agree_dimension_signals:
+    professional_practice: 1
+    documentation_practice: 0.8
+    people_product: 0.5
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 14
-  options:
-  - key: strong-stakeholder-update
-    label: 'Strongly prefer: A concise update that aligns everyone'
-    display_order: 1
-    dimension_signals:
-      influence_coordination: 2
-  - key: slight-stakeholder-update
-    label: 'Slightly prefer: A concise update that aligns everyone'
-    display_order: 2
-    dimension_signals:
-      influence_coordination: 1
-  - key: slight-focused-analysis
-    label: 'Slightly prefer: A careful analysis of the underlying problem'
-    display_order: 3
-    dimension_signals:
-      independent_deep_work: 1
-  - key: strong-focused-analysis
-    label: 'Strongly prefer: A careful analysis of the underlying problem'
-    display_order: 4
-    dimension_signals:
-      independent_deep_work: 2
-- code: role-trait-internal-efficiency-or-customer-task
+- code: role-swebok-15-economics
   item_group: core
-  question_type: single_choice
-  prompt: Which outcome would you rather improve?
+  question_type: likert_5
+  prompt: I think about cost, value, and tradeoffs when choosing work.
+  agree_dimension_signals:
+    economics: 1
+    people_product: 0.6
+    leadership_process: 0.4
+  disagree_dimension_signals:
+    construction: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 15
-  options:
-  - key: strong-internal-efficiency
-    label: 'Strongly prefer: Make internal work more consistent and efficient'
-    display_order: 1
-    dimension_signals:
-      business_process: 2
-  - key: slight-internal-efficiency
-    label: 'Slightly prefer: Make internal work more consistent and efficient'
-    display_order: 2
-    dimension_signals:
-      business_process: 1
-  - key: slight-customer-task
-    label: 'Slightly prefer: Make a customer task easier and more satisfying'
-    display_order: 3
-    dimension_signals:
-      product_experience: 1
-  - key: strong-customer-task
-    label: 'Strongly prefer: Make a customer task easier and more satisfying'
-    display_order: 4
-    dimension_signals:
-      product_experience: 2
-- code: role-trait-data-quality-or-service-reliability
+- code: role-swebok-16-computing-foundations
   item_group: core
-  question_type: single_choice
-  prompt: Something must become more trustworthy. Choose.
+  question_type: likert_5
+  prompt: I enjoy the algorithms, data, and computing ideas behind software behavior.
+  agree_dimension_signals:
+    computing_ai: 1
+    data_ai: 0.8
+  disagree_dimension_signals:
+    requirements: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 16
-  options:
-  - key: strong-data-quality
-    label: 'Strongly prefer: Make the data and analysis trustworthy'
-    display_order: 1
-    dimension_signals:
-      data_investigation: 2
-  - key: slight-data-quality
-    label: 'Slightly prefer: Make the data and analysis trustworthy'
-    display_order: 2
-    dimension_signals:
-      data_investigation: 1
-  - key: slight-service-reliability
-    label: 'Slightly prefer: Make the service behavior trustworthy'
-    display_order: 3
-    dimension_signals:
-      systems_operation: 1
-  - key: strong-service-reliability
-    label: 'Strongly prefer: Make the service behavior trustworthy'
-    display_order: 4
-    dimension_signals:
-      systems_operation: 2
-- code: role-trait-edge-cases-or-release-work
+- code: role-swebok-17-mathematical-foundations
   item_group: core
-  question_type: single_choice
-  prompt: A feature has unknowns. Pick your focus.
+  question_type: likert_5
+  prompt: I like using numbers or statistical evidence to justify decisions.
+  agree_dimension_signals:
+    math: 1
+    data_ai: 0.8
+  disagree_dimension_signals:
+    design: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 17
-  options:
-  - key: strong-edge-cases
-    label: 'Strongly prefer: Define edge cases and expected behavior'
-    display_order: 1
-    dimension_signals:
-      requirements_modeling: 2
-  - key: slight-edge-cases
-    label: 'Slightly prefer: Define edge cases and expected behavior'
-    display_order: 2
-    dimension_signals:
-      requirements_modeling: 1
-  - key: slight-release-work
-    label: 'Slightly prefer: Do the delivery work to make it real'
-    display_order: 3
-    dimension_signals:
-      implementation_delivery: 1
-  - key: strong-release-work
-    label: 'Strongly prefer: Do the delivery work to make it real'
-    display_order: 4
-    dimension_signals:
-      implementation_delivery: 2
-- code: role-trait-safe-release-or-new-approach
+- code: role-swebok-18-engineering-foundations
   item_group: core
-  question_type: single_choice
-  prompt: A team wants to move faster. What do you improve?
+  question_type: likert_5
+  prompt: I prefer disciplined engineering tradeoffs over quick visual polish.
+  agree_dimension_signals:
+    engineering: 1
+    backend_platform: 0.6
+  disagree_dimension_signals:
+    design: 0.6
   difficulty: 1
   discrimination_score: 4.0
   display_order: 18
-  options:
-  - key: strong-safe-release
-    label: 'Strongly prefer: Make releases safer and more controlled'
-    display_order: 1
-    dimension_signals:
-      risk_control: 2
-  - key: slight-safe-release
-    label: 'Slightly prefer: Make releases safer and more controlled'
-    display_order: 2
-    dimension_signals:
-      risk_control: 1
-  - key: slight-new-approach
-    label: 'Slightly prefer: Try a new approach that could unlock speed'
-    display_order: 3
-    dimension_signals:
-      innovation_experiment: 1
-  - key: strong-new-approach
-    label: 'Strongly prefer: Try a new approach that could unlock speed'
-    display_order: 4
-    dimension_signals:
-      innovation_experiment: 2
-- code: role-trait-workflow-observation-or-technical-spike
+- code: role-swebok-19-user-needs-vs-internals
   item_group: core
-  question_type: single_choice
-  prompt: A new feature feels risky. Which discovery helps more?
+  question_type: likert_5
+  prompt: I would rather interview users than tune an internal service.
+  agree_dimension_signals:
+    requirements: 1
+    people_product: 1
+  disagree_dimension_signals:
+    operations: 0.6
+    backend_platform: 0.4
   difficulty: 1
   discrimination_score: 4.0
   display_order: 19
-  options:
-  - key: strong-observe-workflow
-    label: 'Strongly prefer: Observe how people do the task today'
-    display_order: 1
-    dimension_signals:
-      people_discovery: 2
-  - key: slight-observe-workflow
-    label: 'Slightly prefer: Observe how people do the task today'
-    display_order: 2
-    dimension_signals:
-      people_discovery: 1
-  - key: slight-technical-spike
-    label: 'Slightly prefer: Prototype the technical approach and constraints'
-    display_order: 3
-    dimension_signals:
-      technical_build: 1
-  - key: strong-technical-spike
-    label: 'Strongly prefer: Prototype the technical approach and constraints'
-    display_order: 4
-    dimension_signals:
-      technical_build: 2
-- code: role-trait-workshop-or-quiet-build
+- code: role-swebok-20-structure-vs-iteration
   item_group: core
-  question_type: single_choice
-  prompt: Which work setting gives you more energy?
+  question_type: likert_5
+  prompt: I prefer stable technical structure over fast trial-and-error changes.
+  agree_dimension_signals:
+    architecture: 1
+    engineering: 0.5
+    backend_platform: 0.6
+  disagree_dimension_signals:
+    process: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 20
-  options:
-  - key: strong-team-workshop
-    label: 'Strongly prefer: A workshop that turns many views into one plan'
-    display_order: 1
-    dimension_signals:
-      influence_coordination: 2
-  - key: slight-team-workshop
-    label: 'Slightly prefer: A workshop that turns many views into one plan'
-    display_order: 2
-    dimension_signals:
-      influence_coordination: 1
-  - key: slight-quiet-build
-    label: 'Slightly prefer: Quiet time to build or investigate without interruption'
-    display_order: 3
-    dimension_signals:
-      independent_deep_work: 1
-  - key: strong-quiet-build
-    label: 'Strongly prefer: Quiet time to build or investigate without interruption'
-    display_order: 4
-    dimension_signals:
-      independent_deep_work: 2
-- code: role-trait-process-rules-or-screen-behavior
+- code: role-swebok-21-screen-vs-data-flow
   item_group: core
-  question_type: single_choice
-  prompt: A feature is unclear. Which clarity do you provide?
+  question_type: likert_5
+  prompt: I enjoy designing screens and interaction details more than shaping system behavior behind the scenes.
+  agree_dimension_signals:
+    design: 1
+    web_frontend: 0.8
+  disagree_dimension_signals:
+    architecture: 0.5
+    backend_platform: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 21
-  options:
-  - key: strong-process-rules
-    label: 'Strongly prefer: Clarify the process rules and exceptions'
-    display_order: 1
-    dimension_signals:
-      business_process: 2
-  - key: slight-process-rules
-    label: 'Slightly prefer: Clarify the process rules and exceptions'
-    display_order: 2
-    dimension_signals:
-      business_process: 1
-  - key: slight-screen-behavior
-    label: 'Slightly prefer: Clarify what people see, tap, and understand'
-    display_order: 3
-    dimension_signals:
-      product_experience: 1
-  - key: strong-screen-behavior
-    label: 'Strongly prefer: Clarify what people see, tap, and understand'
-    display_order: 4
-    dimension_signals:
-      product_experience: 2
-- code: role-trait-experiment-readout-or-incident-review
+- code: role-swebok-22-build-vs-analyze
   item_group: core
-  question_type: single_choice
-  prompt: After a problem, what would you lead?
+  question_type: likert_5
+  prompt: I would rather implement a feature than spend the day reading reports.
+  agree_dimension_signals:
+    construction: 1
+    application_build: 0.8
+  disagree_dimension_signals:
+    economics: 0.4
   difficulty: 1
   discrimination_score: 4.0
   display_order: 22
-  options:
-  - key: strong-experiment-readout
-    label: 'Strongly prefer: Read the data and explain likely causes'
-    display_order: 1
-    dimension_signals:
-      data_investigation: 2
-  - key: slight-experiment-readout
-    label: 'Slightly prefer: Read the data and explain likely causes'
-    display_order: 2
-    dimension_signals:
-      data_investigation: 1
-  - key: slight-incident-review
-    label: 'Slightly prefer: Review system behavior and improve recovery'
-    display_order: 3
-    dimension_signals:
-      systems_operation: 1
-  - key: strong-incident-review
-    label: 'Strongly prefer: Review system behavior and improve recovery'
-    display_order: 4
-    dimension_signals:
-      systems_operation: 2
-- code: role-trait-system-model-or-working-increment
+- code: role-swebok-23-test-vs-operate
   item_group: core
-  question_type: single_choice
-  prompt: A complex idea needs progress. Which progress?
+  question_type: likert_5
+  prompt: I prefer finding defects before release over monitoring live systems.
+  agree_dimension_signals:
+    testing: 1
+    quality: 0.7
+  disagree_dimension_signals:
+    operations: 1
+    operations_security: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 23
-  options:
-  - key: strong-system-model
-    label: 'Strongly prefer: A model of entities, rules, and flows'
-    display_order: 1
-    dimension_signals:
-      requirements_modeling: 2
-  - key: slight-system-model
-    label: 'Slightly prefer: A model of entities, rules, and flows'
-    display_order: 2
-    dimension_signals:
-      requirements_modeling: 1
-  - key: slight-working-increment
-    label: 'Slightly prefer: A tested increment running in the product'
-    display_order: 3
-    dimension_signals:
-      implementation_delivery: 1
-  - key: strong-working-increment
-    label: 'Strongly prefer: A tested increment running in the product'
-    display_order: 4
-    dimension_signals:
-      implementation_delivery: 2
-- code: role-trait-compliance-check-or-discovery-test
+- code: role-swebok-24-run-vs-plan
   item_group: core
-  question_type: single_choice
-  prompt: A decision needs confidence. What kind?
+  question_type: likert_5
+  prompt: I would rather improve deployment reliability than refine team planning.
+  agree_dimension_signals:
+    operations: 1
+    operations_security: 0.8
+  disagree_dimension_signals:
+    management: 0.8
+    leadership_process: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 24
-  options:
-  - key: strong-compliance-check
-    label: 'Strongly prefer: Confidence that rules, risks, and controls are covered'
-    display_order: 1
-    dimension_signals:
-      risk_control: 2
-  - key: slight-compliance-check
-    label: 'Slightly prefer: Confidence that rules, risks, and controls are covered'
-    display_order: 2
-    dimension_signals:
-      risk_control: 1
-  - key: slight-discovery-test
-    label: 'Slightly prefer: Confidence from testing a new possibility'
-    display_order: 3
-    dimension_signals:
-      innovation_experiment: 1
-  - key: strong-discovery-test
-    label: 'Strongly prefer: Confidence from testing a new possibility'
-    display_order: 4
-    dimension_signals:
-      innovation_experiment: 2
-- code: role-trait-user-story-or-working-module
+- code: role-swebok-25-maintain-vs-create
   item_group: core
-  question_type: single_choice
-  prompt: What feels more satisfying to finish?
+  question_type: likert_5
+  prompt: I enjoy simplifying old code more than adding new product ideas.
+  agree_dimension_signals:
+    maintenance: 1
+    quality: 0.7
+  disagree_dimension_signals:
+    people_product: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 25
-  options:
-  - key: strong-clear-user-story
-    label: 'Strongly prefer: A clear story of who needs what and why'
-    display_order: 1
-    dimension_signals:
-      people_discovery: 2
-  - key: slight-clear-user-story
-    label: 'Slightly prefer: A clear story of who needs what and why'
-    display_order: 2
-    dimension_signals:
-      people_discovery: 1
-  - key: slight-working-module
-    label: 'Slightly prefer: A working module that proves the system can do it'
-    display_order: 3
-    dimension_signals:
-      technical_build: 1
-  - key: strong-working-module
-    label: 'Strongly prefer: A working module that proves the system can do it'
-    display_order: 4
-    dimension_signals:
-      technical_build: 2
-- code: role-trait-negotiate-tradeoff-or-master-complexity
+- code: role-swebok-26-release-control-vs-creative-flow
   item_group: core
-  question_type: single_choice
-  prompt: A decision has tradeoffs. Which role would you take?
+  question_type: likert_5
+  prompt: I prefer controlled releases over open-ended creative exploration.
+  agree_dimension_signals:
+    configuration_management: 1
+    operations_security: 0.7
+  disagree_dimension_signals:
+    design: 0.5
   difficulty: 1
   discrimination_score: 4.0
   display_order: 26
-  options:
-  - key: strong-negotiate-tradeoff
-    label: 'Strongly prefer: Help groups choose a tradeoff they can support'
-    display_order: 1
-    dimension_signals:
-      influence_coordination: 2
-  - key: slight-negotiate-tradeoff
-    label: 'Slightly prefer: Help groups choose a tradeoff they can support'
-    display_order: 2
-    dimension_signals:
-      influence_coordination: 1
-  - key: slight-master-complexity
-    label: 'Slightly prefer: Master the complex details behind the decision'
-    display_order: 3
-    dimension_signals:
-      independent_deep_work: 1
-  - key: strong-master-complexity
-    label: 'Strongly prefer: Master the complex details behind the decision'
-    display_order: 4
-    dimension_signals:
-      independent_deep_work: 2
-- code: role-trait-operations-fit-or-experience-fit
+- code: role-swebok-27-lead-vs-build
   item_group: core
-  question_type: single_choice
-  prompt: A solution must fit real work. Which fit matters first?
+  question_type: likert_5
+  prompt: I would rather unblock the team than personally code the feature.
+  agree_dimension_signals:
+    management: 1
+    leadership_process: 1
+    people_product: 0.5
+  disagree_dimension_signals:
+    construction: 1
+    application_build: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 27
-  options:
-  - key: strong-operations-fit
-    label: 'Strongly prefer: Fit the solution to business operations'
-    display_order: 1
-    dimension_signals:
-      business_process: 2
-  - key: slight-operations-fit
-    label: 'Slightly prefer: Fit the solution to business operations'
-    display_order: 2
-    dimension_signals:
-      business_process: 1
-  - key: slight-experience-fit
-    label: 'Slightly prefer: Fit the solution to the product experience'
-    display_order: 3
-    dimension_signals:
-      product_experience: 1
-  - key: strong-experience-fit
-    label: 'Strongly prefer: Fit the solution to the product experience'
-    display_order: 4
-    dimension_signals:
-      product_experience: 2
-- code: role-trait-forecast-change-or-operate-platform
+- code: role-swebok-28-process-vs-speed
   item_group: core
-  question_type: single_choice
-  prompt: A team plans for growth. Which work fits you?
+  question_type: likert_5
+  prompt: I prefer improving the workflow over shipping one more feature quickly.
+  agree_dimension_signals:
+    process: 1
+    leadership_process: 0.8
+  disagree_dimension_signals:
+    construction: 0.7
   difficulty: 1
   discrimination_score: 4.0
   display_order: 28
-  options:
-  - key: strong-forecast-change
-    label: 'Strongly prefer: Use data to forecast needs and tradeoffs'
-    display_order: 1
-    dimension_signals:
-      data_investigation: 2
-  - key: slight-forecast-change
-    label: 'Slightly prefer: Use data to forecast needs and tradeoffs'
-    display_order: 2
-    dimension_signals:
-      data_investigation: 1
-  - key: slight-operate-platform
-    label: 'Slightly prefer: Operate the platform so growth does not break it'
-    display_order: 3
-    dimension_signals:
-      systems_operation: 1
-  - key: strong-operate-platform
-    label: 'Strongly prefer: Operate the platform so growth does not break it'
-    display_order: 4
-    dimension_signals:
-      systems_operation: 2
-- code: role-trait-acceptance-criteria-or-production-change
+- code: role-swebok-29-method-vs-intuition
   item_group: core
-  question_type: single_choice
-  prompt: What would you rather make ready?
+  question_type: likert_5
+  prompt: I trust measured experiments more than gut feel.
+  agree_dimension_signals:
+    models_methods: 1
+    math: 0.7
+    data_ai: 0.7
+  disagree_dimension_signals:
+    professional_practice: 0.2
   difficulty: 1
   discrimination_score: 4.0
   display_order: 29
-  options:
-  - key: strong-acceptance-criteria
-    label: 'Strongly prefer: Acceptance criteria everyone can judge against'
-    display_order: 1
-    dimension_signals:
-      requirements_modeling: 2
-  - key: slight-acceptance-criteria
-    label: 'Slightly prefer: Acceptance criteria everyone can judge against'
-    display_order: 2
-    dimension_signals:
-      requirements_modeling: 1
-  - key: slight-production-change
-    label: 'Slightly prefer: The production change and follow-up fixes'
-    display_order: 3
-    dimension_signals:
-      implementation_delivery: 1
-  - key: strong-production-change
-    label: 'Strongly prefer: The production change and follow-up fixes'
-    display_order: 4
-    dimension_signals:
-      implementation_delivery: 2
-- code: role-trait-prevent-failure-or-create-option
+- code: role-swebok-30-quality-vs-novelty
   item_group: core
-  question_type: single_choice
-  prompt: What feels more natural?
+  question_type: likert_5
+  prompt: I value steady quality more than trying a new technology just because it is new.
+  agree_dimension_signals:
+    quality: 1
+    maintenance: 0.6
+  disagree_dimension_signals:
+    computing_ai: 0.4
   difficulty: 1
   discrimination_score: 4.0
   display_order: 30
-  options:
-  - key: strong-prevent-failure
-    label: 'Strongly prefer: Prevent avoidable failures and misuse'
-    display_order: 1
-    dimension_signals:
-      risk_control: 2
-  - key: slight-prevent-failure
-    label: 'Slightly prefer: Prevent avoidable failures and misuse'
-    display_order: 2
-    dimension_signals:
-      risk_control: 1
-  - key: slight-create-option
-    label: 'Slightly prefer: Create a new option the team can evaluate'
-    display_order: 3
-    dimension_signals:
-      innovation_experiment: 1
-  - key: strong-create-option
-    label: 'Strongly prefer: Create a new option the team can evaluate'
-    display_order: 4
-    dimension_signals:
-      innovation_experiment: 2
+- code: role-swebok-31-security-vs-usability
+  item_group: core
+  question_type: likert_5
+  prompt: I would tighten access rules even if onboarding became slower.
+  agree_dimension_signals:
+    security: 1
+    operations_security: 0.8
+  disagree_dimension_signals:
+    requirements: 0.4
+    people_product: 0.4
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 31
+- code: role-swebok-32-explain-vs-implement
+  item_group: core
+  question_type: likert_5
+  prompt: I enjoy teaching developers as much as shipping production code.
+  agree_dimension_signals:
+    professional_practice: 1
+    documentation_practice: 0.8
+    developer_community: 0.7
+  disagree_dimension_signals:
+    construction: 0.7
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 32
+- code: role-swebok-33-business-vs-technical
+  item_group: core
+  question_type: likert_5
+  prompt: I would prioritize business impact over technical elegance.
+  agree_dimension_signals:
+    economics: 1
+    people_product: 0.7
+  disagree_dimension_signals:
+    architecture: 0.8
+    engineering: 0.5
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 33
+- code: role-swebok-34-ai-vs-classic-apps
+  item_group: core
+  question_type: likert_5
+  prompt: I am more drawn to building AI or data capabilities than polishing general product workflows.
+  agree_dimension_signals:
+    computing_ai: 1
+    data_ai: 0.9
+  disagree_dimension_signals:
+    application_build: 0.4
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 34
+- code: role-swebok-35-statistics-vs-craft
+  item_group: core
+  question_type: likert_5
+  prompt: I enjoy statistical evidence more than visual or interaction craft.
+  agree_dimension_signals:
+    math: 1
+    data_ai: 0.8
+  disagree_dimension_signals:
+    design: 0.6
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 35
+- code: role-swebok-36-engineering-vs-product
+  item_group: core
+  question_type: likert_5
+  prompt: I would choose engineering robustness over faster market feedback.
+  agree_dimension_signals:
+    engineering: 1
+    backend_platform: 0.7
+    quality: 0.5
+  disagree_dimension_signals:
+    economics: 0.8
+    people_product: 0.6
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 36
+- code: role-swebok-tie-01-frontend-backend
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer browser behavior over server behavior.
+  agree_dimension_signals:
+    web_frontend: 1
+    design: 0.6
+    application_build: 0.8
+  disagree_dimension_signals:
+    server_backend: 1
+    architecture: 0.6
+    backend_platform: 0.8
+  discriminates_between:
+  - frontend-developer
+  - backend-developer
+  - full-stack-developer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 101
+- code: role-swebok-tie-02-devops-devsecops
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I focus on delivery speed before security gates.
+  agree_dimension_signals:
+    operations: 1
+    configuration_management: 0.7
+  disagree_dimension_signals:
+    security: 1
+    operations_security: 0.9
+  discriminates_between:
+  - devops-engineer
+  - devsecops-engineer
+  - cyber-security-engineer-analyst
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 102
+- code: role-swebok-tie-03-data-analyst-bi
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer open-ended analysis over recurring business dashboards.
+  agree_dimension_signals:
+    data_ai: 0.8
+    math: 0.7
+  disagree_dimension_signals:
+    business_intelligence: 1
+    economics: 0.7
+  discriminates_between:
+  - data-analyst
+  - bi-analyst
+  - product-manager
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 103
+- code: role-swebok-tie-04-ai-engineer-scientist
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer shipping AI features over proving model assumptions.
+  agree_dimension_signals:
+    construction: 1
+    architecture: 0.7
+    backend_platform: 0.5
+  disagree_dimension_signals:
+    models_methods: 1
+    math: 0.8
+    data_ai: 0.8
+  discriminates_between:
+  - ai-engineer
+  - ai-data-scientist
+  - machine-learning-engineer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 104
+- code: role-swebok-tie-05-data-engineer-mlops
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer data pipelines over model deployment systems.
+  agree_dimension_signals:
+    data_ai: 0.8
+    construction: 0.7
+  disagree_dimension_signals:
+    ml_platform: 1
+    operations: 0.8
+    configuration_management: 0.7
+  discriminates_between:
+  - data-engineer
+  - mlops-engineer
+  - machine-learning-engineer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 105
+- code: role-swebok-tie-06-mobile-platform
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer Android platform work over Apple platform work.
+  agree_dimension_signals:
+    android_platform: 1
+    application_build: 0.6
+  disagree_dimension_signals:
+    ios_platform: 1
+    application_build: 0.6
+  discriminates_between:
+  - android-developer
+  - ios-developer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 106
+- code: role-swebok-tie-07-database-backend
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer database performance over general service logic.
+  agree_dimension_signals:
+    database_postgresql: 1
+    quality: 0.7
+    operations: 0.5
+  disagree_dimension_signals:
+    server_backend: 1
+    construction: 0.7
+  discriminates_between:
+  - postgresql-developer-dba
+  - backend-developer
+  - data-engineer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 107
+- code: role-swebok-tie-08-blockchain-security
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I enjoy smart-contract logic more than general security monitoring.
+  agree_dimension_signals:
+    blockchain_platform: 1
+    construction: 0.7
+    economics: 0.5
+  disagree_dimension_signals:
+    security: 1
+    operations_security: 0.8
+  discriminates_between:
+  - blockchain-developer
+  - cyber-security-engineer-analyst
+  - devsecops-engineer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 108
+- code: role-swebok-tie-09-qa-architect
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer test evidence over high-level structure decisions.
+  agree_dimension_signals:
+    testing: 1
+    quality: 0.8
+  disagree_dimension_signals:
+    architecture: 1
+    design: 0.7
+  discriminates_between:
+  - qa-engineer
+  - software-architect
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 109
+- code: role-swebok-tie-10-ux-product
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer designing flows over prioritizing business outcomes.
+  agree_dimension_signals:
+    design: 1
+    requirements: 0.7
+    people_product: 0.8
+  disagree_dimension_signals:
+    economics: 1
+    management: 0.7
+    leadership_process: 0.6
+  discriminates_between:
+  - ux-designer
+  - product-manager
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 110
+- code: role-swebok-tie-11-docs-devrel
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer precise documentation over community demos.
+  agree_dimension_signals:
+    technical_documentation: 1
+    maintenance: 0.6
+  disagree_dimension_signals:
+    developer_community: 1
+    construction: 0.6
+  discriminates_between:
+  - technical-writer
+  - developer-relations
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 111
+- code: role-swebok-tie-12-game-client-server
+  item_group: tie_break
+  question_type: likert_5
+  prompt: I prefer gameplay feel over multiplayer backend reliability.
+  agree_dimension_signals:
+    game_client: 1
+    game_family: 0.9
+    design: 0.6
+  disagree_dimension_signals:
+    game_server: 1
+    operations: 0.8
+    backend_platform: 0.8
+  discriminates_between:
+  - game-developer
+  - server-side-game-developer
+  difficulty: 1
+  discrimination_score: 4.5
+  display_order: 112

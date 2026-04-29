@@ -1,0 +1,43 @@
+skill_questions:
+  - code: mlops-engineer-ml-operations-pipelines
+    role_slug: mlops-engineer
+    topic_slug: ml-operations-pipelines
+    question_type: yes_no_maybe
+    prompt: Can you explain the basic work involved in ml operations pipelines?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 21
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ml-operations-pipelines, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ml-operations-pipelines, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ml-operations-pipelines, mastery_delta: 0.0}]
+  - code: mlops-engineer-model-configuration-management
+    role_slug: mlops-engineer
+    topic_slug: model-configuration-management
+    question_type: yes_no_maybe
+    prompt: Have you practiced a small task related to model configuration management?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 22
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: model-configuration-management, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: model-configuration-management, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: model-configuration-management, mastery_delta: 0.0}]

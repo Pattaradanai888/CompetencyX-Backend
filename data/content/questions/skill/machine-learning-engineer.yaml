@@ -1,0 +1,43 @@
+skill_questions:
+  - code: machine-learning-engineer-ml-model-engineering
+    role_slug: machine-learning-engineer
+    topic_slug: ml-model-engineering
+    question_type: yes_no_maybe
+    prompt: Can you explain the basic work involved in ml model engineering?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 21
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ml-model-engineering, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ml-model-engineering, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ml-model-engineering, mastery_delta: 0.0}]
+  - code: machine-learning-engineer-production-ml-services
+    role_slug: machine-learning-engineer
+    topic_slug: production-ml-services
+    question_type: yes_no_maybe
+    prompt: Have you practiced a small task related to production ml services?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 22
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: production-ml-services, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: production-ml-services, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: production-ml-services, mastery_delta: 0.0}]

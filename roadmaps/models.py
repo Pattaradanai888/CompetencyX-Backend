@@ -5,6 +5,9 @@ class Role(models.Model):
     slug = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=128)
     description = models.TextField(blank=True)
+    top_ka_codes = models.JSONField(default=list, blank=True)
+    core_tasks = models.JSONField(default=list, blank=True)
+    swebok_source_version = models.CharField(max_length=32, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -94,6 +97,7 @@ class Question(models.Model):
     class Type(models.TextChoices):
         YES_NO = 'yes_no', 'Yes / No'
         YES_NO_MAYBE = 'yes_no_maybe', 'Yes / No / Maybe'
+        LIKERT_5 = 'likert_5', 'Five-Point Agreement Scale'
         SINGLE_CHOICE = 'single_choice', 'Single Choice'
         RANKED_CHOICE = 'ranked_choice', 'Ranked Choice'
 
@@ -124,6 +128,9 @@ class Question(models.Model):
         default=ItemGroup.STANDARD,
     )
     discriminates_between = models.JSONField(default=list, blank=True)
+    agree_dimension_signals = models.JSONField(default=dict, blank=True)
+    disagree_dimension_signals = models.JSONField(default=dict, blank=True)
+    trait_positive_dimension = models.SlugField(max_length=64, blank=True)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -145,7 +152,6 @@ class QuestionOption(models.Model):
     key = models.SlugField(max_length=64)
     label = models.CharField(max_length=160)
     value = models.CharField(max_length=64, blank=True)
-    dimension_signals = models.JSONField(default=dict, blank=True)
     display_order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -154,27 +160,6 @@ class QuestionOption(models.Model):
 
     def __str__(self) -> str:
         return f'{self.question.code}:{self.key}'
-
-
-class QuestionRoleSignal(models.Model):
-    question_option = models.ForeignKey(
-        QuestionOption,
-        on_delete=models.CASCADE,
-        related_name='role_signals',
-    )
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        related_name='question_role_signals',
-    )
-    weight = models.FloatField(default=0.0)
-
-    class Meta:
-        ordering = ['question_option__question__code', 'role__slug']
-        unique_together = [('question_option', 'role')]
-
-    def __str__(self) -> str:
-        return f'{self.question_option} -> {self.role.slug}: {self.weight}'
 
 
 class QuestionTopicSignal(models.Model):

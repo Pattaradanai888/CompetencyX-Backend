@@ -31,7 +31,8 @@ class SessionCreateSerializer(serializers.Serializer):
 
 class AnswerSubmitSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
-    option_id = serializers.IntegerField()
+    option_id = serializers.IntegerField(required=False)
+    scale_value = serializers.IntegerField(required=False)
     response_time_ms = serializers.IntegerField(required=False, min_value=0)
     confidence_indicator = serializers.ChoiceField(
         choices=['low', 'medium', 'high'],
@@ -45,10 +46,11 @@ class AnswerSubmitSerializer(serializers.Serializer):
             question = Question.objects.prefetch_related('options').get(id=attrs['question_id'], is_active=True)
         except Question.DoesNotExist as exc:
             raise serializers.ValidationError({'question_id': 'Unknown active question.'}) from exc
-        try:
-            option = QuestionOption.objects.get(id=attrs['option_id'], question=question)
-        except QuestionOption.DoesNotExist as exc:
-            raise serializers.ValidationError({'option_id': 'Option does not belong to the question.'}) from exc
+
+        if question.question_type == Question.Type.LIKERT_5:
+            option, scale_value = self._validate_likert_answer(attrs)
+        else:
+            option, scale_value = self._validate_option_answer(attrs, question)
 
         if session is not None:
             expected_question = get_current_question(session)
@@ -61,7 +63,27 @@ class AnswerSubmitSerializer(serializers.Serializer):
 
         attrs['question'] = question
         attrs['option'] = option
+        attrs['scale_value'] = scale_value
         return attrs
+
+    def _validate_likert_answer(self, attrs):
+        scale_value = attrs.get('scale_value')
+        if 'option_id' in attrs:
+            raise serializers.ValidationError({'option_id': 'Likert questions must submit scale_value instead of option_id.'})
+        if scale_value not in {-2, -1, 0, 1, 2}:
+            raise serializers.ValidationError({'scale_value': 'Use one of -2, -1, 0, 1, or 2.'})
+        return None, scale_value
+
+    def _validate_option_answer(self, attrs, question):
+        if 'scale_value' in attrs:
+            raise serializers.ValidationError({'scale_value': 'Option questions must submit option_id instead of scale_value.'})
+        if 'option_id' not in attrs:
+            raise serializers.ValidationError({'option_id': 'This question requires an option_id.'})
+        try:
+            option = QuestionOption.objects.get(id=attrs['option_id'], question=question)
+        except QuestionOption.DoesNotExist as exc:
+            raise serializers.ValidationError({'option_id': 'Option does not belong to the question.'}) from exc
+        return option, None
 
 
 class TopicMasterySerializer(serializers.ModelSerializer):
@@ -239,6 +261,7 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
             'selected_option_id',
             'selected_option_key',
             'selected_option_label',
+            'scale_value',
             'response_time_ms',
             'confidence_indicator',
             'responded_at',
@@ -247,7 +270,8 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
     preferred_role = RoleSerializer(read_only=True)
-    best_fit_role = RoleSerializer(read_only=True)
+    best_fit_role = serializers.SerializerMethodField()
+    best_fit_confidence = serializers.SerializerMethodField()
     mastery_scores = TopicMasterySerializer(many=True, read_only=True)
     preferred_path_recommendation = serializers.SerializerMethodField()
     best_fit_path_recommendation = serializers.SerializerMethodField()
@@ -301,6 +325,16 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
         return get_role_resolution_status(obj)
+
+    @extend_schema_field(RoleSerializer(allow_null=True))
+    def get_best_fit_role(self, obj):
+        if get_role_resolution_status(obj) != 'resolved':
+            return None
+        return RoleSerializer(obj.best_fit_role).data if obj.best_fit_role else None
+
+    @extend_schema_field(serializers.FloatField())
+    def get_best_fit_confidence(self, obj):
+        return obj.best_fit_confidence if get_role_resolution_status(obj) == 'resolved' else 0.0
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):

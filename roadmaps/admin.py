@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import (
     Question,
     QuestionOption,
-    QuestionRoleSignal,
     QuestionTopicSignal,
     RoadmapTopic,
     Role,
@@ -14,11 +13,6 @@ from .models import (
 class QuestionOptionInline(admin.TabularInline):
     model = QuestionOption
     extra = 1
-
-
-class QuestionRoleSignalInline(admin.TabularInline):
-    model = QuestionRoleSignal
-    extra = 0
 
 
 class QuestionTopicSignalInline(admin.TabularInline):
@@ -51,7 +45,7 @@ class TopicPrerequisiteAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('code', 'stage', 'role', 'topic', 'question_type', 'is_active')
+    list_display = ('code', 'stage', 'role', 'topic', 'question_type', 'item_group', 'is_active')
     list_filter = ('stage', 'question_type', 'is_active', 'role')
     search_fields = ('code', 'prompt')
     list_select_related = ('role', 'topic')
@@ -62,4 +56,4 @@ class QuestionAdmin(admin.ModelAdmin):
 class QuestionOptionAdmin(admin.ModelAdmin):
     list_display = ('question', 'key', 'label', 'display_order')
     list_select_related = ('question',)
-    inlines = [QuestionRoleSignalInline, QuestionTopicSignalInline]
+    inlines = [QuestionTopicSignalInline]

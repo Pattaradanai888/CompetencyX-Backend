@@ -7,7 +7,6 @@ import yaml
 from roadmaps.models import (
     Question,
     QuestionOption,
-    QuestionRoleSignal,
     QuestionTopicSignal,
     RoadmapTopic,
     Role,
@@ -145,10 +144,14 @@ def _sync_roles(role_seeds: list[dict]):
             defaults={
                 'name': role_seed['name'],
                 'description': role_seed.get('description', ''),
+                'top_ka_codes': role_seed.get('top_ka_codes', []),
+                'core_tasks': role_seed.get('core_tasks', []),
+                'swebok_source_version': role_seed.get('swebok_source_version', ''),
                 'is_active': True,
             },
         )
         roles_by_slug[role.slug] = role
+    Role.objects.exclude(slug__in=roles_by_slug).update(is_active=False)
     return roles_by_slug
 
 
@@ -192,6 +195,9 @@ def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
 def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], roles_by_slug, topics_by_key):
     seed_codes = {question_seed['code'] for question_seed in [*role_questions, *skill_questions]}
     for question_seed in role_questions:
+        agree_dimension_signals = question_seed.get('agree_dimension_signals', {})
+        disagree_dimension_signals = question_seed.get('disagree_dimension_signals', {})
+        trait_positive_dimension = question_seed.get('trait_positive_dimension') or next(iter(agree_dimension_signals), '')
         question, _created = Question.objects.update_or_create(
             code=question_seed['code'],
             defaults={
@@ -205,11 +211,14 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'discrimination_score': question_seed['discrimination_score'],
                 'item_group': question_seed.get('item_group', Question.ItemGroup.CORE),
                 'discriminates_between': question_seed.get('discriminates_between', []),
+                'agree_dimension_signals': agree_dimension_signals,
+                'disagree_dimension_signals': disagree_dimension_signals,
+                'trait_positive_dimension': trait_positive_dimension,
                 'display_order': question_seed['display_order'],
                 'is_active': True,
             },
         )
-        _sync_question_options(question, question_seed['options'], roles_by_slug=roles_by_slug, topics_by_key=topics_by_key)
+        question.options.all().delete()
 
     Question.objects.exclude(code__in=seed_codes).delete()
 
@@ -229,14 +238,17 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'discrimination_score': question_seed['discrimination_score'],
                 'item_group': Question.ItemGroup.STANDARD,
                 'discriminates_between': [],
+                'agree_dimension_signals': {},
+                'disagree_dimension_signals': {},
+                'trait_positive_dimension': '',
                 'display_order': question_seed['display_order'],
                 'is_active': True,
             },
         )
-        _sync_question_options(question, question_seed['options'], roles_by_slug=roles_by_slug, topics_by_key=topics_by_key)
+        _sync_question_options(question, question_seed['options'], topics_by_key=topics_by_key)
 
 
-def _sync_question_options(question: Question, option_seeds: list[dict], *, roles_by_slug, topics_by_key):
+def _sync_question_options(question: Question, option_seeds: list[dict], *, topics_by_key):
     existing_keys = set(question.options.values_list('key', flat=True))
     seed_keys = set()
     for option_seed in option_seeds:
@@ -248,11 +260,9 @@ def _sync_question_options(question: Question, option_seeds: list[dict], *, role
             defaults={
                 'label': option_seed['label'],
                 'value': option_seed.get('value', ''),
-                'dimension_signals': option_seed.get('dimension_signals', {}),
                 'display_order': option_seed['display_order'],
             },
         )
-        _sync_role_signals(option, option_seed.get('role_signals', {}), roles_by_slug)
         _sync_topic_signals(
             option,
             option_seed.get('topic_signals', []),
@@ -264,7 +274,7 @@ def _sync_question_options(question: Question, option_seeds: list[dict], *, role
 
 
 def _validate_option_seed(option_seed: dict, *, question: Question) -> None:
-    unsupported_fields = {'mastery_value', 'role_weights'} & option_seed.keys()
+    unsupported_fields = {'dimension_signals', 'mastery_value', 'role_signals', 'role_weights'} & option_seed.keys()
     if not unsupported_fields:
         return
 
@@ -295,12 +305,37 @@ def _validate_role_question_seed(role_question: dict, *, role_slugs: set[str], e
     if item_group not in {Question.ItemGroup.CORE, Question.ItemGroup.TIE_BREAK}:
         msg = f'Role question "{role_question["code"]}" must use item_group "core" or "tie_break".'
         raise ValueError(msg)
+    if role_question.get('question_type') != Question.Type.LIKERT_5:
+        msg = f'Role question "{role_question["code"]}" must use question_type "likert_5".'
+        raise ValueError(msg)
+    if role_question.get('options'):
+        msg = f'Role question "{role_question["code"]}" must not define options.'
+        raise ValueError(msg)
+    agree_dimension_signals = _validate_dimension_signal_map(role_question, field_name='agree_dimension_signals')
+    disagree_dimension_signals = _validate_dimension_signal_map(role_question, field_name='disagree_dimension_signals')
+    if item_group == Question.ItemGroup.CORE:
+        core_signal_dimensions = set(agree_dimension_signals) | set(disagree_dimension_signals)
+        if not core_signal_dimensions & CORE_ROLE_DIMENSIONS:
+            msg = f'Core role question "{role_question["code"]}" must signal at least one SWEBOK knowledge area.'
+            raise ValueError(msg)
 
     _validate_role_question_pairing(role_question, item_group=item_group, role_slugs=role_slugs)
-    question_dimensions, _total_signal_count = _validate_role_question_options(role_question, role_slugs=role_slugs)
-    if item_group == Question.ItemGroup.CORE and not question_dimensions:
-        msg = f'Core role question "{role_question["code"]}" must define dimension_signals.'
+
+
+def _validate_dimension_signal_map(role_question: dict, *, field_name: str) -> dict:
+    signals = role_question.get(field_name)
+    if not isinstance(signals, dict) or not signals:
+        msg = f'Role question "{role_question["code"]}" must define {field_name}.'
         raise ValueError(msg)
+    unknown_dimensions = sorted(set(signals) - set(ROLE_DIMENSIONS))
+    if unknown_dimensions:
+        msg = f'Role question "{role_question["code"]}" has unknown {field_name}: {", ".join(unknown_dimensions)}'
+        raise ValueError(msg)
+    invalid_weights = sorted(key for key, value in signals.items() if not isinstance(value, int | float) or float(value) <= 0)
+    if invalid_weights:
+        msg = f'Role question "{role_question["code"]}" has invalid {field_name} weight(s): {", ".join(invalid_weights)}'
+        raise ValueError(msg)
+    return signals
 
 
 def _validate_role_question_pairing(role_question: dict, *, item_group: str, role_slugs: set[str]) -> None:
@@ -314,32 +349,6 @@ def _validate_role_question_pairing(role_question: dict, *, item_group: str, rol
     if unknown_pair_roles:
         msg = f'Unknown role slug(s) for question "{role_question["code"]}": {", ".join(unknown_pair_roles)}'
         raise ValueError(msg)
-
-
-def _validate_role_question_options(role_question: dict, *, role_slugs: set[str]) -> tuple[set[str], int]:
-    option_keys = set()
-    total_signal_count = 0
-    question_dimensions = set()
-    question_stub = SimpleNamespace(code=role_question['code'])
-    for option_seed in role_question['options']:
-        _validate_option_seed(option_seed, question=question_stub)
-        _validate_option_key_uniqueness(role_question['code'], option_seed, option_keys)
-        role_signals = option_seed.get('role_signals', {})
-        dimension_signals = option_seed.get('dimension_signals', {})
-        unknown_role_slugs = sorted(set(role_signals) - role_slugs)
-        if unknown_role_slugs:
-            msg = f'Unknown role slug(s) for question "{role_question["code"]}": {", ".join(unknown_role_slugs)}'
-            raise ValueError(msg)
-        unknown_dimensions = sorted(set(dimension_signals) - set(ROLE_DIMENSIONS))
-        if unknown_dimensions:
-            msg = f'Unknown dimension(s) for question "{role_question["code"]}": {", ".join(unknown_dimensions)}'
-            raise ValueError(msg)
-        if not dimension_signals and not role_signals:
-            msg = f'Role question "{role_question["code"]}" option "{option_seed["key"]}" must define dimension_signals or role_signals.'
-            raise ValueError(msg)
-        total_signal_count += len(role_signals)
-        question_dimensions.update(dimension_signals.keys())
-    return question_dimensions, total_signal_count
 
 
 def _validate_skill_question_seed(skill_question: dict, *, role_slugs: set[str], topic_keys: set[tuple[str, str]], existing_codes: set[str]):
@@ -373,23 +382,14 @@ def _validate_role_question_bank(role_questions: list[dict]) -> None:
     for question in role_questions:
         item_group = question.get('item_group', Question.ItemGroup.CORE)
         if item_group == Question.ItemGroup.CORE:
-            for option_seed in question['options']:
-                core_dimensions.update(option_seed.get('dimension_signals', {}).keys())
+            question_dimensions = set(question.get('agree_dimension_signals', {})) | set(question.get('disagree_dimension_signals', {}))
+            question_core_dimensions = question_dimensions & CORE_ROLE_DIMENSIONS
+            core_dimensions.update(question_core_dimensions)
 
     missing_dimensions = sorted(CORE_ROLE_DIMENSIONS - core_dimensions)
     if missing_dimensions:
         msg = f'Core role question bank is missing dimension coverage for: {", ".join(missing_dimensions)}'
         raise ValueError(msg)
-
-
-def _sync_role_signals(option: QuestionOption, role_signals: dict[str, float], roles_by_slug: dict[str, Role]):
-    QuestionRoleSignal.objects.filter(question_option=option).exclude(role__slug__in=role_signals.keys()).delete()
-    for role_slug, weight in role_signals.items():
-        QuestionRoleSignal.objects.update_or_create(
-            question_option=option,
-            role=roles_by_slug[role_slug],
-            defaults={'weight': float(weight)},
-        )
 
 
 def _sync_topic_signals(option: QuestionOption, topic_signals: list[dict], *, question: Question, topics_by_key):

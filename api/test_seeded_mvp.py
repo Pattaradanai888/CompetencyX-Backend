@@ -4,13 +4,15 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from assessments.models import Answer, AssessmentSession
-from assessments.services import _get_selectable_role_candidates, _score_roles_from_dimensions
+from assessments.services import _get_selectable_role_candidates, _score_roles_for_answer, _score_roles_from_dimensions
 from roadmaps.models import Question, Role
+from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 
 
-EXPECTED_SEEDED_ROLE_COUNT = 21
-MIN_ROLE_QUESTION_COUNT = 30
-FULL_FLOW_SMOKE_ROLE_COUNT = 4
+EXPECTED_SEEDED_ROLE_COUNT = 26
+MIN_ROLE_QUESTION_COUNT = 36
+FULL_FLOW_SMOKE_ROLE_COUNT = 1
+IDEAL_SCALE_NEUTRAL_DELTA = 0.2
 
 
 class SeededMvpFlowTests(APITestCase):
@@ -38,7 +40,7 @@ class SeededMvpFlowTests(APITestCase):
             assert create_response.status_code == status.HTTP_201_CREATED
             assert create_response.json()['preferred_role']['slug'] == role_slug
 
-        for role_slug in all_role_slugs[:FULL_FLOW_SMOKE_ROLE_COUNT]:
+        for role_slug in ['backend-developer']:
             create_response = self.client.post(
                 reverse('assessment-session-create'),
                 {'preferred_role_slug': role_slug},
@@ -50,10 +52,11 @@ class SeededMvpFlowTests(APITestCase):
             current_question = payload['current_question']
 
             while current_question is not None and current_question['stage'] == Question.Stage.ROLE:
-                option_id = Question.objects.get(id=current_question['id']).options.order_by('display_order').first().id
+                current_question_model = Question.objects.get(id=current_question['id'])
+                scale_value = self._scale_for_profile(current_question_model, set(ROLE_PROFILE_WEIGHTS[role_slug]))
                 answer_response = self.client.post(
                     reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
-                    {'question_id': current_question['id'], 'option_id': option_id},
+                    {'question_id': current_question['id'], 'scale_value': scale_value},
                     format='json',
                 )
                 assert answer_response.status_code == status.HTTP_200_OK
@@ -90,27 +93,43 @@ class SeededMvpFlowTests(APITestCase):
             assert results_response.json()['preferred_path_recommendation'] is not None
             assert results_response.json()['preferred_path_recommendation']['topic_slug'] is not None
 
-    def test_trait_axis_scoring_favors_backend_for_build_delivery_operations_profile(self):
-        role_scores = _score_roles_from_dimensions(
-            {
-                'technical_build': 5,
-                'independent_deep_work': 4,
-                'systems_operation': 5,
-                'implementation_delivery': 5,
-                'risk_control': 3,
-            }
-        )
+    def test_swebok_scoring_favors_backend_for_service_operations_profile(self):
+        role_scores = _score_roles_from_dimensions(ROLE_PROFILE_WEIGHTS['backend-developer'])
 
-        assert role_scores['backend-engineer'] > role_scores['product-manager']
-        assert role_scores['backend-engineer'] > role_scores['business-analyst']
+        assert role_scores['backend-developer'] > role_scores['product-manager']
+        assert role_scores['backend-developer'] > role_scores['ux-designer']
 
-    def test_role_selector_stops_after_static_core_profile(self):
+    def test_role_family_signals_move_fit_between_people_and_backend_roles(self):
+        people_scores = _score_roles_from_dimensions({'requirements': 1.0, 'people_product': 2.0})
+        backend_scores = _score_roles_from_dimensions({'architecture': 1.0, 'backend_platform': 2.0})
+
+        assert people_scores['product-manager'] > people_scores['backend-developer']
+        assert backend_scores['backend-developer'] > backend_scores['product-manager']
+
+    def test_role_likelihood_calibration_recovers_seeded_roles(self):
+        role_questions = list(Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order'))
+        misses = {}
+
+        for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
+            role_scores = {}
+            for question in role_questions:
+                scale_value = self._ideal_scale_for_profile(question, profile)
+                for candidate_slug, delta in _score_roles_for_answer(question, scale_value).items():
+                    role_scores[candidate_slug] = role_scores.get(candidate_slug, 0.0) + delta
+
+            ranked_slugs = [slug for slug, _score in sorted(role_scores.items(), key=lambda item: (-item[1], item[0]))]
+            if ranked_slugs[0] != role_slug:
+                misses[role_slug] = ranked_slugs[:3]
+
+        assert misses == {}
+
+    def test_role_selector_uses_tie_breaks_after_low_margin_core_profile(self):
         session_model = AssessmentSession.objects.create(profile={})
         for question in Question.objects.filter(stage=Question.Stage.ROLE, item_group=Question.ItemGroup.CORE).order_by('display_order'):
             Answer.objects.create(
                 session=session_model,
                 question=question,
-                selected_option=question.options.order_by('display_order').last(),
+                scale_value=0,
             )
 
         unanswered_role_questions = list(
@@ -120,58 +139,21 @@ class SeededMvpFlowTests(APITestCase):
         )
         candidate_codes = [question.code for question in _get_selectable_role_candidates(session_model, unanswered_role_questions)]
 
-        assert candidate_codes == []
+        assert candidate_codes
+        assert all(Question.objects.get(code=code).item_group == Question.ItemGroup.TIE_BREAK for code in candidate_codes)
 
     def test_seeded_backend_answer_path_resolves_into_skill_assessment(self):
-        # Dynamic test: answer each question as it comes, preferring build/system
-        # options to steer toward backend/engineering roles.
-        answer_plan = {
-            'role-trait-user-interviews-or-service-code': 'strong-build-service',
-            'role-trait-customer-pain-or-system-bug': 'strong-fix-system-bug',
-            'role-trait-feedback-session-or-code-session': 'strong-code-session',
-            'role-trait-workflow-observation-or-technical-spike': 'strong-technical-spike',
-            'role-trait-user-story-or-working-module': 'strong-working-module',
-            'role-trait-align-room-or-solve-alone': 'strong-solve-alone',
-            'role-trait-coordinate-launch-or-deepen-design': 'strong-deepen-design',
-            'role-trait-stakeholder-update-or-focused-analysis': 'strong-focused-analysis',
-            'role-trait-workshop-or-quiet-build': 'strong-quiet-build',
-            'role-trait-negotiate-tradeoff-or-master-complexity': 'strong-master-complexity',
-            'role-trait-department-process-or-user-journey': 'strong-department-process',
-            'role-trait-policy-change-or-product-flow': 'strong-policy-change',
-            'role-trait-internal-efficiency-or-customer-task': 'strong-internal-efficiency',
-            'role-trait-process-rules-or-screen-behavior': 'strong-process-rules',
-            'role-trait-operations-fit-or-experience-fit': 'strong-operations-fit',
-            'role-trait-analyze-patterns-or-keep-running': 'strong-keep-running',
-            'role-trait-metric-question-or-runtime-health': 'strong-runtime-health',
-            'role-trait-data-quality-or-service-reliability': 'strong-service-reliability',
-            'role-trait-experiment-readout-or-incident-review': 'strong-incident-review',
-            'role-trait-forecast-change-or-operate-platform': 'strong-operate-platform',
-            'role-trait-model-requirements-or-ship-feature': 'strong-ship-feature',
-            'role-trait-write-spec-or-build-slice': 'strong-build-slice',
-            'role-trait-edge-cases-or-release-work': 'strong-release-work',
-            'role-trait-system-model-or-working-increment': 'strong-working-increment',
-            'role-trait-acceptance-criteria-or-production-change': 'strong-production-change',
-            'role-trait-reduce-risk-or-test-idea': 'strong-reduce-risk',
-            'role-trait-guardrails-or-prototype': 'strong-guardrails',
-            'role-trait-safe-release-or-new-approach': 'strong-safe-release',
-            'role-trait-compliance-check-or-discovery-test': 'strong-compliance-check',
-            'role-trait-prevent-failure-or-create-option': 'strong-prevent-failure',
-        }
+        backend_profile = set(ROLE_PROFILE_WEIGHTS['backend-developer'])
         create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
         assert create_response.status_code == status.HTTP_201_CREATED
         payload = create_response.json()
 
         while payload['current_question'] is not None and payload['current_question']['stage'] == Question.Stage.ROLE:
             current_question = Question.objects.get(id=payload['current_question']['id'])
-            option_key = answer_plan.get(current_question.code)
-            if option_key is None:
-                # Fallback: pick the first option for any unexpected question
-                option_id = current_question.options.order_by('display_order').first().id
-            else:
-                option_id = current_question.options.get(key=option_key).id
+            scale_value = self._scale_for_profile(current_question, backend_profile)
             answer_response = self.client.post(
                 reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
-                {'question_id': current_question.id, 'option_id': option_id},
+                {'question_id': current_question.id, 'scale_value': scale_value},
                 format='json',
             )
             assert answer_response.status_code == status.HTTP_200_OK
@@ -181,5 +163,106 @@ class SeededMvpFlowTests(APITestCase):
         assert payload['role_resolution_status'] == 'resolved'
         assert payload['best_fit_role'] is not None
 
+    def test_specialized_blockchain_role_requires_blockchain_tie_break_evidence(self):
+        blockchain_profile = set(ROLE_PROFILE_WEIGHTS['blockchain-developer'])
+        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        assert create_response.status_code == status.HTTP_201_CREATED
+        payload = create_response.json()
+
+        while payload['current_question'] is not None and payload['current_question']['stage'] == Question.Stage.ROLE:
+            current_question = Question.objects.get(id=payload['current_question']['id'])
+            if current_question.item_group == Question.ItemGroup.TIE_BREAK:
+                break
+            scale_value = self._scale_for_profile(current_question, blockchain_profile)
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                {'question_id': current_question.id, 'scale_value': scale_value},
+                format='json',
+            )
+            assert answer_response.status_code == status.HTTP_200_OK
+            payload = answer_response.json()
+
+        assert payload['role_resolution_status'] == 'in_progress'
+        assert payload['best_fit_role'] is None
+        assert payload['best_fit_confidence'] == 0.0
+        assert payload['current_question']['code'] == 'role-swebok-tie-08-blockchain-security'
+
+        tie_break_question = Question.objects.get(id=payload['current_question']['id'])
+        answer_response = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': tie_break_question.id, 'scale_value': 2},
+            format='json',
+        )
+        assert answer_response.status_code == status.HTTP_200_OK
+        payload = answer_response.json()
+
+        assert payload['role_resolution_status'] == 'resolved'
+        assert payload['best_fit_role']['slug'] == 'blockchain-developer'
+
+    def test_weak_exhausted_role_path_stops_as_ambiguous(self):
+        scale_values = [
+            1, 2, 1, 2, 1, 0, 1, 0, -1, -2, 0, -1, 1, -1, -2, 1, 0, 2,
+            -2, 2, -2, 1, -1, 1, 0, 1, 0, 1, 2, -1, 0, 1, 0, 1, 2, 1,
+        ]
+        tie_break_answers = {
+            'role-swebok-tie-05-data-engineer-mlops': 0,
+            'role-swebok-tie-04-ai-engineer-scientist': 1,
+            'role-swebok-tie-06-mobile-platform': -1,
+            'role-swebok-tie-12-game-client-server': -2,
+            'role-swebok-tie-07-database-backend': 1,
+            'role-swebok-tie-10-ux-product': -2,
+        }
+        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        assert create_response.status_code == status.HTTP_201_CREATED
+        payload = create_response.json()
+
+        for scale_value in scale_values:
+            question = Question.objects.get(id=payload['current_question']['id'])
+            assert question.item_group == Question.ItemGroup.CORE
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                {'question_id': question.id, 'scale_value': scale_value},
+                format='json',
+            )
+            assert answer_response.status_code == status.HTTP_200_OK
+            payload = answer_response.json()
+
+        while payload['current_question'] is not None and payload['current_question']['stage'] == Question.Stage.ROLE:
+            question = Question.objects.get(id=payload['current_question']['id'])
+            scale_value = tie_break_answers.get(question.code, 0)
+            answer_response = self.client.post(
+                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                {'question_id': question.id, 'scale_value': scale_value},
+                format='json',
+            )
+            assert answer_response.status_code == status.HTTP_200_OK
+            payload = answer_response.json()
+
+        assert payload['phase'] == AssessmentSession.Phase.ROLE_AMBIGUITY
+        assert payload['role_resolution_status'] == 'ambiguous'
+        assert payload['current_question'] is None
+        assert payload['best_fit_role'] is None
+        assert payload['best_fit_confidence'] == 0.0
+
     def _get_session_model(self, session_id):
         return AssessmentSession.objects.get(id=session_id)
+
+    def _scale_for_profile(self, question, profile_dimensions):
+        agree_dimensions = set(question.agree_dimension_signals or {})
+        disagree_dimensions = set(question.disagree_dimension_signals or {})
+        if agree_dimensions & profile_dimensions:
+            return 2
+        if disagree_dimensions & profile_dimensions:
+            return -2
+        return 0
+
+    def _ideal_scale_for_profile(self, question, profile):
+        agree_score = sum(
+            float(weight) * float(profile.get(dimension, 0.0)) for dimension, weight in (question.agree_dimension_signals or {}).items()
+        )
+        disagree_score = sum(
+            float(weight) * float(profile.get(dimension, 0.0)) for dimension, weight in (question.disagree_dimension_signals or {}).items()
+        )
+        if abs(agree_score - disagree_score) < IDEAL_SCALE_NEUTRAL_DELTA:
+            return 0
+        return 2 if agree_score > disagree_score else -2

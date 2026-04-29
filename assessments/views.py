@@ -59,24 +59,46 @@ SESSION_RESPONSE_EXAMPLE = {
     'guidance_summary': 'You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.',
     'current_question': {
         'id': 101,
-        'code': 'role-first-contribution',
+        'code': 'role-likert-build-working-parts',
         'stage': 'role',
-        'question_type': 'single_choice',
-        'prompt': (
-            'A cross-functional team is stuck and only has time to improve one thing today. What kind of contribution would you most want to own?'
-        ),
+        'question_type': 'likert_5',
+        'prompt': 'I enjoy turning an idea into a working technical part.',
         'help_text': '',
         'role': None,
         'topic': None,
         'difficulty': 1,
-        'options': [
+        'options': [],
+        'response_scale': [
             {
-                'id': 201,
-                'key': 'clarify-user-needs',
-                'label': 'Clarify what users or stakeholders actually need before changing the solution',
-                'value': '',
+                'key': 'strongly_agree',
+                'label': 'Strongly agree',
+                'value': 2,
                 'display_order': 1,
-            }
+            },
+            {
+                'key': 'agree',
+                'label': 'Agree',
+                'value': 1,
+                'display_order': 2,
+            },
+            {
+                'key': 'neutral',
+                'label': 'Neutral',
+                'value': 0,
+                'display_order': 3,
+            },
+            {
+                'key': 'disagree',
+                'label': 'Disagree',
+                'value': -1,
+                'display_order': 4,
+            },
+            {
+                'key': 'strongly_disagree',
+                'label': 'Strongly disagree',
+                'value': -2,
+                'display_order': 5,
+            },
         ],
     },
 }
@@ -128,7 +150,7 @@ INSIGHTS_RESPONSE_EXAMPLE = {
 
 ANSWER_REQUEST_EXAMPLE = {
     'question_id': 101,
-    'option_id': 201,
+    'scale_value': 2,
     'response_time_ms': 4200,
     'confidence_indicator': 'high',
 }
@@ -233,13 +255,14 @@ HISTORY_RESPONSE_EXAMPLE = {
         {
             'id': 401,
             'question_id': 101,
-            'question_code': 'role-primary-interest',
-            'question_prompt': 'Which work sounds most interesting?',
+            'question_code': 'role-likert-build-working-parts',
+            'question_prompt': 'I enjoy turning an idea into a working technical part.',
             'question_stage': 'role',
             'topic_slug': None,
-            'selected_option_id': 201,
-            'selected_option_key': 'backend',
-            'selected_option_label': 'Designing APIs and backend services',
+            'selected_option_id': None,
+            'selected_option_key': None,
+            'selected_option_label': None,
+            'scale_value': 2,
             'response_time_ms': 4200,
             'confidence_indicator': 'high',
             'responded_at': '2026-04-17T04:01:00Z',
@@ -503,6 +526,7 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
                 session=session,
                 question=serializer.validated_data['question'],
                 option=serializer.validated_data['option'],
+                scale_value=serializer.validated_data.get('scale_value'),
                 response_time_ms=serializer.validated_data.get('response_time_ms'),
                 confidence_indicator=serializer.validated_data.get('confidence_indicator', ''),
             )

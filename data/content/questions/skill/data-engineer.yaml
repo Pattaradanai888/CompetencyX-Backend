@@ -1,43 +1,43 @@
 skill_questions:
-  - code: data-sql-foundations
+  - code: data-engineer-data-pipeline-construction
     role_slug: data-engineer
-    topic_slug: sql-foundations
+    topic_slug: data-pipeline-construction
     question_type: yes_no_maybe
-    prompt: Can you write SQL queries to filter, join, and aggregate data?
+    prompt: Can you explain the basic work involved in data pipeline construction?
     difficulty: 1
     discrimination_score: 1.8
-    display_order: 51
+    display_order: 21
     options:
       - key: "yes"
         label: Yes
         display_order: 1
-        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 1.0}]
+        topic_signals: [{topic_slug: data-pipeline-construction, mastery_delta: 1.0}]
       - key: "maybe"
         label: Maybe
         display_order: 2
-        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 0.5}]
+        topic_signals: [{topic_slug: data-pipeline-construction, mastery_delta: 0.5}]
       - key: "no"
         label: No
         display_order: 3
-        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 0.0}]
-  - code: data-modeling-foundations
+        topic_signals: [{topic_slug: data-pipeline-construction, mastery_delta: 0.0}]
+  - code: data-engineer-data-platform-operations
     role_slug: data-engineer
-    topic_slug: data-modeling
+    topic_slug: data-platform-operations
     question_type: yes_no_maybe
-    prompt: Can you explain dimensions, facts, keys, and schema design tradeoffs?
+    prompt: Have you practiced a small task related to data platform operations?
     difficulty: 2
     discrimination_score: 2.0
-    display_order: 52
+    display_order: 22
     options:
       - key: "yes"
         label: Yes
         display_order: 1
-        topic_signals: [{topic_slug: data-modeling, mastery_delta: 1.0}]
+        topic_signals: [{topic_slug: data-platform-operations, mastery_delta: 1.0}]
       - key: "maybe"
         label: Maybe
         display_order: 2
-        topic_signals: [{topic_slug: data-modeling, mastery_delta: 0.5}]
+        topic_signals: [{topic_slug: data-platform-operations, mastery_delta: 0.5}]
       - key: "no"
         label: No
         display_order: 3
-        topic_signals: [{topic_slug: data-modeling, mastery_delta: 0.0}]
+        topic_signals: [{topic_slug: data-platform-operations, mastery_delta: 0.0}]

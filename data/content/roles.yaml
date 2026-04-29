@@ -1,64 +1,365 @@
 roles:
-  - slug: frontend-engineer
-    name: Frontend Engineer
-    description: Builds browser-based user interfaces and application experiences.
-  - slug: backend-engineer
-    name: Backend Engineer
-    description: Builds APIs, data flows, and server-side application logic.
-  - slug: full-stack-engineer
-    name: Full-Stack Engineer
-    description: Builds user-facing features and the backend systems behind them.
+  - slug: frontend-developer
+    name: Frontend Developer
+    description: Builds user-facing web interfaces and client-side application behavior.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA3, KA4, KA12]
+    core_tasks:
+      - summary: "Implement responsive UI components and interaction flows"
+        ka_codes: [KA3, KA4]
+      - summary: "Translate UX requirements into usable frontend features"
+        ka_codes: [KA1, KA3]
+      - summary: "Write unit, integration, and accessibility tests"
+        ka_codes: [KA5, KA12]
+      - summary: "Use CI/CD, observability, and AI-assisted coding tools in Agile delivery"
+        ka_codes: [KA6, KA10, KA16]
+  - slug: backend-developer
+    name: Backend Developer
+    description: Builds server-side logic, APIs, services, and business rules.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA2, KA6]
+    core_tasks:
+      - summary: "Design and implement APIs, services, and business logic"
+        ka_codes: [KA2, KA4]
+      - summary: "Integrate databases, queues, caches, and external systems"
+        ka_codes: [KA3, KA4]
+      - summary: "Build automated tests and service quality checks"
+        ka_codes: [KA5, KA12]
+      - summary: "Support DevOps deployment, monitoring, and incident fixes"
+        ka_codes: [KA6, KA7, KA8]
+  - slug: full-stack-developer
+    name: Full Stack Developer
+    description: Develops both frontend and backend parts of a software product.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA3, KA6]
+    core_tasks:
+      - summary: "Build end-to-end features across UI, API, and database layers"
+        ka_codes: [KA3, KA4]
+      - summary: "Convert user stories into working increments in Agile sprints"
+        ka_codes: [KA1, KA10]
+      - summary: "Maintain tests across frontend, backend, and integration points"
+        ka_codes: [KA5, KA12]
+      - summary: "Deploy, monitor, and improve full-stack applications"
+        ka_codes: [KA6, KA7, KA8]
   - slug: devops-engineer
     name: DevOps Engineer
-    description: Owns deployment, automation, observability, and platform reliability.
-  - slug: data-engineer
-    name: Data Engineer
-    description: Builds data pipelines, storage, and processing systems.
-  - slug: mobile-engineer
-    name: Mobile Engineer
-    description: Builds native or cross-platform mobile applications.
-  - slug: qa-test-engineer
-    name: QA / Test Engineer
-    description: Designs quality strategies, automation, and release validation.
-  - slug: cybersecurity-engineer
-    name: Cybersecurity Engineer
-    description: Protects systems through secure design, detection, and incident response.
-  - slug: solutions-architect
-    name: Solutions Architect
-    description: Shapes solution blueprints that connect business needs, systems, and delivery constraints.
-  - slug: system-architect
-    name: System Architect
-    description: Designs system structures, interfaces, reliability boundaries, and technical standards.
-  - slug: systems-analyst
-    name: Systems Analyst
-    description: Turns operational problems into clear process, system, and requirements changes.
-  - slug: product-manager
-    name: Product Manager
-    description: Aligns user problems, business priorities, and product direction.
-  - slug: product-owner
-    name: Product Owner
-    description: Prioritizes backlog decisions and clarifies product delivery outcomes with the team.
-  - slug: project-manager
-    name: Project Manager
-    description: Coordinates scope, delivery plans, dependencies, and stakeholder communication.
-  - slug: business-analyst
-    name: Business Analyst
-    description: Models business needs, workflows, and requirements into actionable change.
+    description: Automates software delivery, infrastructure, deployment, and operational reliability.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA6, KA8, KA10]
+    core_tasks:
+      - summary: "Build CI/CD pipelines and release automation"
+        ka_codes: [KA6, KA8]
+      - summary: "Manage infrastructure as code and deployment environments"
+        ka_codes: [KA6, KA8]
+      - summary: "Improve Agile and DevOps flow, lead time, and release frequency"
+        ka_codes: [KA10, KA9]
+      - summary: "Implement monitoring, rollback, and incident response practices"
+        ka_codes: [KA6, KA12]
+  - slug: devsecops-engineer
+    name: DevSecOps Engineer
+    description: Integrates security practices into DevOps pipelines and software delivery.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA13, KA6, KA8]
+    core_tasks:
+      - summary: "Add SAST, DAST, dependency scanning, and secrets detection to CI/CD"
+        ka_codes: [KA13, KA6]
+      - summary: "Harden infrastructure, containers, cloud services, and pipelines"
+        ka_codes: [KA13, KA8]
+      - summary: "Automate policy checks and compliance gates"
+        ka_codes: [KA12, KA13]
+      - summary: "Support secure Agile delivery with threat modeling and security backlog items"
+        ka_codes: [KA1, KA10, KA13]
   - slug: data-analyst
     name: Data Analyst
-    description: Explains performance and decisions through metrics, queries, and analysis.
-  - slug: ux-ui-designer
-    name: UX/UI Designer
-    description: Designs user journeys, interfaces, and interaction patterns with clarity and intent.
-  - slug: data-scientist
-    name: Data Scientist
-    description: Analyzes data and builds models to extract insights and support decisions.
+    description: Analyzes business and product data to support decision-making.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA16, KA17, KA15]
+    core_tasks:
+      - summary: "Query, clean, and analyze structured datasets"
+        ka_codes: [KA16, KA17]
+      - summary: "Build dashboards, reports, and business metrics"
+        ka_codes: [KA15, KA16]
+      - summary: "Translate stakeholder questions into analytical requirements"
+        ka_codes: [KA1, KA14]
+      - summary: "Use AI-assisted analytics and statistical validation responsibly"
+        ka_codes: [KA16, KA17, KA12]
   - slug: ai-engineer
     name: AI Engineer
-    description: Builds and deploys machine learning models into production software systems.
-  - slug: system-engineer
-    name: System Engineer
-    description: Designs and maintains integrated system infrastructure and platform reliability.
-  - slug: sap-erp-consultant
-    name: SAP/ERP Consultant
-    description: Configures and optimizes enterprise resource planning systems to match business needs.
+    description: Builds AI-enabled software systems that integrate models into real applications.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA16, KA4, KA2]
+    core_tasks:
+      - summary: "Integrate LLMs, ML models, APIs, and AI services into products"
+        ka_codes: [KA16, KA4]
+      - summary: "Design AI system architecture, data flow, and model-serving patterns"
+        ka_codes: [KA2, KA3]
+      - summary: "Evaluate model quality, latency, reliability, and safety"
+        ka_codes: [KA12, KA13, KA16]
+      - summary: "Deploy AI features through DevOps and MLOps pipelines"
+        ka_codes: [KA6, KA8, KA10]
+  - slug: ai-data-scientist
+    name: AI and Data Scientist
+    description: Develops analytical, statistical, and machine learning models to solve business or product problems.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA16, KA17, KA11]
+    core_tasks:
+      - summary: "Explore data, engineer features, and build predictive models"
+        ka_codes: [KA16, KA17]
+      - summary: "Select algorithms, validate assumptions, and evaluate model performance"
+        ka_codes: [KA11, KA12, KA17]
+      - summary: "Communicate model insights and trade-offs to stakeholders"
+        ka_codes: [KA14, KA15]
+      - summary: "Collaborate with engineers to productionize AI models"
+        ka_codes: [KA4, KA6, KA8]
+  - slug: data-engineer
+    name: Data Engineer
+    description: Builds data pipelines, data platforms, and reliable data infrastructure.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA6, KA16]
+    core_tasks:
+      - summary: "Build ETL and ELT pipelines and data processing workflows"
+        ka_codes: [KA4, KA16]
+      - summary: "Design data models, storage layers, and integration patterns"
+        ka_codes: [KA2, KA3]
+      - summary: "Ensure data reliability, lineage, testing, and quality"
+        ka_codes: [KA5, KA12]
+      - summary: "Operate pipelines with CI/CD, orchestration, and monitoring"
+        ka_codes: [KA6, KA8]
+  - slug: android-developer
+    name: Android Developer
+    description: Builds mobile applications for the Android platform.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA3, KA5]
+    core_tasks:
+      - summary: "Implement Android screens, navigation, state management, and device integrations"
+        ka_codes: [KA3, KA4]
+      - summary: "Translate product requirements into mobile features"
+        ka_codes: [KA1, KA4]
+      - summary: "Test UI, device compatibility, performance, and offline behavior"
+        ka_codes: [KA5, KA12]
+      - summary: "Use mobile CI/CD, app release management, and AI-assisted coding"
+        ka_codes: [KA6, KA8, KA16]
+  - slug: machine-learning-engineer
+    name: Machine Learning Engineer
+    description: Engineers machine learning models and deploys them into production systems.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA16, KA4, KA6]
+    core_tasks:
+      - summary: "Build, train, tune, and evaluate ML models"
+        ka_codes: [KA16, KA17]
+      - summary: "Convert prototypes into production-ready ML services"
+        ka_codes: [KA4, KA6]
+      - summary: "Create automated model testing, validation, and monitoring"
+        ka_codes: [KA5, KA12]
+      - summary: "Manage model versioning, pipelines, and deployment workflows"
+        ka_codes: [KA8, KA10]
+  - slug: postgresql-developer-dba
+    name: PostgreSQL Developer / DBA
+    description: Designs, optimizes, secures, and operates PostgreSQL databases.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA6, KA12]
+    core_tasks:
+      - summary: "Design schemas, indexes, queries, stored procedures, and data constraints"
+        ka_codes: [KA3, KA4]
+      - summary: "Optimize performance, backup, replication, and availability"
+        ka_codes: [KA6, KA12]
+      - summary: "Manage database configuration, migrations, and version control"
+        ka_codes: [KA8, KA7]
+      - summary: "Support secure data access, auditing, and compliance"
+        ka_codes: [KA13, KA14]
+  - slug: ios-developer
+    name: iOS Developer
+    description: Builds mobile applications for Apple platforms.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA3, KA5]
+    core_tasks:
+      - summary: "Implement iOS interfaces, app logic, persistence, and platform integrations"
+        ka_codes: [KA3, KA4]
+      - summary: "Convert user stories into mobile application features"
+        ka_codes: [KA1, KA10]
+      - summary: "Test usability, performance, accessibility, and device compatibility"
+        ka_codes: [KA5, KA12]
+      - summary: "Manage app releases, CI/CD, and production crash monitoring"
+        ka_codes: [KA6, KA8]
+  - slug: blockchain-developer
+    name: Blockchain Developer
+    description: Builds decentralized applications, smart contracts, and blockchain integrations.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA13, KA2]
+    core_tasks:
+      - summary: "Develop smart contracts, tokens, wallets, and decentralized application logic"
+        ka_codes: [KA4, KA2]
+      - summary: "Design secure transaction flows and consensus-aware system behavior"
+        ka_codes: [KA2, KA13]
+      - summary: "Test contracts for vulnerabilities, edge cases, and economic risks"
+        ka_codes: [KA5, KA12, KA15]
+      - summary: "Deploy and maintain blockchain applications through controlled release processes"
+        ka_codes: [KA6, KA8]
+  - slug: qa-engineer
+    name: QA Engineer
+    description: Ensures software quality through testing, validation, and process improvement.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA5, KA12, KA10]
+    core_tasks:
+      - summary: "Design test plans, test cases, and acceptance criteria"
+        ka_codes: [KA1, KA5]
+      - summary: "Perform manual, automated, regression, and exploratory testing"
+        ka_codes: [KA5, KA12]
+      - summary: "Integrate testing into Agile and CI/CD workflows"
+        ka_codes: [KA6, KA10]
+      - summary: "Track defects, analyze root causes, and improve quality processes"
+        ka_codes: [KA7, KA12]
+  - slug: software-architect
+    name: Software Architect
+    description: Defines the high-level structure, technical direction, and quality attributes of software systems.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA2, KA3, KA12]
+    core_tasks:
+      - summary: "Define system architecture, components, interfaces, and technical constraints"
+        ka_codes: [KA2, KA3]
+      - summary: "Evaluate trade-offs for scalability, reliability, security, and maintainability"
+        ka_codes: [KA12, KA13, KA15]
+      - summary: "Guide teams on design standards, integration patterns, and technology choices"
+        ka_codes: [KA3, KA14]
+      - summary: "Support Agile architecture evolution and DevOps-ready system design"
+        ka_codes: [KA6, KA10]
+  - slug: cyber-security-engineer-analyst
+    name: Cyber Security Engineer / Analyst
+    description: Protects software systems, data, infrastructure, and users from security risks.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA13, KA6, KA12]
+    core_tasks:
+      - summary: "Perform threat modeling, vulnerability assessment, and risk analysis"
+        ka_codes: [KA13, KA12]
+      - summary: "Secure applications, APIs, cloud environments, and identities"
+        ka_codes: [KA13, KA6]
+      - summary: "Monitor incidents, investigate alerts, and support response processes"
+        ka_codes: [KA6, KA7]
+      - summary: "Embed security requirements into Agile and DevSecOps workflows"
+        ka_codes: [KA1, KA10, KA13]
+  - slug: ux-designer
+    name: UX Designer
+    description: Designs user experiences, interaction flows, prototypes, and usability improvements.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA1, KA3, KA12]
+    core_tasks:
+      - summary: "Research user needs, journeys, pain points, and usability constraints"
+        ka_codes: [KA1, KA14]
+      - summary: "Create wireframes, prototypes, information architecture, and interaction designs"
+        ka_codes: [KA3]
+      - summary: "Validate designs through usability testing and accessibility review"
+        ka_codes: [KA5, KA12]
+      - summary: "Collaborate with Agile teams to refine backlog items and acceptance criteria"
+        ka_codes: [KA10, KA1]
+  - slug: technical-writer
+    name: Technical Writer
+    description: Creates technical documentation for users, developers, operations teams, and stakeholders.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA14, KA1, KA7]
+    core_tasks:
+      - summary: "Produce API docs, user guides, release notes, and system documentation"
+        ka_codes: [KA14, KA7]
+      - summary: "Translate technical requirements and designs into understandable documentation"
+        ka_codes: [KA1, KA3]
+      - summary: "Maintain documentation through version control and release processes"
+        ka_codes: [KA8, KA7]
+      - summary: "Use AI-assisted writing while preserving accuracy, reviewability, and governance"
+        ka_codes: [KA12, KA14, KA16]
+  - slug: game-developer
+    name: Game Developer
+    description: Builds gameplay systems, mechanics, UI, physics, and interactive game features.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA3, KA16]
+    core_tasks:
+      - summary: "Implement gameplay mechanics, UI, physics, animation, and game logic"
+        ka_codes: [KA3, KA4]
+      - summary: "Optimize performance across devices, engines, and runtime environments"
+        ka_codes: [KA12, KA16]
+      - summary: "Test gameplay behavior, balance, stability, and user experience"
+        ka_codes: [KA5, KA12]
+      - summary: "Use Agile iteration, build pipelines, and AI-assisted content workflows"
+        ka_codes: [KA6, KA10, KA16]
+  - slug: server-side-game-developer
+    name: Server Side Game Developer
+    description: Builds backend services for multiplayer, matchmaking, game state, accounts, and live operations.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA4, KA6, KA2]
+    core_tasks:
+      - summary: "Build multiplayer services, matchmaking, leaderboards, and game APIs"
+        ka_codes: [KA2, KA4]
+      - summary: "Design scalable real-time systems and persistent game state"
+        ka_codes: [KA2, KA3]
+      - summary: "Monitor latency, availability, cheating, and live-service reliability"
+        ka_codes: [KA6, KA12, KA13]
+      - summary: "Support DevOps release pipelines and incident response for live games"
+        ka_codes: [KA6, KA8, KA10]
+  - slug: mlops-engineer
+    name: MLOps Engineer
+    description: Builds infrastructure and processes for deploying, monitoring, and governing machine learning systems.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA6, KA8, KA16]
+    core_tasks:
+      - summary: "Build model training, deployment, and monitoring pipelines"
+        ka_codes: [KA6, KA16]
+      - summary: "Manage model versions, datasets, experiments, and reproducibility"
+        ka_codes: [KA8, KA12]
+      - summary: "Automate validation, drift detection, rollback, and retraining workflows"
+        ka_codes: [KA5, KA6, KA12]
+      - summary: "Align ML delivery with Agile, DevOps, governance, and security practices"
+        ka_codes: [KA10, KA13, KA14]
+  - slug: product-manager
+    name: Product Manager
+    description: Defines product direction, prioritizes value, and aligns software delivery with user and business needs.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA1, KA15, KA9]
+    core_tasks:
+      - summary: "Discover user problems, define requirements, and prioritize backlog items"
+        ka_codes: [KA1, KA10]
+      - summary: "Evaluate business value, trade-offs, cost, and product impact"
+        ka_codes: [KA15, KA9]
+      - summary: "Coordinate stakeholders, engineers, UX, QA, and operations"
+        ka_codes: [KA9, KA14]
+      - summary: "Guide AI-enabled features, metrics, experimentation, and responsible adoption"
+        ka_codes: [KA16, KA12, KA15]
+  - slug: engineering-manager
+    name: Engineering Manager
+    description: Leads engineering teams, delivery execution, technical health, and people development.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA9, KA10, KA14]
+    core_tasks:
+      - summary: "Manage delivery planning, team capacity, risks, and dependencies"
+        ka_codes: [KA9, KA10]
+      - summary: "Improve Agile process, engineering standards, and team productivity"
+        ka_codes: [KA10, KA12]
+      - summary: "Support hiring, coaching, performance, and professional practice"
+        ka_codes: [KA14, KA9]
+      - summary: "Promote DevOps maturity, technical quality, and responsible AI tool use"
+        ka_codes: [KA6, KA12, KA16]
+  - slug: developer-relations
+    name: Developer Relations
+    description: Supports developer communities through education, advocacy, documentation, demos, and feedback loops.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA14, KA1, KA4]
+    core_tasks:
+      - summary: "Create sample apps, tutorials, SDK examples, and technical demos"
+        ka_codes: [KA4, KA14]
+      - summary: "Gather developer feedback and translate it into product requirements"
+        ka_codes: [KA1, KA14]
+      - summary: "Support API usability, documentation quality, and onboarding experience"
+        ka_codes: [KA12, KA14]
+      - summary: "Explain DevOps, AI integration, and platform best practices to developers"
+        ka_codes: [KA6, KA16]
+  - slug: bi-analyst
+    name: BI Analyst
+    description: Converts business data into dashboards, reports, KPIs, and decision-support insights.
+    swebok_source_version: SWEBOK V4.0
+    top_ka_codes: [KA15, KA16, KA17]
+    core_tasks:
+      - summary: "Define KPIs, metrics, dashboards, and reporting requirements"
+        ka_codes: [KA1, KA15]
+      - summary: "Build BI reports using SQL, semantic models, and visualization tools"
+        ka_codes: [KA16, KA17]
+      - summary: "Validate data quality, business logic, and metric consistency"
+        ka_codes: [KA12, KA5]
+      - summary: "Use AI-assisted analytics and forecasting to support business decisions"
+        ka_codes: [KA16, KA17, KA15]

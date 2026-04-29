@@ -81,9 +81,12 @@ class Answer(models.Model):
     )
     selected_option = models.ForeignKey(
         QuestionOption,
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name='answers',
     )
+    scale_value = models.SmallIntegerField(null=True, blank=True)
     response_time_ms = models.PositiveIntegerField(null=True, blank=True)
     confidence_indicator = models.CharField(
         max_length=16,

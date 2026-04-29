@@ -1,390 +1,521 @@
 topics:
-  - role_slug: frontend-engineer
-    slug: html-css
-    title: HTML and CSS Fundamentals
-    description: Structure pages and style interfaces with maintainable CSS.
+  - role_slug: frontend-developer
+    slug: frontend-interface-foundations
+    title: Frontend Interface Foundations
+    description: Build beginner competency in frontend interface foundations.
     display_order: 1
-  - role_slug: frontend-engineer
-    slug: javascript
-    title: JavaScript Fundamentals
-    description: Work with core language features, DOM APIs, and browser execution.
-    display_order: 2
-    prerequisites: [html-css]
-  - role_slug: frontend-engineer
-    slug: frontend-testing
-    title: Frontend Testing
-    description: Validate UI behavior with component and end-to-end testing.
-    display_order: 3
-    prerequisites: [javascript]
 
-  - role_slug: backend-engineer
-    slug: http
-    title: HTTP Fundamentals
-    description: Understand requests, responses, status codes, and API semantics.
-    display_order: 1
-    external_source: roadmap.sh
-    external_id: backend-http
-    external_slug: http
-    source_version: demo-v1
-  - role_slug: backend-engineer
-    slug: databases
-    title: Databases
-    description: Model data, query efficiently, and understand relational concepts.
+  - role_slug: frontend-developer
+    slug: client-application-construction
+    title: Client Application Construction
+    description: Build beginner competency in client application construction.
     display_order: 2
-    prerequisites: [http]
-    external_source: roadmap.sh
-    external_id: backend-databases
-    external_slug: databases
-    source_version: demo-v1
-  - role_slug: backend-engineer
-    slug: apis
-    title: API Design
-    description: Design web APIs with clear resources, validation, and versioning.
-    display_order: 3
-    prerequisites: [databases]
-    external_source: roadmap.sh
-    external_id: backend-apis
-    external_slug: apis
-    source_version: demo-v1
+    prerequisites: [frontend-interface-foundations]
 
-  - role_slug: full-stack-engineer
-    slug: ui-foundations
-    title: UI Foundations
-    description: Build interfaces with semantic markup and component thinking.
-    display_order: 1
-  - role_slug: full-stack-engineer
-    slug: api-foundations
-    title: API Foundations
-    description: Create backend routes and handle common integration patterns.
-    display_order: 2
-    prerequisites: [ui-foundations]
-  - role_slug: full-stack-engineer
-    slug: full-stack-integration
-    title: Full-Stack Integration
-    description: Connect frontend and backend features into complete user flows.
+  - role_slug: frontend-developer
+    slug: frontend-quality-and-accessibility
+    title: Frontend Quality and Accessibility
+    description: Build beginner competency in frontend quality and accessibility.
     display_order: 3
-    prerequisites: [api-foundations]
+    prerequisites: [client-application-construction]
+
+  - role_slug: backend-developer
+    slug: api-and-service-architecture
+    title: API and Service Architecture
+    description: Build beginner competency in api and service architecture.
+    display_order: 1
+
+  - role_slug: backend-developer
+    slug: backend-construction
+    title: Backend Construction
+    description: Build beginner competency in backend construction.
+    display_order: 2
+    prerequisites: [api-and-service-architecture]
+
+  - role_slug: backend-developer
+    slug: runtime-operations
+    title: Runtime Operations
+    description: Build beginner competency in runtime operations.
+    display_order: 3
+    prerequisites: [backend-construction]
+
+  - role_slug: full-stack-developer
+    slug: product-interface-design
+    title: Product Interface Design
+    description: Build beginner competency in product interface design.
+    display_order: 1
+
+  - role_slug: full-stack-developer
+    slug: full-stack-construction
+    title: Full-Stack Construction
+    description: Build beginner competency in full-stack construction.
+    display_order: 2
+    prerequisites: [product-interface-design]
+
+  - role_slug: full-stack-developer
+    slug: application-operations
+    title: Application Operations
+    description: Build beginner competency in application operations.
+    display_order: 3
+    prerequisites: [full-stack-construction]
 
   - role_slug: devops-engineer
-    slug: linux-shell
-    title: Linux and Shell Basics
-    description: Navigate systems, inspect processes, and automate simple shell tasks.
+    slug: operations-foundations
+    title: Operations Foundations
+    description: Build beginner competency in operations foundations.
     display_order: 1
+
   - role_slug: devops-engineer
-    slug: ci-cd
-    title: CI/CD Foundations
-    description: Build and ship code changes safely with automated pipelines.
+    slug: configuration-and-release-automation
+    title: Configuration and Release Automation
+    description: Build beginner competency in configuration and release automation.
     display_order: 2
-    prerequisites: [linux-shell]
+    prerequisites: [operations-foundations]
+
   - role_slug: devops-engineer
-    slug: deployment-observability
-    title: Deployment and Observability
-    description: Deploy services and observe health, logs, and runtime behavior.
+    slug: devops-process-improvement
+    title: DevOps Process Improvement
+    description: Build beginner competency in devops process improvement.
     display_order: 3
-    prerequisites: [ci-cd]
+    prerequisites: [configuration-and-release-automation]
 
-  - role_slug: data-engineer
-    slug: sql-foundations
-    title: SQL Foundations
-    description: Query and transform structured data with relational tools.
+  - role_slug: devsecops-engineer
+    slug: security-automation
+    title: Security Automation
+    description: Build beginner competency in security automation.
     display_order: 1
-  - role_slug: data-engineer
-    slug: data-modeling
-    title: Data Modeling
-    description: Design schemas and reason about reliable analytical structures.
-    display_order: 2
-    prerequisites: [sql-foundations]
-  - role_slug: data-engineer
-    slug: data-pipelines
-    title: Data Pipelines
-    description: Move, schedule, and validate data through repeatable workflows.
-    display_order: 3
-    prerequisites: [data-modeling]
 
-  - role_slug: mobile-engineer
-    slug: mobile-ui
-    title: Mobile UI Basics
-    description: Build layouts and navigation patterns suited to mobile devices.
+  - role_slug: devsecops-engineer
+    slug: secure-operations
+    title: Secure Operations
+    description: Build beginner competency in secure operations.
+    display_order: 2
+    prerequisites: [security-automation]
+
+  - role_slug: devsecops-engineer
+    slug: policy-and-configuration-controls
+    title: Policy and Configuration Controls
+    description: Build beginner competency in policy and configuration controls.
+    display_order: 3
+    prerequisites: [secure-operations]
+
+  - role_slug: data-analyst
+    slug: analytical-requirements
+    title: Analytical Requirements
+    description: Build beginner competency in analytical requirements.
     display_order: 1
-  - role_slug: mobile-engineer
-    slug: mobile-state
-    title: Mobile State Management
-    description: Manage local UI state and asynchronous screen updates.
-    display_order: 2
-    prerequisites: [mobile-ui]
-  - role_slug: mobile-engineer
-    slug: mobile-api-integration
-    title: Mobile API Integration
-    description: Connect mobile apps to backend APIs and synchronize data.
-    display_order: 3
-    prerequisites: [mobile-state]
 
-  - role_slug: qa-test-engineer
+  - role_slug: data-analyst
+    slug: data-analysis-foundations
+    title: Data Analysis Foundations
+    description: Build beginner competency in data analysis foundations.
+    display_order: 2
+    prerequisites: [analytical-requirements]
+
+  - role_slug: data-analyst
+    slug: business-metrics-and-decisions
+    title: Business Metrics and Decisions
+    description: Build beginner competency in business metrics and decisions.
+    display_order: 3
+    prerequisites: [data-analysis-foundations]
+
+  - role_slug: ai-engineer
+    slug: ai-product-architecture
+    title: AI Product Architecture
+    description: Build beginner competency in ai product architecture.
+    display_order: 1
+
+  - role_slug: ai-engineer
+    slug: ai-feature-construction
+    title: AI Feature Construction
+    description: Build beginner competency in ai feature construction.
+    display_order: 2
+    prerequisites: [ai-product-architecture]
+
+  - role_slug: ai-engineer
+    slug: ai-quality-and-safety
+    title: AI Quality and Safety
+    description: Build beginner competency in ai quality and safety.
+    display_order: 3
+    prerequisites: [ai-feature-construction]
+
+  - role_slug: ai-data-scientist
+    slug: data-science-methods
+    title: Data Science Methods
+    description: Build beginner competency in data science methods.
+    display_order: 1
+
+  - role_slug: ai-data-scientist
+    slug: statistical-model-evaluation
+    title: Statistical Model Evaluation
+    description: Build beginner competency in statistical model evaluation.
+    display_order: 2
+    prerequisites: [data-science-methods]
+
+  - role_slug: ai-data-scientist
+    slug: model-insight-communication
+    title: Model Insight Communication
+    description: Build beginner competency in model insight communication.
+    display_order: 3
+    prerequisites: [statistical-model-evaluation]
+
+  - role_slug: data-engineer
+    slug: data-pipeline-construction
+    title: Data Pipeline Construction
+    description: Build beginner competency in data pipeline construction.
+    display_order: 1
+
+  - role_slug: data-engineer
+    slug: data-platform-operations
+    title: Data Platform Operations
+    description: Build beginner competency in data platform operations.
+    display_order: 2
+    prerequisites: [data-pipeline-construction]
+
+  - role_slug: data-engineer
+    slug: data-quality-controls
+    title: Data Quality Controls
+    description: Build beginner competency in data quality controls.
+    display_order: 3
+    prerequisites: [data-platform-operations]
+
+  - role_slug: android-developer
+    slug: android-interface-design
+    title: Android Interface Design
+    description: Build beginner competency in android interface design.
+    display_order: 1
+
+  - role_slug: android-developer
+    slug: android-feature-construction
+    title: Android Feature Construction
+    description: Build beginner competency in android feature construction.
+    display_order: 2
+    prerequisites: [android-interface-design]
+
+  - role_slug: android-developer
+    slug: android-testing-and-release
+    title: Android Testing and Release
+    description: Build beginner competency in android testing and release.
+    display_order: 3
+    prerequisites: [android-feature-construction]
+
+  - role_slug: machine-learning-engineer
+    slug: ml-model-engineering
+    title: ML Model Engineering
+    description: Build beginner competency in ml model engineering.
+    display_order: 1
+
+  - role_slug: machine-learning-engineer
+    slug: production-ml-services
+    title: Production ML Services
+    description: Build beginner competency in production ml services.
+    display_order: 2
+    prerequisites: [ml-model-engineering]
+
+  - role_slug: machine-learning-engineer
+    slug: model-validation-and-monitoring
+    title: Model Validation and Monitoring
+    description: Build beginner competency in model validation and monitoring.
+    display_order: 3
+    prerequisites: [production-ml-services]
+
+  - role_slug: postgresql-developer-dba
+    slug: postgresql-schema-design
+    title: PostgreSQL Schema Design
+    description: Build beginner competency in postgresql schema design.
+    display_order: 1
+
+  - role_slug: postgresql-developer-dba
+    slug: database-operations
+    title: Database Operations
+    description: Build beginner competency in database operations.
+    display_order: 2
+    prerequisites: [postgresql-schema-design]
+
+  - role_slug: postgresql-developer-dba
+    slug: database-quality-and-security
+    title: Database Quality and Security
+    description: Build beginner competency in database quality and security.
+    display_order: 3
+    prerequisites: [database-operations]
+
+  - role_slug: ios-developer
+    slug: ios-interface-design
+    title: iOS Interface Design
+    description: Build beginner competency in ios interface design.
+    display_order: 1
+
+  - role_slug: ios-developer
+    slug: ios-feature-construction
+    title: iOS Feature Construction
+    description: Build beginner competency in ios feature construction.
+    display_order: 2
+    prerequisites: [ios-interface-design]
+
+  - role_slug: ios-developer
+    slug: ios-testing-and-release
+    title: iOS Testing and Release
+    description: Build beginner competency in ios testing and release.
+    display_order: 3
+    prerequisites: [ios-feature-construction]
+
+  - role_slug: blockchain-developer
+    slug: smart-contract-construction
+    title: Smart Contract Construction
+    description: Build beginner competency in smart contract construction.
+    display_order: 1
+
+  - role_slug: blockchain-developer
+    slug: blockchain-architecture
+    title: Blockchain Architecture
+    description: Build beginner competency in blockchain architecture.
+    display_order: 2
+    prerequisites: [smart-contract-construction]
+
+  - role_slug: blockchain-developer
+    slug: blockchain-security-and-economics
+    title: Blockchain Security and Economics
+    description: Build beginner competency in blockchain security and economics.
+    display_order: 3
+    prerequisites: [blockchain-architecture]
+
+  - role_slug: qa-engineer
     slug: test-design
     title: Test Design
-    description: Turn requirements into concrete, high-signal test cases.
+    description: Build beginner competency in test design.
     display_order: 1
-  - role_slug: qa-test-engineer
-    slug: test-automation
-    title: Test Automation
-    description: Automate validation for repeatable product and regression checks.
+
+  - role_slug: qa-engineer
+    slug: quality-validation
+    title: Quality Validation
+    description: Build beginner competency in quality validation.
     display_order: 2
     prerequisites: [test-design]
-  - role_slug: qa-test-engineer
-    slug: release-quality
-    title: Release Quality
-    description: Assess release risk and verify product quality before shipping.
-    display_order: 3
-    prerequisites: [test-automation]
 
-  - role_slug: cybersecurity-engineer
-    slug: security-basics
-    title: Security Basics
-    description: Understand common threats, attack surfaces, and secure design concepts.
+  - role_slug: qa-engineer
+    slug: process-based-quality-improvement
+    title: Process-Based Quality Improvement
+    description: Build beginner competency in process-based quality improvement.
+    display_order: 3
+    prerequisites: [quality-validation]
+
+  - role_slug: software-architect
+    slug: software-architecture-foundations
+    title: Software Architecture Foundations
+    description: Build beginner competency in software architecture foundations.
     display_order: 1
-  - role_slug: cybersecurity-engineer
-    slug: web-security
-    title: Web Security
-    description: Identify and mitigate common web application vulnerabilities.
+
+  - role_slug: software-architect
+    slug: design-trade-offs
+    title: Design Trade-Offs
+    description: Build beginner competency in design trade-offs.
     display_order: 2
-    prerequisites: [security-basics]
-  - role_slug: cybersecurity-engineer
-    slug: incident-response
-    title: Incident Response
-    description: Triage suspicious activity and respond to concrete security events.
-    display_order: 3
-    prerequisites: [web-security]
+    prerequisites: [software-architecture-foundations]
 
-  - role_slug: solutions-architect
-    slug: solution-discovery
-    title: Solution Discovery
-    description: Translate business needs and constraints into solution options.
+  - role_slug: software-architect
+    slug: quality-attribute-decisions
+    title: Quality Attribute Decisions
+    description: Build beginner competency in quality attribute decisions.
+    display_order: 3
+    prerequisites: [design-trade-offs]
+
+  - role_slug: cyber-security-engineer-analyst
+    slug: security-risk-analysis
+    title: Security Risk Analysis
+    description: Build beginner competency in security risk analysis.
     display_order: 1
-  - role_slug: solutions-architect
-    slug: integration-patterns
-    title: Integration Patterns
-    description: Design how systems exchange data, events, and responsibilities.
+
+  - role_slug: cyber-security-engineer-analyst
+    slug: secure-operations
+    title: Secure Operations
+    description: Build beginner competency in secure operations.
     display_order: 2
-    prerequisites: [solution-discovery]
-  - role_slug: solutions-architect
-    slug: solution-governance
-    title: Solution Governance
-    description: Balance tradeoffs across cost, risk, scalability, and maintainability.
-    display_order: 3
-    prerequisites: [integration-patterns]
+    prerequisites: [security-risk-analysis]
 
-  - role_slug: system-architect
-    slug: architecture-principles
-    title: Architecture Principles
-    description: Define structural principles, boundaries, and technical standards.
-    display_order: 1
-  - role_slug: system-architect
-    slug: system-integration
-    title: System Integration Design
-    description: Model interfaces, dependencies, and failure boundaries across systems.
-    display_order: 2
-    prerequisites: [architecture-principles]
-  - role_slug: system-architect
-    slug: reliability-by-design
-    title: Reliability by Design
-    description: Shape resilience, security, and scalability into the architecture.
+  - role_slug: cyber-security-engineer-analyst
+    slug: incident-response-and-improvement
+    title: Incident Response and Improvement
+    description: Build beginner competency in incident response and improvement.
     display_order: 3
-    prerequisites: [system-integration]
+    prerequisites: [secure-operations]
 
-  - role_slug: systems-analyst
-    slug: process-mapping
-    title: Process Mapping
-    description: Capture how work, information, and decisions currently flow.
+  - role_slug: ux-designer
+    slug: user-requirements-research
+    title: User Requirements Research
+    description: Build beginner competency in user requirements research.
     display_order: 1
-  - role_slug: systems-analyst
-    slug: requirements-analysis
-    title: Requirements Analysis
-    description: Turn stakeholder problems into clear functional and system requirements.
-    display_order: 2
-    prerequisites: [process-mapping]
-  - role_slug: systems-analyst
-    slug: system-change-analysis
-    title: System Change Analysis
-    description: Assess impacts, dependencies, and tradeoffs for proposed changes.
-    display_order: 3
-    prerequisites: [requirements-analysis]
 
-  - role_slug: product-manager
-    slug: product-discovery
-    title: Product Discovery
-    description: Clarify problems, users, and outcomes worth pursuing.
-    display_order: 1
-  - role_slug: product-manager
-    slug: prioritization
-    title: Prioritization and Tradeoffs
-    description: Balance opportunities against constraints, risk, and strategic value.
-    display_order: 2
-    prerequisites: [product-discovery]
-  - role_slug: product-manager
-    slug: product-delivery
-    title: Product Delivery Alignment
-    description: Drive delivery decisions with clear outcomes and stakeholder alignment.
-    display_order: 3
-    prerequisites: [prioritization]
-
-  - role_slug: product-owner
-    slug: backlog-management
-    title: Backlog Management
-    description: Structure work into clear, prioritized items the team can deliver.
-    display_order: 1
-  - role_slug: product-owner
-    slug: acceptance-criteria
-    title: Acceptance Criteria
-    description: Turn intent into testable, team-ready delivery expectations.
-    display_order: 2
-    prerequisites: [backlog-management]
-  - role_slug: product-owner
-    slug: release-planning
-    title: Release Planning
-    description: Sequence scope decisions into coherent releases and increments.
-    display_order: 3
-    prerequisites: [acceptance-criteria]
-
-  - role_slug: project-manager
-    slug: project-planning
-    title: Project Planning
-    description: Build plans, milestones, and dependency views that keep work moving.
-    display_order: 1
-  - role_slug: project-manager
-    slug: risk-tracking
-    title: Risk and Dependency Tracking
-    description: Surface blockers, risks, and coordination issues before they widen.
-    display_order: 2
-    prerequisites: [project-planning]
-  - role_slug: project-manager
-    slug: stakeholder-reporting
-    title: Stakeholder Reporting
-    description: Communicate delivery status, changes, and decisions clearly.
-    display_order: 3
-    prerequisites: [risk-tracking]
-
-  - role_slug: business-analyst
-    slug: stakeholder-discovery
-    title: Stakeholder Discovery
-    description: Understand objectives, constraints, and decision needs across teams.
-    display_order: 1
-  - role_slug: business-analyst
-    slug: business-requirements
-    title: Business Requirements
-    description: Convert needs into structured requirements, rules, and priorities.
-    display_order: 2
-    prerequisites: [stakeholder-discovery]
-  - role_slug: business-analyst
-    slug: process-improvement
-    title: Process Improvement
-    description: Recommend better workflows, controls, and operational decisions.
-    display_order: 3
-    prerequisites: [business-requirements]
-
-  - role_slug: data-analyst
-    slug: data-querying
-    title: Data Querying
-    description: Pull and shape data from source systems for analysis.
-    display_order: 1
-  - role_slug: data-analyst
-    slug: dashboarding
-    title: Dashboarding and Reporting
-    description: Communicate trends and performance through visual reporting.
-    display_order: 2
-    prerequisites: [data-querying]
-  - role_slug: data-analyst
-    slug: decision-analysis
-    title: Decision Analysis
-    description: Turn patterns and metrics into recommendations that guide choices.
-    display_order: 3
-    prerequisites: [dashboarding]
-
-  - role_slug: ux-ui-designer
-    slug: user-research
-    title: User Research
-    description: Learn what people need, where they struggle, and what matters to them.
-    display_order: 1
-  - role_slug: ux-ui-designer
+  - role_slug: ux-designer
     slug: interaction-design
     title: Interaction Design
-    description: Shape flows, states, and interactions that feel clear and deliberate.
+    description: Build beginner competency in interaction design.
     display_order: 2
-    prerequisites: [user-research]
-  - role_slug: ux-ui-designer
-    slug: design-systems
-    title: Design Systems
-    description: Create consistent interface patterns and reusable design decisions.
+    prerequisites: [user-requirements-research]
+
+  - role_slug: ux-designer
+    slug: usability-and-accessibility-validation
+    title: Usability and Accessibility Validation
+    description: Build beginner competency in usability and accessibility validation.
     display_order: 3
     prerequisites: [interaction-design]
 
-  - role_slug: data-scientist
-    slug: statistics-foundations
-    title: Statistics Foundations
-    description: Understand probability, distributions, and hypothesis testing for data analysis.
+  - role_slug: technical-writer
+    slug: technical-documentation-practice
+    title: Technical Documentation Practice
+    description: Build beginner competency in technical documentation practice.
     display_order: 1
-  - role_slug: data-scientist
-    slug: exploratory-analysis
-    title: Exploratory Data Analysis
-    description: Clean, visualize, and summarize datasets to reveal patterns and relationships.
-    display_order: 2
-    prerequisites: [statistics-foundations]
-  - role_slug: data-scientist
-    slug: predictive-modeling
-    title: Predictive Modeling
-    description: Build and evaluate models that forecast outcomes from structured data.
-    display_order: 3
-    prerequisites: [exploratory-analysis]
 
-  - role_slug: ai-engineer
-    slug: ml-foundations
-    title: ML Foundations
-    description: Understand core machine learning algorithms, training loops, and evaluation metrics.
-    display_order: 1
-  - role_slug: ai-engineer
-    slug: model-engineering
-    title: Model Engineering
-    description: Train, tune, and validate ML models for real-world tasks.
+  - role_slug: technical-writer
+    slug: requirements-and-design-communication
+    title: Requirements and Design Communication
+    description: Build beginner competency in requirements and design communication.
     display_order: 2
-    prerequisites: [ml-foundations]
-  - role_slug: ai-engineer
-    slug: ml-deployment
-    title: ML Deployment
-    description: Package and serve ML models so other software can use them reliably.
-    display_order: 3
-    prerequisites: [model-engineering]
+    prerequisites: [technical-documentation-practice]
 
-  - role_slug: system-engineer
-    slug: infrastructure-basics
-    title: Infrastructure Basics
-    description: Understand servers, networking, and how system components communicate.
-    display_order: 1
-  - role_slug: system-engineer
-    slug: system-integration
-    title: System Integration
-    description: Connect diverse systems and manage interfaces between components.
-    display_order: 2
-    prerequisites: [infrastructure-basics]
-  - role_slug: system-engineer
-    slug: platform-reliability
-    title: Platform Reliability
-    description: Monitor, troubleshoot, and improve the reliability of integrated platforms.
+  - role_slug: technical-writer
+    slug: documentation-maintenance
+    title: Documentation Maintenance
+    description: Build beginner competency in documentation maintenance.
     display_order: 3
-    prerequisites: [system-integration]
+    prerequisites: [requirements-and-design-communication]
 
-  - role_slug: sap-erp-consultant
-    slug: erp-fundamentals
-    title: ERP Fundamentals
-    description: Understand enterprise resource planning concepts, modules, and business flows.
+  - role_slug: game-developer
+    slug: gameplay-construction
+    title: Gameplay Construction
+    description: Build beginner competency in gameplay construction.
     display_order: 1
-  - role_slug: sap-erp-consultant
-    slug: erp-configuration
-    title: ERP Configuration
-    description: Configure system settings, workflows, and rules to match business requirements.
+
+  - role_slug: game-developer
+    slug: game-interaction-design
+    title: Game Interaction Design
+    description: Build beginner competency in game interaction design.
     display_order: 2
-    prerequisites: [erp-fundamentals]
-  - role_slug: sap-erp-consultant
-    slug: erp-optimization
-    title: ERP Optimization
-    description: Analyze usage patterns and improve processes within the ERP system.
+    prerequisites: [gameplay-construction]
+
+  - role_slug: game-developer
+    slug: game-quality-and-performance
+    title: Game Quality and Performance
+    description: Build beginner competency in game quality and performance.
     display_order: 3
-    prerequisites: [erp-configuration]
+    prerequisites: [game-interaction-design]
+
+  - role_slug: server-side-game-developer
+    slug: game-service-architecture
+    title: Game Service Architecture
+    description: Build beginner competency in game service architecture.
+    display_order: 1
+
+  - role_slug: server-side-game-developer
+    slug: live-game-operations
+    title: Live Game Operations
+    description: Build beginner competency in live game operations.
+    display_order: 2
+    prerequisites: [game-service-architecture]
+
+  - role_slug: server-side-game-developer
+    slug: game-backend-security
+    title: Game Backend Security
+    description: Build beginner competency in game backend security.
+    display_order: 3
+    prerequisites: [live-game-operations]
+
+  - role_slug: mlops-engineer
+    slug: ml-operations-pipelines
+    title: ML Operations Pipelines
+    description: Build beginner competency in ml operations pipelines.
+    display_order: 1
+
+  - role_slug: mlops-engineer
+    slug: model-configuration-management
+    title: Model Configuration Management
+    description: Build beginner competency in model configuration management.
+    display_order: 2
+    prerequisites: [ml-operations-pipelines]
+
+  - role_slug: mlops-engineer
+    slug: ml-governance-and-monitoring
+    title: ML Governance and Monitoring
+    description: Build beginner competency in ml governance and monitoring.
+    display_order: 3
+    prerequisites: [model-configuration-management]
+
+  - role_slug: product-manager
+    slug: product-requirements-discovery
+    title: Product Requirements Discovery
+    description: Build beginner competency in product requirements discovery.
+    display_order: 1
+
+  - role_slug: product-manager
+    slug: economic-prioritization
+    title: Economic Prioritization
+    description: Build beginner competency in economic prioritization.
+    display_order: 2
+    prerequisites: [product-requirements-discovery]
+
+  - role_slug: product-manager
+    slug: product-delivery-management
+    title: Product Delivery Management
+    description: Build beginner competency in product delivery management.
+    display_order: 3
+    prerequisites: [economic-prioritization]
+
+  - role_slug: engineering-manager
+    slug: engineering-management
+    title: Engineering Management
+    description: Build beginner competency in engineering management.
+    display_order: 1
+
+  - role_slug: engineering-manager
+    slug: engineering-process-improvement
+    title: Engineering Process Improvement
+    description: Build beginner competency in engineering process improvement.
+    display_order: 2
+    prerequisites: [engineering-management]
+
+  - role_slug: engineering-manager
+    slug: professional-practice
+    title: Professional Practice
+    description: Build beginner competency in professional practice.
+    display_order: 3
+    prerequisites: [engineering-process-improvement]
+
+  - role_slug: developer-relations
+    slug: developer-education
+    title: Developer Education
+    description: Build beginner competency in developer education.
+    display_order: 1
+
+  - role_slug: developer-relations
+    slug: developer-feedback-and-requirements
+    title: Developer Feedback and Requirements
+    description: Build beginner competency in developer feedback and requirements.
+    display_order: 2
+    prerequisites: [developer-education]
+
+  - role_slug: developer-relations
+    slug: technical-demos-and-documentation
+    title: Technical Demos and Documentation
+    description: Build beginner competency in technical demos and documentation.
+    display_order: 3
+    prerequisites: [developer-feedback-and-requirements]
+
+  - role_slug: bi-analyst
+    slug: business-metrics-requirements
+    title: Business Metrics Requirements
+    description: Build beginner competency in business metrics requirements.
+    display_order: 1
+
+  - role_slug: bi-analyst
+    slug: bi-modeling-and-reporting
+    title: BI Modeling and Reporting
+    description: Build beginner competency in bi modeling and reporting.
+    display_order: 2
+    prerequisites: [business-metrics-requirements]
+
+  - role_slug: bi-analyst
+    slug: decision-analytics-quality
+    title: Decision Analytics Quality
+    description: Build beginner competency in decision analytics quality.
+    display_order: 3
+    prerequisites: [bi-modeling-and-reporting]
+

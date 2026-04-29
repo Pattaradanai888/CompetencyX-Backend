@@ -1,0 +1,1653 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "CompetencyX API",
+        "version": "0.1.0",
+        "description": "Adaptive career-roadmap backend API for assessment sessions, role inference, mastery estimation, and next-topic recommendations."
+    },
+    "paths": {
+        "/api/assessment-sessions/": {
+            "post": {
+                "operationId": "createAssessmentSession",
+                "summary": "Create an assessment session",
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SessionCreate"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssessmentSession"
+                                },
+                                "examples": {
+                                    "CreateSessionResponse": {
+                                        "value": {
+                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                            "status": "in_progress",
+                                            "phase": "role_discovery",
+                                            "best_fit_confidence": 0.0,
+                                            "preferred_role": {
+                                                "id": 1,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs and backend services."
+                                            },
+                                            "best_fit_role": null,
+                                            "profile": {
+                                                "education_level": "student",
+                                                "current_stage": "beginner"
+                                            },
+                                            "started_at": "2026-04-17T04:00:00Z",
+                                            "updated_at": "2026-04-17T04:00:00Z",
+                                            "completed_at": null,
+                                            "milestones": {
+                                                "answered_role_questions": 0,
+                                                "answered_skill_questions": 0
+                                            },
+                                            "role_alignment_status": "unknown",
+                                            "role_resolution_status": "in_progress",
+                                            "guidance_summary": "You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.",
+                                            "current_question": {
+                                                "id": 101,
+                                                "code": "role-likert-build-working-parts",
+                                                "stage": "role",
+                                                "question_type": "likert_5",
+                                                "prompt": "I enjoy turning an idea into a working technical part.",
+                                                "help_text": "",
+                                                "role": null,
+                                                "topic": null,
+                                                "difficulty": 1,
+                                                "options": [],
+                                                "response_scale": [
+                                                    {
+                                                        "key": "strongly_agree",
+                                                        "label": "Strongly agree",
+                                                        "value": 2,
+                                                        "display_order": 1
+                                                    },
+                                                    {
+                                                        "key": "agree",
+                                                        "label": "Agree",
+                                                        "value": 1,
+                                                        "display_order": 2
+                                                    },
+                                                    {
+                                                        "key": "neutral",
+                                                        "label": "Neutral",
+                                                        "value": 0,
+                                                        "display_order": 3
+                                                    },
+                                                    {
+                                                        "key": "disagree",
+                                                        "label": "Disagree",
+                                                        "value": -1,
+                                                        "display_order": 4
+                                                    },
+                                                    {
+                                                        "key": "strongly_disagree",
+                                                        "label": "Strongly disagree",
+                                                        "value": -2,
+                                                        "display_order": 5
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "summary": "Create session response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Assessment session created successfully."
+                    },
+                    "400": {
+                        "description": "Validation error, such as an unknown preferred role slug."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/": {
+            "get": {
+                "operationId": "getAssessmentSession",
+                "summary": "Get the current assessment session state",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssessmentSession"
+                                },
+                                "examples": {
+                                    "SessionResponse": {
+                                        "value": {
+                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                            "status": "in_progress",
+                                            "phase": "role_discovery",
+                                            "best_fit_confidence": 0.0,
+                                            "preferred_role": {
+                                                "id": 1,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs and backend services."
+                                            },
+                                            "best_fit_role": null,
+                                            "profile": {
+                                                "education_level": "student",
+                                                "current_stage": "beginner"
+                                            },
+                                            "started_at": "2026-04-17T04:00:00Z",
+                                            "updated_at": "2026-04-17T04:00:00Z",
+                                            "completed_at": null,
+                                            "milestones": {
+                                                "answered_role_questions": 0,
+                                                "answered_skill_questions": 0
+                                            },
+                                            "role_alignment_status": "unknown",
+                                            "role_resolution_status": "in_progress",
+                                            "guidance_summary": "You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.",
+                                            "current_question": {
+                                                "id": 101,
+                                                "code": "role-likert-build-working-parts",
+                                                "stage": "role",
+                                                "question_type": "likert_5",
+                                                "prompt": "I enjoy turning an idea into a working technical part.",
+                                                "help_text": "",
+                                                "role": null,
+                                                "topic": null,
+                                                "difficulty": 1,
+                                                "options": [],
+                                                "response_scale": [
+                                                    {
+                                                        "key": "strongly_agree",
+                                                        "label": "Strongly agree",
+                                                        "value": 2,
+                                                        "display_order": 1
+                                                    },
+                                                    {
+                                                        "key": "agree",
+                                                        "label": "Agree",
+                                                        "value": 1,
+                                                        "display_order": 2
+                                                    },
+                                                    {
+                                                        "key": "neutral",
+                                                        "label": "Neutral",
+                                                        "value": 0,
+                                                        "display_order": 3
+                                                    },
+                                                    {
+                                                        "key": "disagree",
+                                                        "label": "Disagree",
+                                                        "value": -1,
+                                                        "display_order": 4
+                                                    },
+                                                    {
+                                                        "key": "strongly_disagree",
+                                                        "label": "Strongly disagree",
+                                                        "value": -2,
+                                                        "display_order": 5
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "summary": "Session response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Current assessment session state, including the next question when still in progress."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/answers/": {
+            "post": {
+                "operationId": "submitAssessmentAnswer",
+                "summary": "Submit an answer for the current question",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AnswerSubmit"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssessmentSession"
+                                },
+                                "examples": {
+                                    "SubmitAnswerResponse": {
+                                        "value": {
+                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                            "status": "in_progress",
+                                            "phase": "role_discovery",
+                                            "best_fit_confidence": 0.0,
+                                            "preferred_role": {
+                                                "id": 1,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs and backend services."
+                                            },
+                                            "best_fit_role": null,
+                                            "profile": {
+                                                "education_level": "student",
+                                                "current_stage": "beginner"
+                                            },
+                                            "started_at": "2026-04-17T04:00:00Z",
+                                            "updated_at": "2026-04-17T04:00:00Z",
+                                            "completed_at": null,
+                                            "milestones": {
+                                                "answered_role_questions": 0,
+                                                "answered_skill_questions": 0
+                                            },
+                                            "role_alignment_status": "unknown",
+                                            "role_resolution_status": "in_progress",
+                                            "guidance_summary": "You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.",
+                                            "current_question": {
+                                                "id": 101,
+                                                "code": "role-likert-build-working-parts",
+                                                "stage": "role",
+                                                "question_type": "likert_5",
+                                                "prompt": "I enjoy turning an idea into a working technical part.",
+                                                "help_text": "",
+                                                "role": null,
+                                                "topic": null,
+                                                "difficulty": 1,
+                                                "options": [],
+                                                "response_scale": [
+                                                    {
+                                                        "key": "strongly_agree",
+                                                        "label": "Strongly agree",
+                                                        "value": 2,
+                                                        "display_order": 1
+                                                    },
+                                                    {
+                                                        "key": "agree",
+                                                        "label": "Agree",
+                                                        "value": 1,
+                                                        "display_order": 2
+                                                    },
+                                                    {
+                                                        "key": "neutral",
+                                                        "label": "Neutral",
+                                                        "value": 0,
+                                                        "display_order": 3
+                                                    },
+                                                    {
+                                                        "key": "disagree",
+                                                        "label": "Disagree",
+                                                        "value": -1,
+                                                        "display_order": 4
+                                                    },
+                                                    {
+                                                        "key": "strongly_disagree",
+                                                        "label": "Strongly disagree",
+                                                        "value": -2,
+                                                        "display_order": 5
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "summary": "Submit answer response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Updated assessment session state after a valid answer submission."
+                    },
+                    "400": {
+                        "description": "Validation or assessment flow error, including out-of-order answers."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/history/": {
+            "get": {
+                "operationId": "getAssessmentHistory",
+                "summary": "Get completed assessment history",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssessmentHistory"
+                                },
+                                "examples": {
+                                    "HistoryResponse": {
+                                        "value": {
+                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                            "phase": "recommendation_ready",
+                                            "status": "completed",
+                                            "answers": [
+                                                {
+                                                    "id": 401,
+                                                    "question_id": 101,
+                                                    "question_code": "role-likert-build-working-parts",
+                                                    "question_prompt": "I enjoy turning an idea into a working technical part.",
+                                                    "question_stage": "role",
+                                                    "topic_slug": null,
+                                                    "selected_option_id": null,
+                                                    "selected_option_key": null,
+                                                    "selected_option_label": null,
+                                                    "scale_value": 2,
+                                                    "response_time_ms": 4200,
+                                                    "confidence_indicator": "high",
+                                                    "responded_at": "2026-04-17T04:01:00Z"
+                                                }
+                                            ],
+                                            "recommendations": [
+                                                {
+                                                    "id": 301,
+                                                    "role_slug": "backend-engineer",
+                                                    "topic_id": 12,
+                                                    "topic_slug": "databases",
+                                                    "topic_title": "Databases",
+                                                    "reason": "Lowest-order topic with satisfied prerequisites and insufficient mastery.",
+                                                    "path_kind": "preferred",
+                                                    "policy_type": "rule_based",
+                                                    "score": 0.5,
+                                                    "created_at": "2026-04-17T04:05:00Z"
+                                                }
+                                            ]
+                                        },
+                                        "summary": "History response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Completed assessment answers and recommendations."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    },
+                    "409": {
+                        "description": "Assessment history is only available after completion."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/insights/": {
+            "get": {
+                "operationId": "getAssessmentInsights",
+                "summary": "Get role discovery insights",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoleInsights"
+                                },
+                                "examples": {
+                                    "InsightsResponse": {
+                                        "value": {
+                                            "role_resolution_status": "resolved",
+                                            "best_fit_role": {
+                                                "id": 2,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs, data flows, and server-side application logic."
+                                            },
+                                            "best_fit_confidence": 0.71,
+                                            "answered_role_questions": 3,
+                                            "pillar_profile": [
+                                                {
+                                                    "key": "systems_design",
+                                                    "label": "Systems Design",
+                                                    "raw_score": 7.0,
+                                                    "normalized_score": 0.5,
+                                                    "evidence_count": 3
+                                                },
+                                                {
+                                                    "key": "reliability_automation",
+                                                    "label": "Reliability and Automation",
+                                                    "raw_score": 4.0,
+                                                    "normalized_score": 0.286,
+                                                    "evidence_count": 2
+                                                }
+                                            ],
+                                            "ranked_roles": [
+                                                {
+                                                    "slug": "backend-engineer",
+                                                    "name": "Backend Engineer",
+                                                    "fit_score": 0.71,
+                                                    "fit_share": 0.18,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Reliability and Automation",
+                                                        "Data Reasoning"
+                                                    ]
+                                                },
+                                                {
+                                                    "slug": "system-architect",
+                                                    "name": "System Architect",
+                                                    "fit_score": 0.58,
+                                                    "fit_share": 0.16,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Risk and Security"
+                                                    ]
+                                                }
+                                            ],
+                                            "guidance_summary": "Your current answers align best with Backend Engineer."
+                                        },
+                                        "summary": "Insights response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Pillar profile and ranked role insights for the session."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/results/": {
+            "get": {
+                "operationId": "getAssessmentResults",
+                "summary": "Get final assessment results",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "pk",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssessmentResult"
+                                },
+                                "examples": {
+                                    "ResultsResponse": {
+                                        "value": {
+                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                            "status": "completed",
+                                            "phase": "recommendation_ready",
+                                            "best_fit_confidence": 0.8,
+                                            "preferred_role": {
+                                                "id": 1,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs and backend services."
+                                            },
+                                            "best_fit_role": {
+                                                "id": 1,
+                                                "slug": "backend-engineer",
+                                                "name": "Backend Engineer",
+                                                "description": "Builds APIs and backend services."
+                                            },
+                                            "profile": {
+                                                "education_level": "student",
+                                                "current_stage": "beginner"
+                                            },
+                                            "started_at": "2026-04-17T04:00:00Z",
+                                            "updated_at": "2026-04-17T04:05:00Z",
+                                            "completed_at": "2026-04-17T04:05:00Z",
+                                            "milestones": {
+                                                "answered_role_questions": 2,
+                                                "answered_skill_questions": 2
+                                            },
+                                            "role_alignment_status": "aligned",
+                                            "role_resolution_status": "resolved",
+                                            "guidance_summary": "You are tracking well toward Backend Engineer. Focus next on Databases, HTTP Fundamentals.",
+                                            "pillar_profile": [
+                                                {
+                                                    "key": "systems_design",
+                                                    "label": "Systems Design",
+                                                    "raw_score": 7.0,
+                                                    "normalized_score": 0.5,
+                                                    "evidence_count": 3
+                                                }
+                                            ],
+                                            "ranked_roles": [
+                                                {
+                                                    "slug": "backend-engineer",
+                                                    "name": "Backend Engineer",
+                                                    "fit_score": 0.71,
+                                                    "fit_share": 0.18,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Reliability and Automation",
+                                                        "Data Reasoning"
+                                                    ]
+                                                }
+                                            ],
+                                            "preferred_role_gap_topics": [
+                                                {
+                                                    "id": 12,
+                                                    "slug": "databases",
+                                                    "title": "Databases",
+                                                    "description": "Relational data modeling and SQL.",
+                                                    "difficulty": "beginner",
+                                                    "display_order": 2,
+                                                    "parent_id": null,
+                                                    "prerequisites": [
+                                                        {
+                                                            "topic_id": 11,
+                                                            "required_mastery_threshold": 0.7,
+                                                            "dependency_weight": 1.0
+                                                        }
+                                                    ]
+                                                }
+                                            ],
+                                            "mastery_scores": [
+                                                {
+                                                    "topic_id": 11,
+                                                    "topic_slug": "http",
+                                                    "topic_title": "HTTP Fundamentals",
+                                                    "mastery_score": 1.0,
+                                                    "confidence_score": 0.5,
+                                                    "updated_at": "2026-04-17T04:05:00Z"
+                                                }
+                                            ],
+                                            "preferred_path_recommendation": {
+                                                "id": 301,
+                                                "role_slug": "backend-engineer",
+                                                "topic_id": 12,
+                                                "topic_slug": "databases",
+                                                "topic_title": "Databases",
+                                                "reason": "Lowest-order topic with satisfied prerequisites and insufficient mastery.",
+                                                "path_kind": "preferred",
+                                                "policy_type": "rule_based",
+                                                "score": 0.5,
+                                                "created_at": "2026-04-17T04:05:00Z"
+                                            },
+                                            "best_fit_path_recommendation": null
+                                        },
+                                        "summary": "Results response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Final recommendations, mastery scores, and gap topics."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/catalog/roles/": {
+            "get": {
+                "operationId": "listCatalogRoles",
+                "summary": "List active roles",
+                "tags": [
+                    "Catalog"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Role"
+                                    }
+                                },
+                                "examples": {
+                                    "RoleList": {
+                                        "value": [
+                                            [
+                                                {
+                                                    "id": 1,
+                                                    "slug": "backend-engineer",
+                                                    "name": "Backend Engineer",
+                                                    "description": "Builds APIs and backend services."
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "slug": "frontend-engineer",
+                                                    "name": "Frontend Engineer",
+                                                    "description": "Builds web user interfaces."
+                                                }
+                                            ]
+                                        ],
+                                        "summary": "Role list"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Active roles available for onboarding and preference selection."
+                    }
+                }
+            }
+        },
+        "/api/catalog/roles/{role_slug}/topics/": {
+            "get": {
+                "operationId": "listRoleTopics",
+                "summary": "List topics for a role",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "role_slug",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Slug of the active role to inspect.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/RoadmapTopic"
+                                    }
+                                },
+                                "examples": {
+                                    "RoleTopics": {
+                                        "value": [
+                                            [
+                                                {
+                                                    "id": 11,
+                                                    "slug": "http",
+                                                    "title": "HTTP Fundamentals",
+                                                    "description": "Core HTTP concepts for API work.",
+                                                    "difficulty": "beginner",
+                                                    "display_order": 1,
+                                                    "parent_id": null,
+                                                    "prerequisites": []
+                                                },
+                                                {
+                                                    "id": 12,
+                                                    "slug": "databases",
+                                                    "title": "Databases",
+                                                    "description": "Relational data modeling and SQL.",
+                                                    "difficulty": "beginner",
+                                                    "display_order": 2,
+                                                    "parent_id": null,
+                                                    "prerequisites": [
+                                                        {
+                                                            "topic_id": 11,
+                                                            "required_mastery_threshold": 0.7,
+                                                            "dependency_weight": 1.0
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        ],
+                                        "summary": "Role topics"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Ordered roadmap topics for the selected role."
+                    },
+                    "404": {
+                        "description": "Role slug was not found or is inactive."
+                    }
+                }
+            }
+        },
+        "/api/health/": {
+            "get": {
+                "operationId": "healthCheck",
+                "summary": "Health check",
+                "tags": [
+                    "Health"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "API health status."
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AnswerHistory": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "question_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "question_code": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "question_prompt": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "question_stage": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "topic_slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "selected_option_id": {
+                        "type": "integer",
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "selected_option_key": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "selected_option_label": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "scale_value": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "format": "int64",
+                        "nullable": true
+                    },
+                    "response_time_ms": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64",
+                        "nullable": true
+                    },
+                    "confidence_indicator": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AnswerHistoryConfidenceIndicatorEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BlankEnum"
+                            }
+                        ]
+                    },
+                    "responded_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "question_code",
+                    "question_id",
+                    "question_prompt",
+                    "question_stage",
+                    "responded_at",
+                    "selected_option_id",
+                    "selected_option_key",
+                    "selected_option_label",
+                    "topic_slug"
+                ]
+            },
+            "AnswerHistoryConfidenceIndicatorEnum": {
+                "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                ],
+                "type": "string",
+                "description": "* `low` - Low\n* `medium` - Medium\n* `high` - High"
+            },
+            "AnswerSubmit": {
+                "type": "object",
+                "properties": {
+                    "question_id": {
+                        "type": "integer"
+                    },
+                    "option_id": {
+                        "type": "integer"
+                    },
+                    "scale_value": {
+                        "type": "integer"
+                    },
+                    "response_time_ms": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "confidence_indicator": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/AnswerSubmitConfidenceIndicatorEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/BlankEnum"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "question_id"
+                ]
+            },
+            "AnswerSubmitConfidenceIndicatorEnum": {
+                "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                ],
+                "type": "string",
+                "description": "* `low` - low\n* `medium` - medium\n* `high` - high"
+            },
+            "AssessmentHistory": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "phase": {
+                        "$ref": "#/components/schemas/PhaseEnum"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusEnum"
+                    },
+                    "answers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AnswerHistory"
+                        },
+                        "readOnly": true
+                    },
+                    "recommendations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Recommendation"
+                        },
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "answers",
+                    "id",
+                    "recommendations"
+                ]
+            },
+            "AssessmentResult": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusEnum"
+                    },
+                    "phase": {
+                        "$ref": "#/components/schemas/PhaseEnum"
+                    },
+                    "best_fit_confidence": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "preferred_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "best_fit_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "profile": {},
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "milestones": {
+                        "readOnly": true
+                    },
+                    "role_alignment_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "role_resolution_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "guidance_summary": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "pillar_profile": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PillarInsight"
+                        },
+                        "readOnly": true
+                    },
+                    "ranked_roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RankedRoleInsight"
+                        },
+                        "readOnly": true
+                    },
+                    "preferred_role_gap_topics": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RoadmapTopic"
+                        },
+                        "readOnly": true
+                    },
+                    "mastery_scores": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TopicMastery"
+                        },
+                        "readOnly": true
+                    },
+                    "preferred_path_recommendation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Recommendation"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "best_fit_path_recommendation": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Recommendation"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "best_fit_path_recommendation",
+                    "best_fit_role",
+                    "guidance_summary",
+                    "id",
+                    "mastery_scores",
+                    "milestones",
+                    "pillar_profile",
+                    "preferred_path_recommendation",
+                    "preferred_role",
+                    "preferred_role_gap_topics",
+                    "ranked_roles",
+                    "role_alignment_status",
+                    "role_resolution_status",
+                    "started_at",
+                    "updated_at"
+                ]
+            },
+            "AssessmentSession": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "readOnly": true
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/StatusEnum"
+                    },
+                    "phase": {
+                        "$ref": "#/components/schemas/PhaseEnum"
+                    },
+                    "best_fit_confidence": {
+                        "type": "number",
+                        "format": "double",
+                        "readOnly": true
+                    },
+                    "preferred_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "best_fit_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "profile": {},
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "milestones": {
+                        "readOnly": true
+                    },
+                    "role_alignment_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "role_resolution_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "guidance_summary": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "current_question": {
+                        "nullable": true,
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "best_fit_confidence",
+                    "best_fit_role",
+                    "current_question",
+                    "guidance_summary",
+                    "id",
+                    "milestones",
+                    "preferred_role",
+                    "role_alignment_status",
+                    "role_resolution_status",
+                    "started_at",
+                    "updated_at"
+                ]
+            },
+            "BlankEnum": {
+                "enum": [
+                    ""
+                ]
+            },
+            "DifficultyEnum": {
+                "enum": [
+                    "beginner",
+                    "intermediate",
+                    "advanced"
+                ],
+                "type": "string",
+                "description": "* `beginner` - Beginner\n* `intermediate` - Intermediate\n* `advanced` - Advanced"
+            },
+            "PathKindEnum": {
+                "enum": [
+                    "preferred",
+                    "best_fit"
+                ],
+                "type": "string",
+                "description": "* `preferred` - Preferred Role Path\n* `best_fit` - Best-Fit Role Path"
+            },
+            "PhaseEnum": {
+                "enum": [
+                    "role_discovery",
+                    "role_ambiguity",
+                    "skill_assessment",
+                    "recommendation_ready",
+                    "completed"
+                ],
+                "type": "string",
+                "description": "* `role_discovery` - Role Discovery\n* `role_ambiguity` - Role Ambiguity\n* `skill_assessment` - Skill Assessment\n* `recommendation_ready` - Recommendation Ready\n* `completed` - Completed"
+            },
+            "PillarInsight": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "raw_score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "normalized_score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "evidence_count": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "evidence_count",
+                    "key",
+                    "label",
+                    "normalized_score",
+                    "raw_score"
+                ]
+            },
+            "PolicyTypeEnum": {
+                "enum": [
+                    "rule_based",
+                    "bandit",
+                    "q_learning"
+                ],
+                "type": "string",
+                "description": "* `rule_based` - Rule Based\n* `bandit` - Bandit\n* `q_learning` - Q Learning"
+            },
+            "RankedRoleInsight": {
+                "type": "object",
+                "properties": {
+                    "slug": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "fit_score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "fit_share": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "top_supporting_pillars": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "fit_score",
+                    "fit_share",
+                    "name",
+                    "slug",
+                    "top_supporting_pillars"
+                ]
+            },
+            "Recommendation": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "role_slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "topic_id": {
+                        "type": "integer",
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "topic_slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "topic_title": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "reason": {
+                        "type": "string"
+                    },
+                    "path_kind": {
+                        "$ref": "#/components/schemas/PathKindEnum"
+                    },
+                    "policy_type": {
+                        "$ref": "#/components/schemas/PolicyTypeEnum"
+                    },
+                    "score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "created_at",
+                    "id",
+                    "reason",
+                    "role_slug",
+                    "topic_id",
+                    "topic_slug",
+                    "topic_title"
+                ]
+            },
+            "RoadmapTopic": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 96,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 160
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "difficulty": {
+                        "$ref": "#/components/schemas/DifficultyEnum"
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "parent_id": {
+                        "type": "integer",
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "prerequisites": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TopicPrerequisite"
+                        },
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "id",
+                    "parent_id",
+                    "prerequisites",
+                    "slug",
+                    "title"
+                ]
+            },
+            "Role": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "slug": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "name": {
+                        "type": "string",
+                        "maxLength": 128
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "top_ka_codes": {},
+                    "core_tasks": {},
+                    "swebok_source_version": {
+                        "type": "string",
+                        "maxLength": 32
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "slug"
+                ]
+            },
+            "RoleInsights": {
+                "type": "object",
+                "properties": {
+                    "role_resolution_status": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "best_fit_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "nullable": true,
+                        "readOnly": true
+                    },
+                    "best_fit_confidence": {
+                        "type": "number",
+                        "format": "double",
+                        "readOnly": true
+                    },
+                    "answered_role_questions": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "pillar_profile": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PillarInsight"
+                        },
+                        "readOnly": true
+                    },
+                    "ranked_roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RankedRoleInsight"
+                        },
+                        "readOnly": true
+                    },
+                    "guidance_summary": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "answered_role_questions",
+                    "best_fit_confidence",
+                    "best_fit_role",
+                    "guidance_summary",
+                    "pillar_profile",
+                    "ranked_roles",
+                    "role_resolution_status"
+                ]
+            },
+            "SessionCreate": {
+                "type": "object",
+                "properties": {
+                    "preferred_role_slug": {
+                        "type": "string",
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "profile": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "StatusEnum": {
+                "enum": [
+                    "in_progress",
+                    "completed"
+                ],
+                "type": "string",
+                "description": "* `in_progress` - In Progress\n* `completed` - Completed"
+            },
+            "TopicMastery": {
+                "type": "object",
+                "properties": {
+                    "topic_id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "topic_slug": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "topic_title": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "mastery_score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "confidence_score": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "topic_id",
+                    "topic_slug",
+                    "topic_title",
+                    "updated_at"
+                ]
+            },
+            "TopicPrerequisite": {
+                "type": "object",
+                "properties": {
+                    "topic_id": {
+                        "type": "integer"
+                    },
+                    "required_mastery_threshold": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "dependency_weight": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                },
+                "required": [
+                    "dependency_weight",
+                    "required_mastery_threshold",
+                    "topic_id"
+                ]
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "sessionid"
+            }
+        }
+    }
+}

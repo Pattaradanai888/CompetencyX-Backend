@@ -1,0 +1,43 @@
+skill_questions:
+  - code: frontend-developer-frontend-interface-foundations
+    role_slug: frontend-developer
+    topic_slug: frontend-interface-foundations
+    question_type: yes_no_maybe
+    prompt: Can you explain the basic work involved in frontend interface foundations?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 21
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: frontend-interface-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: frontend-interface-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: frontend-interface-foundations, mastery_delta: 0.0}]
+  - code: frontend-developer-client-application-construction
+    role_slug: frontend-developer
+    topic_slug: client-application-construction
+    question_type: yes_no_maybe
+    prompt: Have you practiced a small task related to client application construction?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 22
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: client-application-construction, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: client-application-construction, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: client-application-construction, mastery_delta: 0.0}]
