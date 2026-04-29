@@ -1,0 +1,43 @@
+skill_questions:
+  - code: fullstack-ui-foundations
+    role_slug: full-stack-engineer
+    topic_slug: ui-foundations
+    question_type: yes_no_maybe
+    prompt: Can you build a simple UI and connect it to client-side state updates?
+    difficulty: 1
+    discrimination_score: 1.7
+    display_order: 31
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ui-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ui-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ui-foundations, mastery_delta: 0.0}]
+  - code: fullstack-api-foundations
+    role_slug: full-stack-engineer
+    topic_slug: api-foundations
+    question_type: yes_no_maybe
+    prompt: Can you build a basic API and consume it from a frontend application?
+    difficulty: 2
+    discrimination_score: 1.9
+    display_order: 32
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: api-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: api-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: api-foundations, mastery_delta: 0.0}]

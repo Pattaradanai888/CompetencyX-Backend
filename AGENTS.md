@@ -7,7 +7,7 @@
 Use `uv` for local Python workflows and Docker for the runtime stack.
 
 - `docker compose up --build`: start PostgreSQL and the Django app, run migrations, and seed MVP content.
-- `uv run pytest`: run the full test suite with coverage using `config.settings.test`.
+- `uv run pytest -n auto`: run the full test suite in parallel with coverage using `config.settings.test`.
 - `uv run ruff check .`: run lint checks across the repository.
 - `.venv\Scripts\python.exe manage.py seed_mvp_content`: reseed the local catalog.
 - `.venv\Scripts\python.exe manage.py load_curated_content`: load YAML-curated roles, topics, and questions.
@@ -16,7 +16,7 @@ Use `uv` for local Python workflows and Docker for the runtime stack.
 Target Python 3.12 and follow Ruff defaults configured in `pyproject.toml`. Use 4-space indentation, single quotes, and keep lines within the configured 150-character limit. Prefer Django naming patterns: `PascalCase` for models/serializers, `snake_case` for functions and fields, and descriptive app-local module names. Do not edit generated migration files unless the change explicitly requires it.
 
 ## Testing Guidelines
-Pytest is the test runner, with discovery enabled for `tests.py` and `test_*.py` inside `api`, `roadmaps`, `assessments`, `recommendations`, and `config`. Add tests alongside the app they cover. Favor API and service-level tests that exercise seeded flows and serializer behavior. Run `uv run pytest` before opening a PR; coverage XML is generated at `coverage/coverage.xml`.
+Pytest is the test runner, with discovery enabled for `tests.py` and `test_*.py` inside `api`, `roadmaps`, `assessments`, `recommendations`, and `config`. Add tests alongside the app they cover. Favor API and service-level tests that exercise seeded flows and serializer behavior. Run tests with `-n auto` (for example, `uv run pytest -n auto`) before opening a PR; coverage XML is generated at `coverage/coverage.xml`.
 
 ## Commit & Pull Request Guidelines
 Recent history uses concise, imperative commit messages with Conventional Commit prefixes such as `feat:`. Follow that style when possible, for example `fix: handle missing recommendation path`. Keep commits scoped to one change. PRs should include a short summary, linked issue or task reference, notes about migrations or seed-data changes, and example API payloads or screenshots for behavior changes affecting consumers.

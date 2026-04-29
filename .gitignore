@@ -31,4 +31,8 @@ Thumbs.db
 
 .uv-cache/
 .tmp/
+.codex-pytest-basetemp/
+.codex-pytest-tmp/
+.codex-pytest-tmp-*/
+.codex-python-temp/
 .ruff_cache/

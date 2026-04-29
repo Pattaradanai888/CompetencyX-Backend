@@ -1,0 +1,43 @@
+skill_questions:
+  - code: aiengineer-ml-foundations
+    role_slug: ai-engineer
+    topic_slug: ml-foundations
+    question_type: yes_no_maybe
+    prompt: Can you explain the difference between training and testing a model?
+    difficulty: 1
+    discrimination_score: 1.6
+    display_order: 71
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ml-foundations, mastery_delta: 0.0}]
+  - code: aiengineer-model-engineering
+    role_slug: ai-engineer
+    topic_slug: model-engineering
+    question_type: yes_no_maybe
+    prompt: Have you trained a simple model (like linear regression or a decision tree) on real data?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 72
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: model-engineering, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: model-engineering, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: model-engineering, mastery_delta: 0.0}]

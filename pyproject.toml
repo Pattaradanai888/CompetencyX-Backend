@@ -28,13 +28,16 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 minversion = "8.3"
-addopts = "-p no:cacheprovider --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
+addopts = "-p no:cacheprovider --basetemp=.codex-pytest-basetemp --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
 python_files = ["tests.py", "test_*.py"]
 testpaths = ["api", "roadmaps", "assessments", "recommendations", "config"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 norecursedirs = [
     ".codex-pytest-tmp",
+    ".codex-pytest-tmp-*",
+    ".codex-pytest-basetemp",
+    ".codex-python-temp",
     ".git",
     ".mypy_cache",
     ".pytest_cache",

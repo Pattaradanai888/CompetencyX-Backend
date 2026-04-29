@@ -154,3 +154,237 @@ topics:
     description: Triage suspicious activity and respond to concrete security events.
     display_order: 3
     prerequisites: [web-security]
+
+  - role_slug: solutions-architect
+    slug: solution-discovery
+    title: Solution Discovery
+    description: Translate business needs and constraints into solution options.
+    display_order: 1
+  - role_slug: solutions-architect
+    slug: integration-patterns
+    title: Integration Patterns
+    description: Design how systems exchange data, events, and responsibilities.
+    display_order: 2
+    prerequisites: [solution-discovery]
+  - role_slug: solutions-architect
+    slug: solution-governance
+    title: Solution Governance
+    description: Balance tradeoffs across cost, risk, scalability, and maintainability.
+    display_order: 3
+    prerequisites: [integration-patterns]
+
+  - role_slug: system-architect
+    slug: architecture-principles
+    title: Architecture Principles
+    description: Define structural principles, boundaries, and technical standards.
+    display_order: 1
+  - role_slug: system-architect
+    slug: system-integration
+    title: System Integration Design
+    description: Model interfaces, dependencies, and failure boundaries across systems.
+    display_order: 2
+    prerequisites: [architecture-principles]
+  - role_slug: system-architect
+    slug: reliability-by-design
+    title: Reliability by Design
+    description: Shape resilience, security, and scalability into the architecture.
+    display_order: 3
+    prerequisites: [system-integration]
+
+  - role_slug: systems-analyst
+    slug: process-mapping
+    title: Process Mapping
+    description: Capture how work, information, and decisions currently flow.
+    display_order: 1
+  - role_slug: systems-analyst
+    slug: requirements-analysis
+    title: Requirements Analysis
+    description: Turn stakeholder problems into clear functional and system requirements.
+    display_order: 2
+    prerequisites: [process-mapping]
+  - role_slug: systems-analyst
+    slug: system-change-analysis
+    title: System Change Analysis
+    description: Assess impacts, dependencies, and tradeoffs for proposed changes.
+    display_order: 3
+    prerequisites: [requirements-analysis]
+
+  - role_slug: product-manager
+    slug: product-discovery
+    title: Product Discovery
+    description: Clarify problems, users, and outcomes worth pursuing.
+    display_order: 1
+  - role_slug: product-manager
+    slug: prioritization
+    title: Prioritization and Tradeoffs
+    description: Balance opportunities against constraints, risk, and strategic value.
+    display_order: 2
+    prerequisites: [product-discovery]
+  - role_slug: product-manager
+    slug: product-delivery
+    title: Product Delivery Alignment
+    description: Drive delivery decisions with clear outcomes and stakeholder alignment.
+    display_order: 3
+    prerequisites: [prioritization]
+
+  - role_slug: product-owner
+    slug: backlog-management
+    title: Backlog Management
+    description: Structure work into clear, prioritized items the team can deliver.
+    display_order: 1
+  - role_slug: product-owner
+    slug: acceptance-criteria
+    title: Acceptance Criteria
+    description: Turn intent into testable, team-ready delivery expectations.
+    display_order: 2
+    prerequisites: [backlog-management]
+  - role_slug: product-owner
+    slug: release-planning
+    title: Release Planning
+    description: Sequence scope decisions into coherent releases and increments.
+    display_order: 3
+    prerequisites: [acceptance-criteria]
+
+  - role_slug: project-manager
+    slug: project-planning
+    title: Project Planning
+    description: Build plans, milestones, and dependency views that keep work moving.
+    display_order: 1
+  - role_slug: project-manager
+    slug: risk-tracking
+    title: Risk and Dependency Tracking
+    description: Surface blockers, risks, and coordination issues before they widen.
+    display_order: 2
+    prerequisites: [project-planning]
+  - role_slug: project-manager
+    slug: stakeholder-reporting
+    title: Stakeholder Reporting
+    description: Communicate delivery status, changes, and decisions clearly.
+    display_order: 3
+    prerequisites: [risk-tracking]
+
+  - role_slug: business-analyst
+    slug: stakeholder-discovery
+    title: Stakeholder Discovery
+    description: Understand objectives, constraints, and decision needs across teams.
+    display_order: 1
+  - role_slug: business-analyst
+    slug: business-requirements
+    title: Business Requirements
+    description: Convert needs into structured requirements, rules, and priorities.
+    display_order: 2
+    prerequisites: [stakeholder-discovery]
+  - role_slug: business-analyst
+    slug: process-improvement
+    title: Process Improvement
+    description: Recommend better workflows, controls, and operational decisions.
+    display_order: 3
+    prerequisites: [business-requirements]
+
+  - role_slug: data-analyst
+    slug: data-querying
+    title: Data Querying
+    description: Pull and shape data from source systems for analysis.
+    display_order: 1
+  - role_slug: data-analyst
+    slug: dashboarding
+    title: Dashboarding and Reporting
+    description: Communicate trends and performance through visual reporting.
+    display_order: 2
+    prerequisites: [data-querying]
+  - role_slug: data-analyst
+    slug: decision-analysis
+    title: Decision Analysis
+    description: Turn patterns and metrics into recommendations that guide choices.
+    display_order: 3
+    prerequisites: [dashboarding]
+
+  - role_slug: ux-ui-designer
+    slug: user-research
+    title: User Research
+    description: Learn what people need, where they struggle, and what matters to them.
+    display_order: 1
+  - role_slug: ux-ui-designer
+    slug: interaction-design
+    title: Interaction Design
+    description: Shape flows, states, and interactions that feel clear and deliberate.
+    display_order: 2
+    prerequisites: [user-research]
+  - role_slug: ux-ui-designer
+    slug: design-systems
+    title: Design Systems
+    description: Create consistent interface patterns and reusable design decisions.
+    display_order: 3
+    prerequisites: [interaction-design]
+
+  - role_slug: data-scientist
+    slug: statistics-foundations
+    title: Statistics Foundations
+    description: Understand probability, distributions, and hypothesis testing for data analysis.
+    display_order: 1
+  - role_slug: data-scientist
+    slug: exploratory-analysis
+    title: Exploratory Data Analysis
+    description: Clean, visualize, and summarize datasets to reveal patterns and relationships.
+    display_order: 2
+    prerequisites: [statistics-foundations]
+  - role_slug: data-scientist
+    slug: predictive-modeling
+    title: Predictive Modeling
+    description: Build and evaluate models that forecast outcomes from structured data.
+    display_order: 3
+    prerequisites: [exploratory-analysis]
+
+  - role_slug: ai-engineer
+    slug: ml-foundations
+    title: ML Foundations
+    description: Understand core machine learning algorithms, training loops, and evaluation metrics.
+    display_order: 1
+  - role_slug: ai-engineer
+    slug: model-engineering
+    title: Model Engineering
+    description: Train, tune, and validate ML models for real-world tasks.
+    display_order: 2
+    prerequisites: [ml-foundations]
+  - role_slug: ai-engineer
+    slug: ml-deployment
+    title: ML Deployment
+    description: Package and serve ML models so other software can use them reliably.
+    display_order: 3
+    prerequisites: [model-engineering]
+
+  - role_slug: system-engineer
+    slug: infrastructure-basics
+    title: Infrastructure Basics
+    description: Understand servers, networking, and how system components communicate.
+    display_order: 1
+  - role_slug: system-engineer
+    slug: system-integration
+    title: System Integration
+    description: Connect diverse systems and manage interfaces between components.
+    display_order: 2
+    prerequisites: [infrastructure-basics]
+  - role_slug: system-engineer
+    slug: platform-reliability
+    title: Platform Reliability
+    description: Monitor, troubleshoot, and improve the reliability of integrated platforms.
+    display_order: 3
+    prerequisites: [system-integration]
+
+  - role_slug: sap-erp-consultant
+    slug: erp-fundamentals
+    title: ERP Fundamentals
+    description: Understand enterprise resource planning concepts, modules, and business flows.
+    display_order: 1
+  - role_slug: sap-erp-consultant
+    slug: erp-configuration
+    title: ERP Configuration
+    description: Configure system settings, workflows, and rules to match business requirements.
+    display_order: 2
+    prerequisites: [erp-fundamentals]
+  - role_slug: sap-erp-consultant
+    slug: erp-optimization
+    title: ERP Optimization
+    description: Analyze usage patterns and improve processes within the ERP system.
+    display_order: 3
+    prerequisites: [erp-configuration]

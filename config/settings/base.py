@@ -123,6 +123,8 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
+ASSESSMENT_BANDIT_POLICY_MODE = 'live_bandit'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

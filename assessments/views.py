@@ -11,9 +11,16 @@ from .serializers import (
     AssessmentHistorySerializer,
     AssessmentResultSerializer,
     AssessmentSessionSerializer,
+    RoleInsightsSerializer,
     SessionCreateSerializer,
 )
-from .services import AssessmentFlowError, create_assessment_session, submit_answer
+from .services import (
+    AssessmentFlowError,
+    build_session_state,
+    create_assessment_session,
+    get_role_insights,
+    submit_answer,
+)
 
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
@@ -48,28 +55,75 @@ SESSION_RESPONSE_EXAMPLE = {
         'answered_skill_questions': 0,
     },
     'role_alignment_status': 'unknown',
-    'guidance_summary': 'You want to pursue Backend Engineer. Answer the role-discovery questions to see how close your current fit is.',
+    'role_resolution_status': 'in_progress',
+    'guidance_summary': 'You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.',
     'current_question': {
         'id': 101,
-        'code': 'role-primary-interest',
+        'code': 'role-first-contribution',
         'stage': 'role',
         'question_type': 'single_choice',
-        'prompt': 'Which work sounds most interesting?',
+        'prompt': (
+            'A cross-functional team is stuck and only has time to improve one thing today. What kind of contribution would you most want to own?'
+        ),
         'help_text': '',
         'role': None,
         'topic': None,
         'difficulty': 1,
-        'discrimination_score': 3.0,
         'options': [
             {
                 'id': 201,
-                'key': 'backend',
-                'label': 'Designing APIs and backend services',
+                'key': 'clarify-user-needs',
+                'label': 'Clarify what users or stakeholders actually need before changing the solution',
                 'value': '',
                 'display_order': 1,
             }
         ],
     },
+}
+
+INSIGHTS_RESPONSE_EXAMPLE = {
+    'role_resolution_status': 'resolved',
+    'best_fit_role': {
+        'id': 2,
+        'slug': 'backend-engineer',
+        'name': 'Backend Engineer',
+        'description': 'Builds APIs, data flows, and server-side application logic.',
+    },
+    'best_fit_confidence': 0.71,
+    'answered_role_questions': 3,
+    'pillar_profile': [
+        {
+            'key': 'systems_design',
+            'label': 'Systems Design',
+            'raw_score': 7.0,
+            'normalized_score': 0.5,
+            'evidence_count': 3,
+        },
+        {
+            'key': 'reliability_automation',
+            'label': 'Reliability and Automation',
+            'raw_score': 4.0,
+            'normalized_score': 0.286,
+            'evidence_count': 2,
+        },
+    ],
+    'ranked_roles': [
+        {
+            'slug': 'backend-engineer',
+            'name': 'Backend Engineer',
+            'fit_score': 0.71,
+            'fit_share': 0.18,
+            'top_supporting_pillars': ['Systems Design', 'Reliability and Automation', 'Data Reasoning'],
+        },
+        {
+            'slug': 'system-architect',
+            'name': 'System Architect',
+            'fit_score': 0.58,
+            'fit_share': 0.16,
+            'top_supporting_pillars': ['Systems Design', 'Risk and Security'],
+        },
+    ],
+    'guidance_summary': 'Your current answers align best with Backend Engineer.',
 }
 
 ANSWER_REQUEST_EXAMPLE = {
@@ -108,7 +162,26 @@ RESULT_RESPONSE_EXAMPLE = {
         'answered_skill_questions': 2,
     },
     'role_alignment_status': 'aligned',
+    'role_resolution_status': 'resolved',
     'guidance_summary': 'You are tracking well toward Backend Engineer. Focus next on Databases, HTTP Fundamentals.',
+    'pillar_profile': [
+        {
+            'key': 'systems_design',
+            'label': 'Systems Design',
+            'raw_score': 7.0,
+            'normalized_score': 0.5,
+            'evidence_count': 3,
+        }
+    ],
+    'ranked_roles': [
+        {
+            'slug': 'backend-engineer',
+            'name': 'Backend Engineer',
+            'fit_score': 0.71,
+            'fit_share': 0.18,
+            'top_supporting_pillars': ['Systems Design', 'Reliability and Automation', 'Data Reasoning'],
+        }
+    ],
     'preferred_role_gap_topics': [
         {
             'id': 12,
@@ -224,7 +297,7 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
             profile=serializer.validated_data.get('profile', {}),
         )
         return Response(
-            AssessmentSessionSerializer(session).data,
+            AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -258,7 +331,39 @@ class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
         },
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        session = self.get_object()
+        return Response(AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data)
+
+
+class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    serializer_class = RoleInsightsSerializer
+
+    @extend_schema(
+        operation_id='getAssessmentInsights',
+        summary='Get role discovery insights',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='pk',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=RoleInsightsSerializer,
+                description='Pillar profile and ranked role insights for the session.',
+                examples=[OpenApiExample('Insights response', value=INSIGHTS_RESPONSE_EXAMPLE, response_only=True)],
+            ),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        session = self.get_object()
+        insights = get_role_insights(session)
+        return Response(RoleInsightsSerializer(session, context={'role_insights': insights}).data)
 
 
 class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
@@ -291,7 +396,11 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
         },
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        session = self.get_object()
+        if session.status != AssessmentSession.Status.COMPLETED:
+            return Response({'detail': 'Assessment results are only available after completion.'}, status=status.HTTP_409_CONFLICT)
+        serializer = self.get_serializer(session, context={'role_insights': get_role_insights(session)})
+        return Response(serializer.data)
 
 
 class AssessmentSessionHistoryAPIView(generics.RetrieveAPIView):
@@ -401,4 +510,4 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         session.refresh_from_db()
-        return Response(AssessmentSessionSerializer(session).data, status=status.HTTP_200_OK)
+        return Response(AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data, status=status.HTTP_200_OK)

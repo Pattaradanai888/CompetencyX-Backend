@@ -55,6 +55,5 @@ class QuestionSerializer(serializers.ModelSerializer):
             'role',
             'topic',
             'difficulty',
-            'discrimination_score',
             'options',
         )

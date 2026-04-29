@@ -1,0 +1,43 @@
+skill_questions:
+  - code: mobile-ui-basics
+    role_slug: mobile-engineer
+    topic_slug: mobile-ui
+    question_type: yes_no_maybe
+    prompt: Can you build navigable mobile screens with reusable UI components?
+    difficulty: 1
+    discrimination_score: 1.7
+    display_order: 61
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: mobile-ui, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: mobile-ui, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: mobile-ui, mastery_delta: 0.0}]
+  - code: mobile-state-basics
+    role_slug: mobile-engineer
+    topic_slug: mobile-state
+    question_type: yes_no_maybe
+    prompt: Are you comfortable managing screen state, events, and async loading in a mobile app?
+    difficulty: 2
+    discrimination_score: 1.9
+    display_order: 62
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: mobile-state, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: mobile-state, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: mobile-state, mastery_delta: 0.0}]

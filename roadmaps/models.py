@@ -86,6 +86,11 @@ class Question(models.Model):
         ROLE = 'role', 'Role Discovery'
         SKILL = 'skill', 'Skill Estimation'
 
+    class ItemGroup(models.TextChoices):
+        CORE = 'core', 'Core'
+        TIE_BREAK = 'tie_break', 'Tie Break'
+        STANDARD = 'standard', 'Standard'
+
     class Type(models.TextChoices):
         YES_NO = 'yes_no', 'Yes / No'
         YES_NO_MAYBE = 'yes_no_maybe', 'Yes / No / Maybe'
@@ -113,6 +118,12 @@ class Question(models.Model):
     )
     difficulty = models.PositiveSmallIntegerField(default=1)
     discrimination_score = models.FloatField(default=1.0)
+    item_group = models.CharField(
+        max_length=16,
+        choices=ItemGroup.choices,
+        default=ItemGroup.STANDARD,
+    )
+    discriminates_between = models.JSONField(default=list, blank=True)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -134,6 +145,7 @@ class QuestionOption(models.Model):
     key = models.SlugField(max_length=64)
     label = models.CharField(max_length=160)
     value = models.CharField(max_length=64, blank=True)
+    dimension_signals = models.JSONField(default=dict, blank=True)
     display_order = models.PositiveIntegerField(default=0)
 
     class Meta:

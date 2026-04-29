@@ -3,14 +3,17 @@ from rest_framework import serializers
 
 from recommendations.serializers import RecommendationSerializer
 from roadmaps.models import Question, QuestionOption, Role
-from roadmaps.serializers import QuestionSerializer, RoadmapTopicSerializer, RoleSerializer
+from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
 from .models import Answer, AssessmentSession, TopicMastery
 from .services import (
     build_guidance_summary,
+    build_session_state,
     get_current_question,
     get_preferred_role_gap_topics,
     get_role_alignment_status,
+    get_role_insights,
+    get_role_resolution_status,
     serialize_milestones,
 )
 
@@ -77,13 +80,88 @@ class TopicMasterySerializer(serializers.ModelSerializer):
         )
 
 
+class PillarInsightSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+    raw_score = serializers.FloatField()
+    normalized_score = serializers.FloatField()
+    evidence_count = serializers.IntegerField()
+
+
+class RankedRoleInsightSerializer(serializers.Serializer):
+    slug = serializers.CharField()
+    name = serializers.CharField()
+    fit_score = serializers.FloatField()
+    fit_share = serializers.FloatField()
+    top_supporting_pillars = serializers.ListField(child=serializers.CharField())
+
+
+class RoleInsightsSerializer(serializers.ModelSerializer):
+    role_resolution_status = serializers.SerializerMethodField()
+    answered_role_questions = serializers.SerializerMethodField()
+    pillar_profile = serializers.SerializerMethodField()
+    ranked_roles = serializers.SerializerMethodField()
+    guidance_summary = serializers.SerializerMethodField()
+    best_fit_role = serializers.SerializerMethodField()
+    best_fit_confidence = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentSession
+        fields = (
+            'role_resolution_status',
+            'best_fit_role',
+            'best_fit_confidence',
+            'answered_role_questions',
+            'pillar_profile',
+            'ranked_roles',
+            'guidance_summary',
+        )
+
+    def _insights(self, obj):
+        cached = self.context.get('role_insights')
+        if cached is not None:
+            return cached
+        return get_role_insights(obj)
+
+    @extend_schema_field(serializers.CharField())
+    def get_role_resolution_status(self, obj):
+        return self._insights(obj)['role_resolution_status']
+
+    @extend_schema_field(RoleSerializer(allow_null=True))
+    def get_best_fit_role(self, obj):
+        best_fit_role = self._insights(obj)['best_fit_role']
+        return RoleSerializer(best_fit_role).data if best_fit_role else None
+
+    @extend_schema_field(serializers.FloatField())
+    def get_best_fit_confidence(self, obj):
+        return self._insights(obj)['best_fit_confidence']
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_answered_role_questions(self, obj):
+        return self._insights(obj)['answered_role_questions']
+
+    @extend_schema_field(PillarInsightSerializer(many=True))
+    def get_pillar_profile(self, obj):
+        return self._insights(obj)['pillar_profile']
+
+    @extend_schema_field(RankedRoleInsightSerializer(many=True))
+    def get_ranked_roles(self, obj):
+        return self._insights(obj)['ranked_roles']
+
+    @extend_schema_field(serializers.CharField())
+    def get_guidance_summary(self, obj):
+        return self._insights(obj)['guidance_summary']
+
+
 class AssessmentSessionSerializer(serializers.ModelSerializer):
     preferred_role = RoleSerializer(read_only=True)
-    best_fit_role = RoleSerializer(read_only=True)
-    current_question = serializers.SerializerMethodField()
+    best_fit_role = serializers.SerializerMethodField()
+    best_fit_confidence = serializers.SerializerMethodField()
     milestones = serializers.SerializerMethodField()
     role_alignment_status = serializers.SerializerMethodField()
+    role_resolution_status = serializers.SerializerMethodField()
     guidance_summary = serializers.SerializerMethodField()
+    current_question = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentSession
@@ -100,26 +178,45 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
             'completed_at',
             'milestones',
             'role_alignment_status',
+            'role_resolution_status',
             'guidance_summary',
             'current_question',
         )
 
-    @extend_schema_field(QuestionSerializer(allow_null=True))
-    def get_current_question(self, obj):
-        question = get_current_question(obj)
-        return QuestionSerializer(question).data if question else None
+    def _session_state(self, obj):
+        session_state = self.context.get('session_state')
+        if session_state is not None:
+            return session_state
+        return build_session_state(obj)
+
+    @extend_schema_field(RoleSerializer(allow_null=True))
+    def get_best_fit_role(self, obj):
+        best_fit_role = self._session_state(obj)['best_fit_role']
+        return RoleSerializer(best_fit_role).data if best_fit_role else None
+
+    @extend_schema_field(serializers.FloatField())
+    def get_best_fit_confidence(self, obj):
+        return self._session_state(obj)['best_fit_confidence']
 
     @extend_schema_field(serializers.JSONField())
     def get_milestones(self, obj):
-        return serialize_milestones(obj)
+        return self._session_state(obj)['milestones']
 
     @extend_schema_field(serializers.CharField())
     def get_role_alignment_status(self, obj):
-        return get_role_alignment_status(obj)
+        return self._session_state(obj)['role_alignment_status']
+
+    @extend_schema_field(serializers.CharField())
+    def get_role_resolution_status(self, obj):
+        return self._session_state(obj)['role_resolution_status']
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
-        return build_guidance_summary(obj)
+        return self._session_state(obj)['guidance_summary']
+
+    @extend_schema_field(serializers.JSONField(allow_null=True))
+    def get_current_question(self, obj):
+        return self._session_state(obj)['current_question']
 
 
 class AnswerHistorySerializer(serializers.ModelSerializer):
@@ -156,8 +253,11 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
     best_fit_path_recommendation = serializers.SerializerMethodField()
     milestones = serializers.SerializerMethodField()
     role_alignment_status = serializers.SerializerMethodField()
+    role_resolution_status = serializers.SerializerMethodField()
     guidance_summary = serializers.SerializerMethodField()
     preferred_role_gap_topics = serializers.SerializerMethodField()
+    pillar_profile = serializers.SerializerMethodField()
+    ranked_roles = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentSession
@@ -174,12 +274,21 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             'completed_at',
             'milestones',
             'role_alignment_status',
+            'role_resolution_status',
             'guidance_summary',
+            'pillar_profile',
+            'ranked_roles',
             'preferred_role_gap_topics',
             'mastery_scores',
             'preferred_path_recommendation',
             'best_fit_path_recommendation',
         )
+
+    def _insights(self, obj):
+        cached = self.context.get('role_insights')
+        if cached is not None:
+            return cached
+        return get_role_insights(obj)
 
     @extend_schema_field(serializers.JSONField())
     def get_milestones(self, obj):
@@ -190,8 +299,20 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
         return get_role_alignment_status(obj)
 
     @extend_schema_field(serializers.CharField())
+    def get_role_resolution_status(self, obj):
+        return get_role_resolution_status(obj)
+
+    @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return build_guidance_summary(obj)
+
+    @extend_schema_field(PillarInsightSerializer(many=True))
+    def get_pillar_profile(self, obj):
+        return self._insights(obj)['pillar_profile']
+
+    @extend_schema_field(RankedRoleInsightSerializer(many=True))
+    def get_ranked_roles(self, obj):
+        return self._insights(obj)['ranked_roles']
 
     @extend_schema_field(RoadmapTopicSerializer(many=True))
     def get_preferred_role_gap_topics(self, obj):

@@ -1,0 +1,841 @@
+role_questions:
+- code: role-trait-user-interviews-or-service-code
+  item_group: core
+  question_type: single_choice
+  prompt: A team is unsure what to improve next. Which work would you choose?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 1
+  options:
+  - key: strong-talk-to-users
+    label: 'Strongly prefer: Study people using the workflow'
+    display_order: 1
+    dimension_signals:
+      people_discovery: 2
+  - key: slight-talk-to-users
+    label: 'Slightly prefer: Study people using the workflow'
+    display_order: 2
+    dimension_signals:
+      people_discovery: 1
+  - key: slight-build-service
+    label: 'Slightly prefer: Build the technical piece that supports the workflow'
+    display_order: 3
+    dimension_signals:
+      technical_build: 1
+  - key: strong-build-service
+    label: 'Strongly prefer: Build the technical piece that supports the workflow'
+    display_order: 4
+    dimension_signals:
+      technical_build: 2
+- code: role-trait-align-room-or-solve-alone
+  item_group: core
+  question_type: single_choice
+  prompt: Progress is blocked. Which contribution fits you better?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 2
+  options:
+  - key: strong-align-room
+    label: 'Strongly prefer: Bring people together and agree on next steps'
+    display_order: 1
+    dimension_signals:
+      influence_coordination: 2
+  - key: slight-align-room
+    label: 'Slightly prefer: Bring people together and agree on next steps'
+    display_order: 2
+    dimension_signals:
+      influence_coordination: 1
+  - key: slight-solve-alone
+    label: 'Slightly prefer: Work deeply until you understand the hard part'
+    display_order: 3
+    dimension_signals:
+      independent_deep_work: 1
+  - key: strong-solve-alone
+    label: 'Strongly prefer: Work deeply until you understand the hard part'
+    display_order: 4
+    dimension_signals:
+      independent_deep_work: 2
+- code: role-trait-department-process-or-user-journey
+  item_group: core
+  question_type: single_choice
+  prompt: A workflow needs improvement. What do you map first?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 3
+  options:
+  - key: strong-department-process
+    label: 'Strongly prefer: Map the business process, rules, and handoffs'
+    display_order: 1
+    dimension_signals:
+      business_process: 2
+  - key: slight-department-process
+    label: 'Slightly prefer: Map the business process, rules, and handoffs'
+    display_order: 2
+    dimension_signals:
+      business_process: 1
+  - key: slight-user-journey
+    label: 'Slightly prefer: Map the user journey and moments of friction'
+    display_order: 3
+    dimension_signals:
+      product_experience: 1
+  - key: strong-user-journey
+    label: 'Strongly prefer: Map the user journey and moments of friction'
+    display_order: 4
+    dimension_signals:
+      product_experience: 2
+- code: role-trait-analyze-patterns-or-keep-running
+  item_group: core
+  question_type: single_choice
+  prompt: A service has mixed signals. What draws you?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 4
+  options:
+  - key: strong-analyze-patterns
+    label: 'Strongly prefer: Analyze data to explain what is happening'
+    display_order: 1
+    dimension_signals:
+      data_investigation: 2
+  - key: slight-analyze-patterns
+    label: 'Slightly prefer: Analyze data to explain what is happening'
+    display_order: 2
+    dimension_signals:
+      data_investigation: 1
+  - key: slight-keep-running
+    label: 'Slightly prefer: Keep the system stable, available, and recoverable'
+    display_order: 3
+    dimension_signals:
+      systems_operation: 1
+  - key: strong-keep-running
+    label: 'Strongly prefer: Keep the system stable, available, and recoverable'
+    display_order: 4
+    dimension_signals:
+      systems_operation: 2
+- code: role-trait-model-requirements-or-ship-feature
+  item_group: core
+  question_type: single_choice
+  prompt: A team is ready to start. What would you rather own?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 5
+  options:
+  - key: strong-model-requirements
+    label: 'Strongly prefer: Model requirements, rules, and acceptance examples'
+    display_order: 1
+    dimension_signals:
+      requirements_modeling: 2
+  - key: slight-model-requirements
+    label: 'Slightly prefer: Model requirements, rules, and acceptance examples'
+    display_order: 2
+    dimension_signals:
+      requirements_modeling: 1
+  - key: slight-ship-feature
+    label: 'Slightly prefer: Implement and ship the working feature'
+    display_order: 3
+    dimension_signals:
+      implementation_delivery: 1
+  - key: strong-ship-feature
+    label: 'Strongly prefer: Implement and ship the working feature'
+    display_order: 4
+    dimension_signals:
+      implementation_delivery: 2
+- code: role-trait-reduce-risk-or-test-idea
+  item_group: core
+  question_type: single_choice
+  prompt: A new idea is promising but uncertain. Choose.
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 6
+  options:
+  - key: strong-reduce-risk
+    label: 'Strongly prefer: Reduce risks before the team commits'
+    display_order: 1
+    dimension_signals:
+      risk_control: 2
+  - key: slight-reduce-risk
+    label: 'Slightly prefer: Reduce risks before the team commits'
+    display_order: 2
+    dimension_signals:
+      risk_control: 1
+  - key: slight-test-idea
+    label: 'Slightly prefer: Test the idea quickly to learn what is possible'
+    display_order: 3
+    dimension_signals:
+      innovation_experiment: 1
+  - key: strong-test-idea
+    label: 'Strongly prefer: Test the idea quickly to learn what is possible'
+    display_order: 4
+    dimension_signals:
+      innovation_experiment: 2
+- code: role-trait-customer-pain-or-system-bug
+  item_group: core
+  question_type: single_choice
+  prompt: A product has a recurring problem. Where do you start?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 7
+  options:
+  - key: strong-find-customer-pain
+    label: 'Strongly prefer: Find where people struggle and why it matters'
+    display_order: 1
+    dimension_signals:
+      people_discovery: 2
+  - key: slight-find-customer-pain
+    label: 'Slightly prefer: Find where people struggle and why it matters'
+    display_order: 2
+    dimension_signals:
+      people_discovery: 1
+  - key: slight-fix-system-bug
+    label: 'Slightly prefer: Trace the technical cause and make it work'
+    display_order: 3
+    dimension_signals:
+      technical_build: 1
+  - key: strong-fix-system-bug
+    label: 'Strongly prefer: Trace the technical cause and make it work'
+    display_order: 4
+    dimension_signals:
+      technical_build: 2
+- code: role-trait-coordinate-launch-or-deepen-design
+  item_group: core
+  question_type: single_choice
+  prompt: A launch needs attention. Choose your focus.
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 8
+  options:
+  - key: strong-coordinate-launch
+    label: 'Strongly prefer: Coordinate owners, timing, and communication'
+    display_order: 1
+    dimension_signals:
+      influence_coordination: 2
+  - key: slight-coordinate-launch
+    label: 'Slightly prefer: Coordinate owners, timing, and communication'
+    display_order: 2
+    dimension_signals:
+      influence_coordination: 1
+  - key: slight-deepen-design
+    label: 'Slightly prefer: Deepen the design of the hardest technical detail'
+    display_order: 3
+    dimension_signals:
+      independent_deep_work: 1
+  - key: strong-deepen-design
+    label: 'Strongly prefer: Deepen the design of the hardest technical detail'
+    display_order: 4
+    dimension_signals:
+      independent_deep_work: 2
+- code: role-trait-policy-change-or-product-flow
+  item_group: core
+  question_type: single_choice
+  prompt: A change request arrives. Which impact interests you more?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 9
+  options:
+  - key: strong-policy-change
+    label: 'Strongly prefer: How the change affects operations and decisions'
+    display_order: 1
+    dimension_signals:
+      business_process: 2
+  - key: slight-policy-change
+    label: 'Slightly prefer: How the change affects operations and decisions'
+    display_order: 2
+    dimension_signals:
+      business_process: 1
+  - key: slight-product-flow
+    label: 'Slightly prefer: How the change affects the product experience'
+    display_order: 3
+    dimension_signals:
+      product_experience: 1
+  - key: strong-product-flow
+    label: 'Strongly prefer: How the change affects the product experience'
+    display_order: 4
+    dimension_signals:
+      product_experience: 2
+- code: role-trait-metric-question-or-runtime-health
+  item_group: core
+  question_type: single_choice
+  prompt: Leaders ask for confidence. Which evidence do you provide?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 10
+  options:
+  - key: strong-metric-question
+    label: 'Strongly prefer: Metrics and cuts that reveal the pattern'
+    display_order: 1
+    dimension_signals:
+      data_investigation: 2
+  - key: slight-metric-question
+    label: 'Slightly prefer: Metrics and cuts that reveal the pattern'
+    display_order: 2
+    dimension_signals:
+      data_investigation: 1
+  - key: slight-runtime-health
+    label: 'Slightly prefer: Operational checks that show the system is healthy'
+    display_order: 3
+    dimension_signals:
+      systems_operation: 1
+  - key: strong-runtime-health
+    label: 'Strongly prefer: Operational checks that show the system is healthy'
+    display_order: 4
+    dimension_signals:
+      systems_operation: 2
+- code: role-trait-write-spec-or-build-slice
+  item_group: core
+  question_type: single_choice
+  prompt: Which finished artifact feels more valuable?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 11
+  options:
+  - key: strong-write-spec
+    label: 'Strongly prefer: A precise spec that removes confusion'
+    display_order: 1
+    dimension_signals:
+      requirements_modeling: 2
+  - key: slight-write-spec
+    label: 'Slightly prefer: A precise spec that removes confusion'
+    display_order: 2
+    dimension_signals:
+      requirements_modeling: 1
+  - key: slight-build-slice
+    label: 'Slightly prefer: A working slice that people can use'
+    display_order: 3
+    dimension_signals:
+      implementation_delivery: 1
+  - key: strong-build-slice
+    label: 'Strongly prefer: A working slice that people can use'
+    display_order: 4
+    dimension_signals:
+      implementation_delivery: 2
+- code: role-trait-guardrails-or-prototype
+  item_group: core
+  question_type: single_choice
+  prompt: Which early work sounds better?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 12
+  options:
+  - key: strong-guardrails
+    label: 'Strongly prefer: Set guardrails for quality, access, and failure cases'
+    display_order: 1
+    dimension_signals:
+      risk_control: 2
+  - key: slight-guardrails
+    label: 'Slightly prefer: Set guardrails for quality, access, and failure cases'
+    display_order: 2
+    dimension_signals:
+      risk_control: 1
+  - key: slight-prototype
+    label: 'Slightly prefer: Build a prototype and learn from trying it'
+    display_order: 3
+    dimension_signals:
+      innovation_experiment: 1
+  - key: strong-prototype
+    label: 'Strongly prefer: Build a prototype and learn from trying it'
+    display_order: 4
+    dimension_signals:
+      innovation_experiment: 2
+- code: role-trait-feedback-session-or-code-session
+  item_group: core
+  question_type: single_choice
+  prompt: You have a free afternoon on a product team. Pick the session.
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 13
+  options:
+  - key: strong-feedback-session
+    label: 'Strongly prefer: Run a feedback session with users or stakeholders'
+    display_order: 1
+    dimension_signals:
+      people_discovery: 2
+  - key: slight-feedback-session
+    label: 'Slightly prefer: Run a feedback session with users or stakeholders'
+    display_order: 2
+    dimension_signals:
+      people_discovery: 1
+  - key: slight-code-session
+    label: 'Slightly prefer: Work through code until the feature behaves correctly'
+    display_order: 3
+    dimension_signals:
+      technical_build: 1
+  - key: strong-code-session
+    label: 'Strongly prefer: Work through code until the feature behaves correctly'
+    display_order: 4
+    dimension_signals:
+      technical_build: 2
+- code: role-trait-stakeholder-update-or-focused-analysis
+  item_group: core
+  question_type: single_choice
+  prompt: The team needs clarity by tomorrow. What do you prepare?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 14
+  options:
+  - key: strong-stakeholder-update
+    label: 'Strongly prefer: A concise update that aligns everyone'
+    display_order: 1
+    dimension_signals:
+      influence_coordination: 2
+  - key: slight-stakeholder-update
+    label: 'Slightly prefer: A concise update that aligns everyone'
+    display_order: 2
+    dimension_signals:
+      influence_coordination: 1
+  - key: slight-focused-analysis
+    label: 'Slightly prefer: A careful analysis of the underlying problem'
+    display_order: 3
+    dimension_signals:
+      independent_deep_work: 1
+  - key: strong-focused-analysis
+    label: 'Strongly prefer: A careful analysis of the underlying problem'
+    display_order: 4
+    dimension_signals:
+      independent_deep_work: 2
+- code: role-trait-internal-efficiency-or-customer-task
+  item_group: core
+  question_type: single_choice
+  prompt: Which outcome would you rather improve?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 15
+  options:
+  - key: strong-internal-efficiency
+    label: 'Strongly prefer: Make internal work more consistent and efficient'
+    display_order: 1
+    dimension_signals:
+      business_process: 2
+  - key: slight-internal-efficiency
+    label: 'Slightly prefer: Make internal work more consistent and efficient'
+    display_order: 2
+    dimension_signals:
+      business_process: 1
+  - key: slight-customer-task
+    label: 'Slightly prefer: Make a customer task easier and more satisfying'
+    display_order: 3
+    dimension_signals:
+      product_experience: 1
+  - key: strong-customer-task
+    label: 'Strongly prefer: Make a customer task easier and more satisfying'
+    display_order: 4
+    dimension_signals:
+      product_experience: 2
+- code: role-trait-data-quality-or-service-reliability
+  item_group: core
+  question_type: single_choice
+  prompt: Something must become more trustworthy. Choose.
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 16
+  options:
+  - key: strong-data-quality
+    label: 'Strongly prefer: Make the data and analysis trustworthy'
+    display_order: 1
+    dimension_signals:
+      data_investigation: 2
+  - key: slight-data-quality
+    label: 'Slightly prefer: Make the data and analysis trustworthy'
+    display_order: 2
+    dimension_signals:
+      data_investigation: 1
+  - key: slight-service-reliability
+    label: 'Slightly prefer: Make the service behavior trustworthy'
+    display_order: 3
+    dimension_signals:
+      systems_operation: 1
+  - key: strong-service-reliability
+    label: 'Strongly prefer: Make the service behavior trustworthy'
+    display_order: 4
+    dimension_signals:
+      systems_operation: 2
+- code: role-trait-edge-cases-or-release-work
+  item_group: core
+  question_type: single_choice
+  prompt: A feature has unknowns. Pick your focus.
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 17
+  options:
+  - key: strong-edge-cases
+    label: 'Strongly prefer: Define edge cases and expected behavior'
+    display_order: 1
+    dimension_signals:
+      requirements_modeling: 2
+  - key: slight-edge-cases
+    label: 'Slightly prefer: Define edge cases and expected behavior'
+    display_order: 2
+    dimension_signals:
+      requirements_modeling: 1
+  - key: slight-release-work
+    label: 'Slightly prefer: Do the delivery work to make it real'
+    display_order: 3
+    dimension_signals:
+      implementation_delivery: 1
+  - key: strong-release-work
+    label: 'Strongly prefer: Do the delivery work to make it real'
+    display_order: 4
+    dimension_signals:
+      implementation_delivery: 2
+- code: role-trait-safe-release-or-new-approach
+  item_group: core
+  question_type: single_choice
+  prompt: A team wants to move faster. What do you improve?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 18
+  options:
+  - key: strong-safe-release
+    label: 'Strongly prefer: Make releases safer and more controlled'
+    display_order: 1
+    dimension_signals:
+      risk_control: 2
+  - key: slight-safe-release
+    label: 'Slightly prefer: Make releases safer and more controlled'
+    display_order: 2
+    dimension_signals:
+      risk_control: 1
+  - key: slight-new-approach
+    label: 'Slightly prefer: Try a new approach that could unlock speed'
+    display_order: 3
+    dimension_signals:
+      innovation_experiment: 1
+  - key: strong-new-approach
+    label: 'Strongly prefer: Try a new approach that could unlock speed'
+    display_order: 4
+    dimension_signals:
+      innovation_experiment: 2
+- code: role-trait-workflow-observation-or-technical-spike
+  item_group: core
+  question_type: single_choice
+  prompt: A new feature feels risky. Which discovery helps more?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 19
+  options:
+  - key: strong-observe-workflow
+    label: 'Strongly prefer: Observe how people do the task today'
+    display_order: 1
+    dimension_signals:
+      people_discovery: 2
+  - key: slight-observe-workflow
+    label: 'Slightly prefer: Observe how people do the task today'
+    display_order: 2
+    dimension_signals:
+      people_discovery: 1
+  - key: slight-technical-spike
+    label: 'Slightly prefer: Prototype the technical approach and constraints'
+    display_order: 3
+    dimension_signals:
+      technical_build: 1
+  - key: strong-technical-spike
+    label: 'Strongly prefer: Prototype the technical approach and constraints'
+    display_order: 4
+    dimension_signals:
+      technical_build: 2
+- code: role-trait-workshop-or-quiet-build
+  item_group: core
+  question_type: single_choice
+  prompt: Which work setting gives you more energy?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 20
+  options:
+  - key: strong-team-workshop
+    label: 'Strongly prefer: A workshop that turns many views into one plan'
+    display_order: 1
+    dimension_signals:
+      influence_coordination: 2
+  - key: slight-team-workshop
+    label: 'Slightly prefer: A workshop that turns many views into one plan'
+    display_order: 2
+    dimension_signals:
+      influence_coordination: 1
+  - key: slight-quiet-build
+    label: 'Slightly prefer: Quiet time to build or investigate without interruption'
+    display_order: 3
+    dimension_signals:
+      independent_deep_work: 1
+  - key: strong-quiet-build
+    label: 'Strongly prefer: Quiet time to build or investigate without interruption'
+    display_order: 4
+    dimension_signals:
+      independent_deep_work: 2
+- code: role-trait-process-rules-or-screen-behavior
+  item_group: core
+  question_type: single_choice
+  prompt: A feature is unclear. Which clarity do you provide?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 21
+  options:
+  - key: strong-process-rules
+    label: 'Strongly prefer: Clarify the process rules and exceptions'
+    display_order: 1
+    dimension_signals:
+      business_process: 2
+  - key: slight-process-rules
+    label: 'Slightly prefer: Clarify the process rules and exceptions'
+    display_order: 2
+    dimension_signals:
+      business_process: 1
+  - key: slight-screen-behavior
+    label: 'Slightly prefer: Clarify what people see, tap, and understand'
+    display_order: 3
+    dimension_signals:
+      product_experience: 1
+  - key: strong-screen-behavior
+    label: 'Strongly prefer: Clarify what people see, tap, and understand'
+    display_order: 4
+    dimension_signals:
+      product_experience: 2
+- code: role-trait-experiment-readout-or-incident-review
+  item_group: core
+  question_type: single_choice
+  prompt: After a problem, what would you lead?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 22
+  options:
+  - key: strong-experiment-readout
+    label: 'Strongly prefer: Read the data and explain likely causes'
+    display_order: 1
+    dimension_signals:
+      data_investigation: 2
+  - key: slight-experiment-readout
+    label: 'Slightly prefer: Read the data and explain likely causes'
+    display_order: 2
+    dimension_signals:
+      data_investigation: 1
+  - key: slight-incident-review
+    label: 'Slightly prefer: Review system behavior and improve recovery'
+    display_order: 3
+    dimension_signals:
+      systems_operation: 1
+  - key: strong-incident-review
+    label: 'Strongly prefer: Review system behavior and improve recovery'
+    display_order: 4
+    dimension_signals:
+      systems_operation: 2
+- code: role-trait-system-model-or-working-increment
+  item_group: core
+  question_type: single_choice
+  prompt: A complex idea needs progress. Which progress?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 23
+  options:
+  - key: strong-system-model
+    label: 'Strongly prefer: A model of entities, rules, and flows'
+    display_order: 1
+    dimension_signals:
+      requirements_modeling: 2
+  - key: slight-system-model
+    label: 'Slightly prefer: A model of entities, rules, and flows'
+    display_order: 2
+    dimension_signals:
+      requirements_modeling: 1
+  - key: slight-working-increment
+    label: 'Slightly prefer: A tested increment running in the product'
+    display_order: 3
+    dimension_signals:
+      implementation_delivery: 1
+  - key: strong-working-increment
+    label: 'Strongly prefer: A tested increment running in the product'
+    display_order: 4
+    dimension_signals:
+      implementation_delivery: 2
+- code: role-trait-compliance-check-or-discovery-test
+  item_group: core
+  question_type: single_choice
+  prompt: A decision needs confidence. What kind?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 24
+  options:
+  - key: strong-compliance-check
+    label: 'Strongly prefer: Confidence that rules, risks, and controls are covered'
+    display_order: 1
+    dimension_signals:
+      risk_control: 2
+  - key: slight-compliance-check
+    label: 'Slightly prefer: Confidence that rules, risks, and controls are covered'
+    display_order: 2
+    dimension_signals:
+      risk_control: 1
+  - key: slight-discovery-test
+    label: 'Slightly prefer: Confidence from testing a new possibility'
+    display_order: 3
+    dimension_signals:
+      innovation_experiment: 1
+  - key: strong-discovery-test
+    label: 'Strongly prefer: Confidence from testing a new possibility'
+    display_order: 4
+    dimension_signals:
+      innovation_experiment: 2
+- code: role-trait-user-story-or-working-module
+  item_group: core
+  question_type: single_choice
+  prompt: What feels more satisfying to finish?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 25
+  options:
+  - key: strong-clear-user-story
+    label: 'Strongly prefer: A clear story of who needs what and why'
+    display_order: 1
+    dimension_signals:
+      people_discovery: 2
+  - key: slight-clear-user-story
+    label: 'Slightly prefer: A clear story of who needs what and why'
+    display_order: 2
+    dimension_signals:
+      people_discovery: 1
+  - key: slight-working-module
+    label: 'Slightly prefer: A working module that proves the system can do it'
+    display_order: 3
+    dimension_signals:
+      technical_build: 1
+  - key: strong-working-module
+    label: 'Strongly prefer: A working module that proves the system can do it'
+    display_order: 4
+    dimension_signals:
+      technical_build: 2
+- code: role-trait-negotiate-tradeoff-or-master-complexity
+  item_group: core
+  question_type: single_choice
+  prompt: A decision has tradeoffs. Which role would you take?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 26
+  options:
+  - key: strong-negotiate-tradeoff
+    label: 'Strongly prefer: Help groups choose a tradeoff they can support'
+    display_order: 1
+    dimension_signals:
+      influence_coordination: 2
+  - key: slight-negotiate-tradeoff
+    label: 'Slightly prefer: Help groups choose a tradeoff they can support'
+    display_order: 2
+    dimension_signals:
+      influence_coordination: 1
+  - key: slight-master-complexity
+    label: 'Slightly prefer: Master the complex details behind the decision'
+    display_order: 3
+    dimension_signals:
+      independent_deep_work: 1
+  - key: strong-master-complexity
+    label: 'Strongly prefer: Master the complex details behind the decision'
+    display_order: 4
+    dimension_signals:
+      independent_deep_work: 2
+- code: role-trait-operations-fit-or-experience-fit
+  item_group: core
+  question_type: single_choice
+  prompt: A solution must fit real work. Which fit matters first?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 27
+  options:
+  - key: strong-operations-fit
+    label: 'Strongly prefer: Fit the solution to business operations'
+    display_order: 1
+    dimension_signals:
+      business_process: 2
+  - key: slight-operations-fit
+    label: 'Slightly prefer: Fit the solution to business operations'
+    display_order: 2
+    dimension_signals:
+      business_process: 1
+  - key: slight-experience-fit
+    label: 'Slightly prefer: Fit the solution to the product experience'
+    display_order: 3
+    dimension_signals:
+      product_experience: 1
+  - key: strong-experience-fit
+    label: 'Strongly prefer: Fit the solution to the product experience'
+    display_order: 4
+    dimension_signals:
+      product_experience: 2
+- code: role-trait-forecast-change-or-operate-platform
+  item_group: core
+  question_type: single_choice
+  prompt: A team plans for growth. Which work fits you?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 28
+  options:
+  - key: strong-forecast-change
+    label: 'Strongly prefer: Use data to forecast needs and tradeoffs'
+    display_order: 1
+    dimension_signals:
+      data_investigation: 2
+  - key: slight-forecast-change
+    label: 'Slightly prefer: Use data to forecast needs and tradeoffs'
+    display_order: 2
+    dimension_signals:
+      data_investigation: 1
+  - key: slight-operate-platform
+    label: 'Slightly prefer: Operate the platform so growth does not break it'
+    display_order: 3
+    dimension_signals:
+      systems_operation: 1
+  - key: strong-operate-platform
+    label: 'Strongly prefer: Operate the platform so growth does not break it'
+    display_order: 4
+    dimension_signals:
+      systems_operation: 2
+- code: role-trait-acceptance-criteria-or-production-change
+  item_group: core
+  question_type: single_choice
+  prompt: What would you rather make ready?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 29
+  options:
+  - key: strong-acceptance-criteria
+    label: 'Strongly prefer: Acceptance criteria everyone can judge against'
+    display_order: 1
+    dimension_signals:
+      requirements_modeling: 2
+  - key: slight-acceptance-criteria
+    label: 'Slightly prefer: Acceptance criteria everyone can judge against'
+    display_order: 2
+    dimension_signals:
+      requirements_modeling: 1
+  - key: slight-production-change
+    label: 'Slightly prefer: The production change and follow-up fixes'
+    display_order: 3
+    dimension_signals:
+      implementation_delivery: 1
+  - key: strong-production-change
+    label: 'Strongly prefer: The production change and follow-up fixes'
+    display_order: 4
+    dimension_signals:
+      implementation_delivery: 2
+- code: role-trait-prevent-failure-or-create-option
+  item_group: core
+  question_type: single_choice
+  prompt: What feels more natural?
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 30
+  options:
+  - key: strong-prevent-failure
+    label: 'Strongly prefer: Prevent avoidable failures and misuse'
+    display_order: 1
+    dimension_signals:
+      risk_control: 2
+  - key: slight-prevent-failure
+    label: 'Slightly prefer: Prevent avoidable failures and misuse'
+    display_order: 2
+    dimension_signals:
+      risk_control: 1
+  - key: slight-create-option
+    label: 'Slightly prefer: Create a new option the team can evaluate'
+    display_order: 3
+    dimension_signals:
+      innovation_experiment: 1
+  - key: strong-create-option
+    label: 'Strongly prefer: Create a new option the team can evaluate'
+    display_order: 4
+    dimension_signals:
+      innovation_experiment: 2

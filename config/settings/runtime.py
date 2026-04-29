@@ -15,15 +15,13 @@ def _env_list(name: str, default: str) -> list[str]:
     return [item.strip() for item in raw_value.split(',') if item.strip()]
 
 
-DATABASES = {
-    alias: config.copy()
-    for alias, config in DATABASES.items()
-}
+DATABASES = {alias: config.copy() for alias, config in DATABASES.items()}
 
 DEBUG = _env_flag('DJANGO_DEBUG', True)
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', SECRET_KEY)
 ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
 CORS_ALLOW_ALL_ORIGINS = _env_flag('DJANGO_CORS_ALLOW_ALL_ORIGINS', True)
+ASSESSMENT_BANDIT_POLICY_MODE = os.getenv('DJANGO_ASSESSMENT_BANDIT_POLICY_MODE', ASSESSMENT_BANDIT_POLICY_MODE)
 
 postgres_host = os.getenv('POSTGRES_HOST')
 if postgres_host:

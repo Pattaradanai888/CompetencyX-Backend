@@ -1,0 +1,43 @@
+skill_questions:
+  - code: product-manager-discovery
+    role_slug: product-manager
+    topic_slug: product-discovery
+    question_type: yes_no_maybe
+    prompt: Can you frame a product problem in terms of users, outcomes, and constraints?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 231
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: product-discovery, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: product-discovery, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: product-discovery, mastery_delta: 0.0}]
+  - code: product-manager-prioritization
+    role_slug: product-manager
+    topic_slug: prioritization
+    question_type: yes_no_maybe
+    prompt: Can you prioritize competing opportunities by weighing value, risk, and effort?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 232
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: prioritization, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: prioritization, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: prioritization, mastery_delta: 0.0}]

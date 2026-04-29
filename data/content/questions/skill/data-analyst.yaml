@@ -1,0 +1,43 @@
+skill_questions:
+  - code: data-analyst-querying
+    role_slug: data-analyst
+    topic_slug: data-querying
+    question_type: yes_no_maybe
+    prompt: Can you query source data and reshape it into something useful for analysis?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 271
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: data-querying, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: data-querying, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: data-querying, mastery_delta: 0.0}]
+  - code: data-analyst-dashboarding
+    role_slug: data-analyst
+    topic_slug: dashboarding
+    question_type: yes_no_maybe
+    prompt: Can you build or interpret dashboards that help others make better decisions?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 272
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: dashboarding, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: dashboarding, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: dashboarding, mastery_delta: 0.0}]

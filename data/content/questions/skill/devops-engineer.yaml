@@ -1,0 +1,43 @@
+skill_questions:
+  - code: devops-linux-shell
+    role_slug: devops-engineer
+    topic_slug: linux-shell
+    question_type: yes_no_maybe
+    prompt: Can you use the shell to inspect files, processes, and service logs?
+    difficulty: 1
+    discrimination_score: 1.7
+    display_order: 41
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: linux-shell, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: linux-shell, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: linux-shell, mastery_delta: 0.0}]
+  - code: devops-ci-cd
+    role_slug: devops-engineer
+    topic_slug: ci-cd
+    question_type: yes_no_maybe
+    prompt: Have you configured or maintained a build, test, or deployment pipeline?
+    difficulty: 2
+    discrimination_score: 1.9
+    display_order: 42
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: ci-cd, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: ci-cd, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: ci-cd, mastery_delta: 0.0}]

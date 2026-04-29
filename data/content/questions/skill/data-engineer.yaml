@@ -1,0 +1,43 @@
+skill_questions:
+  - code: data-sql-foundations
+    role_slug: data-engineer
+    topic_slug: sql-foundations
+    question_type: yes_no_maybe
+    prompt: Can you write SQL queries to filter, join, and aggregate data?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 51
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: sql-foundations, mastery_delta: 0.0}]
+  - code: data-modeling-foundations
+    role_slug: data-engineer
+    topic_slug: data-modeling
+    question_type: yes_no_maybe
+    prompt: Can you explain dimensions, facts, keys, and schema design tradeoffs?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 52
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: data-modeling, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: data-modeling, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: data-modeling, mastery_delta: 0.0}]

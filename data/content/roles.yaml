@@ -23,3 +23,42 @@ roles:
   - slug: cybersecurity-engineer
     name: Cybersecurity Engineer
     description: Protects systems through secure design, detection, and incident response.
+  - slug: solutions-architect
+    name: Solutions Architect
+    description: Shapes solution blueprints that connect business needs, systems, and delivery constraints.
+  - slug: system-architect
+    name: System Architect
+    description: Designs system structures, interfaces, reliability boundaries, and technical standards.
+  - slug: systems-analyst
+    name: Systems Analyst
+    description: Turns operational problems into clear process, system, and requirements changes.
+  - slug: product-manager
+    name: Product Manager
+    description: Aligns user problems, business priorities, and product direction.
+  - slug: product-owner
+    name: Product Owner
+    description: Prioritizes backlog decisions and clarifies product delivery outcomes with the team.
+  - slug: project-manager
+    name: Project Manager
+    description: Coordinates scope, delivery plans, dependencies, and stakeholder communication.
+  - slug: business-analyst
+    name: Business Analyst
+    description: Models business needs, workflows, and requirements into actionable change.
+  - slug: data-analyst
+    name: Data Analyst
+    description: Explains performance and decisions through metrics, queries, and analysis.
+  - slug: ux-ui-designer
+    name: UX/UI Designer
+    description: Designs user journeys, interfaces, and interaction patterns with clarity and intent.
+  - slug: data-scientist
+    name: Data Scientist
+    description: Analyzes data and builds models to extract insights and support decisions.
+  - slug: ai-engineer
+    name: AI Engineer
+    description: Builds and deploys machine learning models into production software systems.
+  - slug: system-engineer
+    name: System Engineer
+    description: Designs and maintains integrated system infrastructure and platform reliability.
+  - slug: sap-erp-consultant
+    name: SAP/ERP Consultant
+    description: Configures and optimizes enterprise resource planning systems to match business needs.

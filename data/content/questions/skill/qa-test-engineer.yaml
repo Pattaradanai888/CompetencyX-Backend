@@ -1,0 +1,43 @@
+skill_questions:
+  - code: qa-test-design
+    role_slug: qa-test-engineer
+    topic_slug: test-design
+    question_type: yes_no_maybe
+    prompt: Can you derive useful test cases from requirements, edge cases, and user flows?
+    difficulty: 1
+    discrimination_score: 1.8
+    display_order: 71
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: test-design, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: test-design, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: test-design, mastery_delta: 0.0}]
+  - code: qa-test-automation
+    role_slug: qa-test-engineer
+    topic_slug: test-automation
+    question_type: yes_no_maybe
+    prompt: Have you written or maintained automated UI, API, or regression tests?
+    difficulty: 2
+    discrimination_score: 2.0
+    display_order: 72
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: test-automation, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: test-automation, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: test-automation, mastery_delta: 0.0}]

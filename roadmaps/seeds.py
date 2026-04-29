@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import yaml
 
@@ -12,11 +13,15 @@ from roadmaps.models import (
     Role,
     TopicPrerequisite,
 )
+from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_DIMENSIONS
 
 
 BASE_DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
 CURATED_CONTENT_DIR = BASE_DATA_DIR / 'content'
+QUESTION_BANK_DIR = CURATED_CONTENT_DIR / 'questions'
+LEGACY_QUESTION_FILE = CURATED_CONTENT_DIR / 'questions.yaml'
 UPSTREAM_SNAPSHOT_DIR = BASE_DATA_DIR / 'upstream' / 'roadmap_sh'
+MIN_TIE_BREAK_ROLE_COUNT = 2
 
 
 def seed_mvp_content(*, stdout=None):
@@ -24,9 +29,7 @@ def seed_mvp_content(*, stdout=None):
 
 
 def load_curated_content(*, stdout=None):
-    roles_data = _load_yaml(CURATED_CONTENT_DIR / 'roles.yaml')
-    topics_data = _load_yaml(CURATED_CONTENT_DIR / 'topics.yaml')
-    questions_data = _load_yaml(CURATED_CONTENT_DIR / 'questions.yaml')
+    roles_data, topics_data, questions_data = load_curated_catalog()
 
     roles_by_slug = _sync_roles(roles_data['roles'])
     topics_by_key = _sync_topics(topics_data['topics'], roles_by_slug)
@@ -44,6 +47,51 @@ def load_curated_content(*, stdout=None):
             f'{Question.objects.count()} questions, and '
             f'{QuestionOption.objects.count()} options.'
         )
+
+
+def load_curated_catalog():
+    roles_data = _load_yaml(CURATED_CONTENT_DIR / 'roles.yaml')
+    topics_data = _load_yaml(CURATED_CONTENT_DIR / 'topics.yaml')
+    questions_data = _load_question_bank()
+    validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=questions_data)
+    return roles_data, topics_data, questions_data
+
+
+def _load_question_bank():
+    if QUESTION_BANK_DIR.exists():
+        question_fragments = sorted(QUESTION_BANK_DIR.rglob('*.yaml'))
+        if not question_fragments:
+            msg = f'No question fragments were found in "{QUESTION_BANK_DIR}".'
+            raise FileNotFoundError(msg)
+
+        questions_data = {'role_questions': [], 'skill_questions': []}
+        for fragment_path in question_fragments:
+            fragment = _load_yaml(fragment_path)
+            if fragment is None:
+                continue
+            questions_data['role_questions'].extend(fragment.get('role_questions', []))
+            questions_data['skill_questions'].extend(fragment.get('skill_questions', []))
+        return questions_data
+
+    return _load_yaml(LEGACY_QUESTION_FILE)
+
+
+def validate_curated_catalog(*, roles_data: dict, topics_data: dict, questions_data: dict):
+    role_slugs = {role_seed['slug'] for role_seed in roles_data['roles']}
+    topic_keys = {(topic_seed['role_slug'], topic_seed['slug']) for topic_seed in topics_data['topics']}
+    question_codes: set[str] = set()
+
+    for role_question in questions_data['role_questions']:
+        _validate_role_question_seed(role_question, role_slugs=role_slugs, existing_codes=question_codes)
+
+    for skill_question in questions_data['skill_questions']:
+        _validate_skill_question_seed(
+            skill_question,
+            role_slugs=role_slugs,
+            topic_keys=topic_keys,
+            existing_codes=question_codes,
+        )
+    _validate_role_question_bank(questions_data['role_questions'])
 
 
 def import_roadmap_snapshot(*, snapshot_path: Path, role_slug: str, source='roadmap.sh', source_version=''):
@@ -142,6 +190,7 @@ def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
 
 
 def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], roles_by_slug, topics_by_key):
+    seed_codes = {question_seed['code'] for question_seed in [*role_questions, *skill_questions]}
     for question_seed in role_questions:
         question, _created = Question.objects.update_or_create(
             code=question_seed['code'],
@@ -154,11 +203,15 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'topic': None,
                 'difficulty': question_seed['difficulty'],
                 'discrimination_score': question_seed['discrimination_score'],
+                'item_group': question_seed.get('item_group', Question.ItemGroup.CORE),
+                'discriminates_between': question_seed.get('discriminates_between', []),
                 'display_order': question_seed['display_order'],
                 'is_active': True,
             },
         )
         _sync_question_options(question, question_seed['options'], roles_by_slug=roles_by_slug, topics_by_key=topics_by_key)
+
+    Question.objects.exclude(code__in=seed_codes).delete()
 
     for question_seed in skill_questions:
         role = roles_by_slug[question_seed['role_slug']]
@@ -174,6 +227,8 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'topic': topic,
                 'difficulty': question_seed['difficulty'],
                 'discrimination_score': question_seed['discrimination_score'],
+                'item_group': Question.ItemGroup.STANDARD,
+                'discriminates_between': [],
                 'display_order': question_seed['display_order'],
                 'is_active': True,
             },
@@ -193,6 +248,7 @@ def _sync_question_options(question: Question, option_seeds: list[dict], *, role
             defaults={
                 'label': option_seed['label'],
                 'value': option_seed.get('value', ''),
+                'dimension_signals': option_seed.get('dimension_signals', {}),
                 'display_order': option_seed['display_order'],
             },
         )
@@ -215,6 +271,115 @@ def _validate_option_seed(option_seed: dict, *, question: Question) -> None:
     fields = ', '.join(sorted(unsupported_fields))
     msg = f'Unsupported option seed field(s) for question "{question.code}": {fields}'
     raise ValueError(msg)
+
+
+def _validate_question_seed_uniqueness(question_seed: dict, *, existing_codes: set[str]) -> None:
+    code = question_seed['code']
+    if code in existing_codes:
+        msg = f'Duplicate question code in curated content: "{code}"'
+        raise ValueError(msg)
+    existing_codes.add(code)
+
+
+def _validate_option_key_uniqueness(question_code: str, option_seed: dict, option_keys: set[str]) -> None:
+    option_key = option_seed['key']
+    if option_key in option_keys:
+        msg = f'Duplicate option key for question "{question_code}": "{option_key}"'
+        raise ValueError(msg)
+    option_keys.add(option_key)
+
+
+def _validate_role_question_seed(role_question: dict, *, role_slugs: set[str], existing_codes: set[str]) -> None:
+    _validate_question_seed_uniqueness(role_question, existing_codes=existing_codes)
+    item_group = role_question.get('item_group', Question.ItemGroup.CORE)
+    if item_group not in {Question.ItemGroup.CORE, Question.ItemGroup.TIE_BREAK}:
+        msg = f'Role question "{role_question["code"]}" must use item_group "core" or "tie_break".'
+        raise ValueError(msg)
+
+    _validate_role_question_pairing(role_question, item_group=item_group, role_slugs=role_slugs)
+    question_dimensions, _total_signal_count = _validate_role_question_options(role_question, role_slugs=role_slugs)
+    if item_group == Question.ItemGroup.CORE and not question_dimensions:
+        msg = f'Core role question "{role_question["code"]}" must define dimension_signals.'
+        raise ValueError(msg)
+
+
+def _validate_role_question_pairing(role_question: dict, *, item_group: str, role_slugs: set[str]) -> None:
+    discriminates_between = role_question.get('discriminates_between', [])
+    if item_group != Question.ItemGroup.TIE_BREAK:
+        return
+    if len(discriminates_between) < MIN_TIE_BREAK_ROLE_COUNT:
+        msg = f'Role tie-break question "{role_question["code"]}" must declare at least two roles in discriminates_between.'
+        raise ValueError(msg)
+    unknown_pair_roles = sorted(set(discriminates_between) - role_slugs)
+    if unknown_pair_roles:
+        msg = f'Unknown role slug(s) for question "{role_question["code"]}": {", ".join(unknown_pair_roles)}'
+        raise ValueError(msg)
+
+
+def _validate_role_question_options(role_question: dict, *, role_slugs: set[str]) -> tuple[set[str], int]:
+    option_keys = set()
+    total_signal_count = 0
+    question_dimensions = set()
+    question_stub = SimpleNamespace(code=role_question['code'])
+    for option_seed in role_question['options']:
+        _validate_option_seed(option_seed, question=question_stub)
+        _validate_option_key_uniqueness(role_question['code'], option_seed, option_keys)
+        role_signals = option_seed.get('role_signals', {})
+        dimension_signals = option_seed.get('dimension_signals', {})
+        unknown_role_slugs = sorted(set(role_signals) - role_slugs)
+        if unknown_role_slugs:
+            msg = f'Unknown role slug(s) for question "{role_question["code"]}": {", ".join(unknown_role_slugs)}'
+            raise ValueError(msg)
+        unknown_dimensions = sorted(set(dimension_signals) - set(ROLE_DIMENSIONS))
+        if unknown_dimensions:
+            msg = f'Unknown dimension(s) for question "{role_question["code"]}": {", ".join(unknown_dimensions)}'
+            raise ValueError(msg)
+        if not dimension_signals and not role_signals:
+            msg = f'Role question "{role_question["code"]}" option "{option_seed["key"]}" must define dimension_signals or role_signals.'
+            raise ValueError(msg)
+        total_signal_count += len(role_signals)
+        question_dimensions.update(dimension_signals.keys())
+    return question_dimensions, total_signal_count
+
+
+def _validate_skill_question_seed(skill_question: dict, *, role_slugs: set[str], topic_keys: set[tuple[str, str]], existing_codes: set[str]):
+    _validate_question_seed_uniqueness(skill_question, existing_codes=existing_codes)
+    role_slug = skill_question['role_slug']
+    topic_slug = skill_question['topic_slug']
+    if role_slug not in role_slugs:
+        msg = f'Unknown role slug for skill question "{skill_question["code"]}": {role_slug}'
+        raise ValueError(msg)
+    if (role_slug, topic_slug) not in topic_keys:
+        msg = f'Unknown topic reference for skill question "{skill_question["code"]}": {role_slug}/{topic_slug}'
+        raise ValueError(msg)
+
+    option_keys = set()
+    question_stub = SimpleNamespace(code=skill_question['code'])
+    for option_seed in skill_question['options']:
+        _validate_option_seed(option_seed, question=question_stub)
+        _validate_option_key_uniqueness(skill_question['code'], option_seed, option_keys)
+        topic_signals = option_seed.get('topic_signals', [])
+        if not topic_signals:
+            msg = f'Skill question "{skill_question["code"]}" option "{option_seed["key"]}" must define topic signals.'
+            raise ValueError(msg)
+        signal_topics = {(signal.get('role_slug') or role_slug, signal['topic_slug']) for signal in topic_signals}
+        if signal_topics != {(role_slug, topic_slug)}:
+            msg = f'Skill question "{skill_question["code"]}" option "{option_seed["key"]}" must only target the question topic.'
+            raise ValueError(msg)
+
+
+def _validate_role_question_bank(role_questions: list[dict]) -> None:
+    core_dimensions = set()
+    for question in role_questions:
+        item_group = question.get('item_group', Question.ItemGroup.CORE)
+        if item_group == Question.ItemGroup.CORE:
+            for option_seed in question['options']:
+                core_dimensions.update(option_seed.get('dimension_signals', {}).keys())
+
+    missing_dimensions = sorted(CORE_ROLE_DIMENSIONS - core_dimensions)
+    if missing_dimensions:
+        msg = f'Core role question bank is missing dimension coverage for: {", ".join(missing_dimensions)}'
+        raise ValueError(msg)
 
 
 def _sync_role_signals(option: QuestionOption, role_signals: dict[str, float], roles_by_slug: dict[str, Role]):
@@ -284,12 +449,4 @@ def _extract_snapshot_edges(snapshot: dict):
 
 
 def _slugify(value: str):
-    return (
-        value.lower()
-        .replace('&', 'and')
-        .replace('/', ' ')
-        .replace('_', ' ')
-        .replace('-', ' ')
-        .strip()
-        .replace(' ', '-')
-    )
+    return value.lower().replace('&', 'and').replace('/', ' ').replace('_', ' ').replace('-', ' ').strip().replace(' ', '-')

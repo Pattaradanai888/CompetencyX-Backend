@@ -13,6 +13,7 @@ class AssessmentSession(models.Model):
 
     class Phase(models.TextChoices):
         ROLE_DISCOVERY = 'role_discovery', 'Role Discovery'
+        ROLE_AMBIGUITY = 'role_ambiguity', 'Role Ambiguity'
         SKILL_ASSESSMENT = 'skill_assessment', 'Skill Assessment'
         RECOMMENDATION_READY = 'recommendation_ready', 'Recommendation Ready'
         COMPLETED = 'completed', 'Completed'
@@ -120,3 +121,74 @@ class TopicMastery(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.topic_id}'
+
+
+class QuestionSelectionEvent(models.Model):
+    class PolicyMode(models.TextChoices):
+        HEURISTIC = 'heuristic', 'Heuristic'
+        CORE_SEQUENCE = 'core_sequence', 'Core Sequence'
+        INFO_GAIN = 'info_gain', 'Information Gain'
+        SHADOW_BANDIT = 'shadow_bandit', 'Shadow Bandit'
+        LIVE_BANDIT = 'live_bandit', 'Live Bandit'
+
+    session = models.ForeignKey(
+        AssessmentSession,
+        on_delete=models.CASCADE,
+        related_name='selection_events',
+    )
+    stage = models.CharField(max_length=16, choices=Question.Stage.choices)
+    policy_mode = models.CharField(max_length=24, choices=PolicyMode.choices)
+    chosen_question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name='selection_events',
+    )
+    heuristic_question = models.ForeignKey(
+        Question,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='heuristic_selection_events',
+    )
+    shadow_bandit_question = models.ForeignKey(
+        Question,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='shadow_bandit_selection_events',
+    )
+    candidate_question_ids = models.JSONField(default=list, blank=True)
+    candidate_question_codes = models.JSONField(default=list, blank=True)
+    candidate_scores = models.JSONField(default=list, blank=True)
+    selection_score = models.FloatField(null=True, blank=True)
+    pre_selection_uncertainty = models.FloatField(default=0.0)
+    post_answer_uncertainty = models.FloatField(null=True, blank=True)
+    reward = models.FloatField(null=True, blank=True)
+    selected_at = models.DateTimeField(auto_now_add=True)
+    answered_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['selected_at']
+
+    def __str__(self) -> str:
+        return f'{self.session_id}:{self.stage}:{self.chosen_question_id}'
+
+
+class QuestionBanditStat(models.Model):
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name='bandit_stats',
+    )
+    stage = models.CharField(max_length=16, choices=Question.Stage.choices)
+    pulls = models.PositiveIntegerField(default=0)
+    cumulative_reward = models.FloatField(default=0.0)
+    mean_reward = models.FloatField(default=0.0)
+    last_selected_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['stage', 'question_id']
+        unique_together = [('question', 'stage')]
+
+    def __str__(self) -> str:
+        return f'{self.stage}:{self.question_id}:{self.mean_reward:.4f}'
