@@ -13,6 +13,7 @@ from .serializers import (
     AssessmentSessionSerializer,
     RoleInsightsSerializer,
     SessionCreateSerializer,
+    Survey2SessionStateSerializer,
 )
 from .services import (
     AssessmentFlowError,
@@ -284,6 +285,19 @@ HISTORY_RESPONSE_EXAMPLE = {
     ],
 }
 
+SURVEY2_RESPONSE_EXAMPLE = {
+    'completed': True,
+    'answers': {
+        'q-req': 4,
+        'q-design': 5,
+        'q-dev': 4,
+        'q-test': 3,
+        'q-release': 3,
+        'q-psp': 4,
+    },
+    'completed_at': '2026-05-08T20:00:00Z',
+}
+
 
 class AssessmentSessionCreateAPIView(generics.GenericAPIView):
     serializer_class = SessionCreateSerializer
@@ -535,3 +549,77 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
 
         session.refresh_from_db()
         return Response(AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data, status=status.HTTP_200_OK)
+
+
+class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
+    serializer_class = Survey2SessionStateSerializer
+    queryset = AssessmentSession.objects.all()
+
+    def _get_survey2_state(self, session: AssessmentSession) -> dict:
+        profile = session.profile if isinstance(session.profile, dict) else {}
+        survey2_state = profile.get('survey2')
+        if isinstance(survey2_state, dict):
+            return survey2_state
+        return {'completed': False, 'answers': {}, 'completed_at': None}
+
+    @extend_schema(
+        operation_id='getAssessmentSurvey2Session',
+        summary='Get Survey 2 saved answers for an assessment session',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='pk',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=Survey2SessionStateSerializer,
+                description='Saved Survey 2 state for this assessment session.',
+                examples=[OpenApiExample('Survey 2 state', value=SURVEY2_RESPONSE_EXAMPLE, response_only=True)],
+            ),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    def get(self, request, pk, *args, **kwargs):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = self.get_serializer(self._get_survey2_state(session))
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        operation_id='saveAssessmentSurvey2Session',
+        summary='Save Survey 2 answers for an assessment session',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='pk',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        request=Survey2SessionStateSerializer,
+        responses={
+            200: OpenApiResponse(
+                response=Survey2SessionStateSerializer,
+                description='Survey 2 state was saved.',
+                examples=[OpenApiExample('Saved Survey 2 state', value=SURVEY2_RESPONSE_EXAMPLE, response_only=True)],
+            ),
+            400: OpenApiResponse(description='Validation error in Survey 2 payload.'),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    def post(self, request, pk, *args, **kwargs):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serialized_state = serializer.data
+
+        profile = session.profile if isinstance(session.profile, dict) else {}
+        profile['survey2'] = serialized_state
+        session.profile = profile
+        session.save(update_fields=['profile', 'updated_at'])
+
+        return Response(self.get_serializer(profile['survey2']).data, status=status.HTTP_200_OK)

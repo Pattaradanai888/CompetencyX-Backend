@@ -383,6 +383,51 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('assessment.mastery_recomputed', joined_logs)
         self.assertIn('assessment.phase_updated', joined_logs)
 
+    def test_survey2_state_can_be_saved_and_loaded_per_session(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        initial_state_response = self.client.get(reverse('assessment-survey2-session', kwargs={'pk': session_id}))
+        self.assertEqual(initial_state_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            initial_state_response.json(),
+            {'completed': False, 'answers': {}, 'completed_at': None},
+        )
+
+        payload = {
+            'completed': True,
+            'answers': {
+                'q-req': 4,
+                'q-design': 5,
+                'q-dev': 4,
+            },
+            'completed_at': '2026-05-08T20:00:00Z',
+        }
+        save_response = self.client.post(reverse('assessment-survey2-session', kwargs={'pk': session_id}), payload, format='json')
+        self.assertEqual(save_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(save_response.json()['completed'], True)
+        self.assertEqual(save_response.json()['answers']['q-design'], 5)
+
+        loaded_response = self.client.get(reverse('assessment-survey2-session', kwargs={'pk': session_id}))
+        self.assertEqual(loaded_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(loaded_response.json()['completed'], True)
+        self.assertEqual(loaded_response.json()['answers'], payload['answers'])
+        self.assertIsNotNone(loaded_response.json()['completed_at'])
+
+    def test_survey2_state_rejects_invalid_answer_scale(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        save_response = self.client.post(
+            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            {'completed': False, 'answers': {'q-req': 7}, 'completed_at': None},
+            format='json',
+        )
+        self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('answers', save_response.json())
+
     def test_role_selection_event_records_reward_for_core_sequence(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)

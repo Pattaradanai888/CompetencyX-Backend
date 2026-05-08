@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     AssessmentAnswerSubmitAPIView,
+    AssessmentSurvey2SessionAPIView,
     AssessmentSessionCreateAPIView,
     AssessmentSessionDetailAPIView,
     AssessmentSessionHistoryAPIView,
@@ -17,4 +18,5 @@ urlpatterns = [
     path('<uuid:pk>/results/', AssessmentSessionResultAPIView.as_view(), name='assessment-session-results'),
     path('<uuid:pk>/history/', AssessmentSessionHistoryAPIView.as_view(), name='assessment-session-history'),
     path('<uuid:pk>/answers/', AssessmentAnswerSubmitAPIView.as_view(), name='assessment-answer-submit'),
+    path('<uuid:pk>/survey2/', AssessmentSurvey2SessionAPIView.as_view(), name='assessment-survey2-session'),
 ]

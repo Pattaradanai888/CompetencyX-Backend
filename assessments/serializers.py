@@ -376,3 +376,19 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
             'answers',
             'recommendations',
         )
+
+
+class Survey2SessionStateSerializer(serializers.Serializer):
+    completed = serializers.BooleanField(default=False)
+    answers = serializers.DictField(
+        child=serializers.IntegerField(min_value=1, max_value=5),
+        default=dict,
+    )
+    completed_at = serializers.DateTimeField(required=False, allow_null=True)
+
+    def validate_answers(self, value):
+        for key in value:
+            if not str(key).strip():
+                msg = 'Answer keys must be non-empty strings.'
+                raise serializers.ValidationError(msg)
+        return value
