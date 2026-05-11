@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from assessments.models import Answer, AssessmentSession
-from assessments.services import _get_selectable_role_candidates, _score_roles_for_answer, _score_roles_from_dimensions
+from assessments.role_inference import _get_selectable_role_candidates, _score_roles_for_answer, _score_roles_from_dimensions
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 

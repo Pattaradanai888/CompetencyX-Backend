@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from assessments.models import Answer, AssessmentSession, QuestionBanditStat, QuestionSelectionEvent, TopicMastery
-from assessments.services import _get_selectable_role_candidates, get_current_question
+from assessments.role_inference import _get_selectable_role_candidates
+from assessments.services import get_current_question
 from recommendations.models import Recommendation
 from roadmaps.models import Question, QuestionOption, QuestionTopicSignal, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
