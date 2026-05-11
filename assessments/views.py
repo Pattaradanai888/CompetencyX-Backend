@@ -13,6 +13,7 @@ from .serializers import (
     AssessmentSessionSerializer,
     RoleInsightsSerializer,
     SessionCreateSerializer,
+    Survey2CatalogSerializer,
     Survey2SessionStateSerializer,
 )
 from .services import (
@@ -22,6 +23,7 @@ from .services import (
     get_role_insights,
     submit_answer,
 )
+from .roadmaps import get_survey2_catalog
 
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
@@ -623,3 +625,34 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         session.save(update_fields=['profile', 'updated_at'])
 
         return Response(self.get_serializer(profile['survey2']).data, status=status.HTTP_200_OK)
+
+
+class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
+    serializer_class = Survey2CatalogSerializer
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+
+    @extend_schema(
+        operation_id='getAssessmentSurvey2Catalog',
+        summary='Get Survey 2 PSP and SDLC questionnaire catalog for an assessment session',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='pk',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=Survey2CatalogSerializer,
+                description='Survey 2 question, dimension, scale, and role guidance catalog.',
+            ),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    def get(self, request, pk, *args, **kwargs):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        target_role = session.preferred_role or session.best_fit_role
+        catalog = get_survey2_catalog(target_role.slug if target_role else None)
+        return Response(self.get_serializer(catalog).data, status=status.HTTP_200_OK)

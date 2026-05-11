@@ -398,16 +398,24 @@ class AssessmentFlowTests(APITestCase):
         payload = {
             'completed': True,
             'answers': {
-                'q-req': 4,
-                'q-design': 5,
-                'q-dev': 4,
+                'psp-plan-estimate': 4,
+                'psp-plan-compare': 4,
+                'psp-quality-defects': 3,
+                'psp-quality-review': 4,
+                'sdlc-req-criteria': 4,
+                'sdlc-design-tradeoffs': 5,
+                'sdlc-dev-conventions': 4,
+                'sdlc-test-strategy': 3,
+                'sdlc-release-checklist': 3,
+                'sdlc-maintain-debug': 4,
+                'sdlc-collab-blockers': 4,
             },
             'completed_at': '2026-05-08T20:00:00Z',
         }
         save_response = self.client.post(reverse('assessment-survey2-session', kwargs={'pk': session_id}), payload, format='json')
         self.assertEqual(save_response.status_code, status.HTTP_200_OK)
         self.assertEqual(save_response.json()['completed'], True)
-        self.assertEqual(save_response.json()['answers']['q-design'], 5)
+        self.assertEqual(save_response.json()['answers']['sdlc-design-tradeoffs'], 5)
 
         loaded_response = self.client.get(reverse('assessment-survey2-session', kwargs={'pk': session_id}))
         self.assertEqual(loaded_response.status_code, status.HTTP_200_OK)
@@ -422,9 +430,38 @@ class AssessmentFlowTests(APITestCase):
 
         save_response = self.client.post(
             reverse('assessment-survey2-session', kwargs={'pk': session_id}),
-            {'completed': False, 'answers': {'q-req': 7}, 'completed_at': None},
+            {'completed': False, 'answers': {'sdlc-req-criteria': 7}, 'completed_at': None},
             format='json',
         )
+        self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('answers', save_response.json())
+
+    def test_survey2_catalog_returns_role_aware_psp_sdlc_questions(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertEqual(payload['version'], '2026-05-11.psp-sdlc-v1')
+        self.assertEqual(len(payload['questions']), 11)
+        self.assertIn('psp-quality', {dimension['key'] for dimension in payload['dimensions']})
+        self.assertIn('sdlc-maintenance', {dimension['key'] for dimension in payload['dimensions']})
+        self.assertTrue(any('API contracts' in guidance for guidance in payload['role_guidance']))
+
+    def test_completed_survey2_requires_all_catalog_questions(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        save_response = self.client.post(
+            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            {'completed': True, 'answers': {'sdlc-req-criteria': 4}, 'completed_at': '2026-05-08T20:00:00Z'},
+            format='json',
+        )
+
         self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('answers', save_response.json())
 
