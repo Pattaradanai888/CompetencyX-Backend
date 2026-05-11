@@ -195,3 +195,62 @@ class QuestionBanditStat(models.Model):
 
     def __str__(self) -> str:
         return f'{self.stage}:{self.question_id}:{self.mean_reward:.4f}'
+
+
+class Survey2Question(models.Model):
+    question_id = models.SlugField(max_length=64, unique=True)
+    prompt = models.TextField()
+    dimension_key = models.SlugField(max_length=64)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'question_id']
+
+    def __str__(self) -> str:
+        return self.question_id
+
+
+class Survey2Dimension(models.Model):
+    class Track(models.TextChoices):
+        PSP = 'psp', 'PSP'
+        SDLC = 'sdlc', 'SDLC'
+
+    dimension_key = models.SlugField(max_length=64, unique=True)
+    label = models.CharField(max_length=128)
+    track = models.CharField(max_length=16, choices=Track.choices)
+    low_score_action = models.TextField()
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['display_order', 'dimension_key']
+
+    def __str__(self) -> str:
+        return self.dimension_key
+
+
+class Survey2RoleGuidance(models.Model):
+    role = models.ForeignKey(
+        Role,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='survey2_guidance_items',
+    )
+    guidance = models.TextField()
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['role__slug', 'display_order', 'id']
+
+    def __str__(self) -> str:
+        role_slug = self.role.slug if self.role_id else 'default'
+        return f'{role_slug}:{self.display_order}'

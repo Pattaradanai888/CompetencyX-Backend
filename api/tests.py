@@ -1,13 +1,23 @@
 import json
 
+from django.core.management import call_command
 from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from assessments.models import Answer, AssessmentSession, QuestionBanditStat, QuestionSelectionEvent, TopicMastery
+from assessments.models import (
+    Answer,
+    AssessmentSession,
+    QuestionBanditStat,
+    QuestionSelectionEvent,
+    Survey2Dimension,
+    Survey2Question,
+    Survey2RoleGuidance,
+    TopicMastery,
+)
 from assessments.services import _get_selectable_role_candidates, get_current_question
-from recommendations.models import Recommendation
+from recommendations.models import Recommendation, RecommendationQValue
 from roadmaps.models import Question, QuestionOption, QuestionTopicSignal, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
 
@@ -74,6 +84,7 @@ class AssessmentFlowTests(APITestCase):
             display_order=22,
             discrimination_score=2.0,
         )
+        call_command('seed_survey2_catalog')
 
     def _add_role_questions(self):
         dimensions = [
@@ -274,6 +285,118 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(TopicMastery.objects.filter(session_id=session_id).count(), 2)
         self.assertEqual(Recommendation.objects.filter(session_id=session_id).count(), 2)
 
+    @override_settings(
+        ASSESSMENT_RECOMMENDATION_POLICY='q_learning',
+        ASSESSMENT_RECOMMENDATION_Q_EPSILON=0.0,
+        ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5,
+        ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
+    )
+    def test_completed_results_can_use_q_learning_recommendations(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        session_id = create_response.json()['id']
+        payload = self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
+        payload = self._answer_current_skill_question(session_id, payload, option_key='yes')
+        self._answer_current_skill_question(session_id, payload, option_key='maybe')
+
+        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
+        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
+        results = results_response.json()
+
+        self.assertEqual(results['preferred_path_recommendation']['policy_type'], Recommendation.PolicyType.Q_LEARNING)
+        self.assertEqual(results['best_fit_path_recommendation']['policy_type'], Recommendation.PolicyType.Q_LEARNING)
+        self.assertEqual(RecommendationQValue.objects.count(), 2)
+        self.assertTrue(
+            RecommendationQValue.objects.filter(
+                role=self.backend_role,
+                path_kind=Recommendation.PathKind.PREFERRED,
+                topic=self.backend_databases,
+                update_count=1,
+            ).exists(),
+        )
+
+    @override_settings(
+        ASSESSMENT_RECOMMENDATION_POLICY='q_learning',
+        ASSESSMENT_RECOMMENDATION_Q_EPSILON=0.0,
+        ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5,
+        ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
+    )
+    def test_completed_survey2_applies_delayed_feedback_to_q_learning_recommendations(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        session_id = create_response.json()['id']
+        payload = self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
+        payload = self._answer_current_skill_question(session_id, payload, option_key='yes')
+        self._answer_current_skill_question(session_id, payload, option_key='maybe')
+
+        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
+        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
+
+        feedback_payload = {
+            'completed': True,
+            'answers': {
+                'psp-plan-estimate': 4,
+                'psp-plan-compare': 4,
+                'psp-quality-defects': 4,
+                'psp-quality-review': 4,
+                'sdlc-req-criteria': 4,
+                'sdlc-design-tradeoffs': 4,
+                'sdlc-dev-conventions': 4,
+                'sdlc-test-strategy': 4,
+                'sdlc-release-checklist': 4,
+                'sdlc-maintain-debug': 4,
+                'sdlc-collab-blockers': 4,
+            },
+            'completed_at': '2026-05-08T20:00:00Z',
+        }
+
+        save_response = self.client.post(
+            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            feedback_payload,
+            format='json',
+        )
+        self.assertEqual(save_response.status_code, status.HTTP_200_OK)
+
+        backend_q_value = RecommendationQValue.objects.get(
+            role=self.backend_role,
+            path_kind=Recommendation.PathKind.PREFERRED,
+            topic=self.backend_databases,
+        )
+        qa_q_value = RecommendationQValue.objects.get(
+            role=self.qa_role,
+            path_kind=Recommendation.PathKind.BEST_FIT,
+            topic=self.qa_design,
+        )
+        self.assertEqual(backend_q_value.update_count, 2)
+        self.assertEqual(qa_q_value.update_count, 2)
+        self.assertTrue(backend_q_value.last_reward > 0.0)
+        self.assertTrue(qa_q_value.last_reward > 0.0)
+        self.assertEqual(
+            Recommendation.objects.filter(
+                session_id=session_id,
+                policy_type=Recommendation.PolicyType.Q_LEARNING,
+                feedback_reward_applied=True,
+            ).count(),
+            2,
+        )
+
+        repeat_response = self.client.post(
+            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            feedback_payload,
+            format='json',
+        )
+        self.assertEqual(repeat_response.status_code, status.HTTP_200_OK)
+        backend_q_value.refresh_from_db()
+        qa_q_value.refresh_from_db()
+        self.assertEqual(backend_q_value.update_count, 2)
+        self.assertEqual(qa_q_value.update_count, 2)
+        self.assertTrue(
+            RecommendationQValue.objects.filter(
+                role=self.qa_role,
+                path_kind=Recommendation.PathKind.BEST_FIT,
+                topic=self.qa_design,
+                update_count=2,
+            ).exists(),
+        )
+
     def test_role_inference_without_preferred_role_does_not_resolve_before_core_traits_complete(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
@@ -450,6 +573,43 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('psp-quality', {dimension['key'] for dimension in payload['dimensions']})
         self.assertIn('sdlc-maintenance', {dimension['key'] for dimension in payload['dimensions']})
         self.assertTrue(any('API contracts' in guidance for guidance in payload['role_guidance']))
+
+    def test_survey2_catalog_questions_are_loaded_from_database(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        survey2_question = Survey2Question.objects.get(question_id='psp-plan-estimate')
+        survey2_question.prompt = 'Database-backed Survey 2 prompt'
+        survey2_question.save(update_fields=['prompt', 'updated_at'])
+
+        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertEqual(payload['questions'][0]['id'], 'psp-plan-estimate')
+        self.assertEqual(payload['questions'][0]['prompt'], 'Database-backed Survey 2 prompt')
+
+    def test_survey2_catalog_dimensions_and_role_guidance_are_loaded_from_database(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        dimension = Survey2Dimension.objects.get(dimension_key='psp-planning')
+        dimension.label = 'Database-backed PSP Planning'
+        dimension.low_score_action = 'Database-backed planning action'
+        dimension.save(update_fields=['label', 'low_score_action', 'updated_at'])
+
+        guidance = Survey2RoleGuidance.objects.filter(role=self.backend_role, display_order=1).first()
+        guidance.guidance = 'Database-backed backend guidance'
+        guidance.save(update_fields=['guidance', 'updated_at'])
+
+        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertEqual(payload['dimensions'][0]['key'], 'psp-planning')
+        self.assertEqual(payload['dimensions'][0]['label'], 'Database-backed PSP Planning')
+        self.assertEqual(payload['dimensions'][0]['low_score_action'], 'Database-backed planning action')
+        self.assertEqual(payload['role_guidance'][0], 'Database-backed backend guidance')
 
     def test_completed_survey2_requires_all_catalog_questions(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')

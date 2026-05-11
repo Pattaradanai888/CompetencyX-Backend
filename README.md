@@ -20,10 +20,13 @@ Copy-Item .env.example .env
 
 ```powershell
 python manage.py migrate
+python manage.py seed_survey2_catalog
 python manage.py runserver
 ```
 
 This uses the checked-in `db.sqlite3` setup.
+
+`Survey 2` catalog data now lives in SQLite tables, not in hardcoded runtime Python lists. The migration seeds the default rows, and `python manage.py seed_survey2_catalog` can be used any time to refresh them.
 
 ## URLs
 
@@ -39,6 +42,7 @@ uv run pytest -n auto
 uv run ruff check .
 python manage.py seed_mvp_content
 python manage.py load_curated_content
+python manage.py seed_survey2_catalog
 uv run python manage.py validate_question_catalog
 ```
 

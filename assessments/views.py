@@ -18,6 +18,7 @@ from .serializers import (
 )
 from .services import (
     AssessmentFlowError,
+    apply_recommendation_feedback_from_survey2,
     build_session_state,
     create_assessment_session,
     get_role_insights,
@@ -623,6 +624,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         profile['survey2'] = serialized_state
         session.profile = profile
         session.save(update_fields=['profile', 'updated_at'])
+        apply_recommendation_feedback_from_survey2(session)
 
         return Response(self.get_serializer(profile['survey2']).data, status=status.HTTP_200_OK)
 
