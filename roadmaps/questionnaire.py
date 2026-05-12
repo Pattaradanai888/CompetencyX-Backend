@@ -81,12 +81,12 @@ ROLE_PROFILE_WEIGHTS = {
         ('web_frontend', 0.7), ('server_backend', 0.7),
     ),
     'devops-engineer': _profile(
-        ('operations', 1.0), ('configuration_management', 1.0), ('process', 1.0), ('management', 0.6),
-        ('quality', 0.6), ('construction', 0.4), ('engineering', 0.4),
+        ('operations', 1.2), ('configuration_management', 1.2), ('process', 1.1), ('management', 0.7),
+        ('quality', 0.7), ('construction', 0.5), ('engineering', 0.4),
     ),
     'devsecops-engineer': _profile(
-        ('security', 1.0), ('operations', 1.0), ('configuration_management', 1.0), ('quality', 0.7),
-        ('requirements', 0.5), ('process', 0.6), ('engineering', 0.4),
+        ('security', 1.0), ('operations', 1.1), ('configuration_management', 1.2), ('quality', 0.7),
+        ('requirements', 0.5), ('process', 0.8), ('engineering', 0.5),
     ),
     'data-analyst': _profile(
         ('computing_ai', 1.0), ('math', 1.0), ('economics', 1.0), ('requirements', 0.6), ('professional_practice', 0.6),
@@ -121,8 +121,8 @@ ROLE_PROFILE_WEIGHTS = {
         ('quality', 0.7), ('operations', 0.4), ('configuration_management', 0.4), ('ios_platform', 1.0),
     ),
     'blockchain-developer': _profile(
-        ('construction', 1.0), ('security', 1.0), ('architecture', 1.0), ('testing', 0.7), ('quality', 0.6),
-        ('economics', 0.7), ('operations', 0.5), ('configuration_management', 0.5), ('blockchain_platform', 1.0),
+        ('construction', 1.0), ('security', 1.0), ('architecture', 0.9), ('testing', 0.7), ('quality', 0.6),
+        ('economics', 0.7), ('operations', 0.4), ('configuration_management', 0.4), ('blockchain_platform', 1.0),
     ),
     'qa-engineer': _profile(
         ('testing', 1.0), ('quality', 1.0), ('process', 1.0), ('requirements', 0.6), ('operations', 0.4),
@@ -149,8 +149,8 @@ ROLE_PROFILE_WEIGHTS = {
         ('operations', 0.4), ('process', 0.4), ('game_client', 1.0),
     ),
     'server-side-game-developer': _profile(
-        ('construction', 1.0), ('operations', 1.0), ('architecture', 1.0), ('design', 0.6), ('quality', 0.7),
-        ('security', 0.6), ('configuration_management', 0.5), ('process', 0.4), ('server_backend', 0.7), ('game_server', 1.0),
+        ('construction', 1.0), ('operations', 1.2), ('architecture', 1.1), ('design', 0.6), ('quality', 0.8),
+        ('security', 0.5), ('configuration_management', 0.6), ('process', 0.5), ('server_backend', 0.8), ('game_server', 1.0),
     ),
     'mlops-engineer': _profile(
         ('operations', 1.0), ('configuration_management', 1.0), ('computing_ai', 1.0), ('quality', 0.7), ('testing', 0.6),
@@ -178,8 +178,8 @@ ROLE_FAMILY_PROFILE_WEIGHTS = {
     'frontend-developer': _profile(('application_build', 1.0)),
     'backend-developer': _profile(('backend_platform', 1.0)),
     'full-stack-developer': _profile(('application_build', 0.8), ('backend_platform', 0.8)),
-    'devops-engineer': _profile(('operations_security', 1.0), ('backend_platform', 0.5)),
-    'devsecops-engineer': _profile(('operations_security', 1.2), ('backend_platform', 0.4)),
+    'devops-engineer': _profile(('operations_security', 1.0), ('backend_platform', 0.7)),
+    'devsecops-engineer': _profile(('operations_security', 1.2), ('backend_platform', 0.8)),
     'data-analyst': _profile(('data_ai', 1.0), ('people_product', 0.4)),
     'ai-engineer': _profile(('data_ai', 1.0), ('backend_platform', 0.7)),
     'ai-data-scientist': _profile(('data_ai', 1.2)),
@@ -195,7 +195,7 @@ ROLE_FAMILY_PROFILE_WEIGHTS = {
     'ux-designer': _profile(('people_product', 1.2), ('application_build', 0.3)),
     'technical-writer': _profile(('documentation_practice', 1.2), ('people_product', 0.4)),
     'game-developer': _profile(('game_family', 1.2), ('application_build', 0.8)),
-    'server-side-game-developer': _profile(('game_family', 1.0), ('backend_platform', 1.0)),
+    'server-side-game-developer': _profile(('game_family', 1.0), ('backend_platform', 1.2)),
     'mlops-engineer': _profile(('operations_security', 0.9), ('data_ai', 0.8), ('backend_platform', 0.5)),
     'product-manager': _profile(('people_product', 1.0), ('leadership_process', 0.8)),
     'engineering-manager': _profile(('leadership_process', 1.2), ('people_product', 0.4)),

@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 
 from assessments.models import Answer, AssessmentSession
 from assessments.role_inference import _get_selectable_role_candidates, _score_roles_for_answer, _score_roles_from_dimensions
+from assessments.services import get_current_question, submit_answer
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 
@@ -122,6 +123,26 @@ class SeededMvpFlowTests(APITestCase):
                 misses[role_slug] = ranked_slugs[:3]
 
         assert misses == {}
+
+    def test_live_role_discovery_paths_can_resolve_every_seeded_role(self):
+        misses = self._collect_live_role_resolution_misses()
+
+        miss_summary = ', '.join(
+            f"{role_slug}->{details['resolved']} ({details['answered_role_questions']} q, {details['phase']})"
+            for role_slug, details in sorted(misses.items())
+        )
+        assert misses == {}, miss_summary
+
+    def test_live_role_discovery_paths_resolve_fragile_specialized_roles(self):
+        misses = self._collect_live_role_resolution_misses(
+            role_slugs=['devops-engineer', 'devsecops-engineer', 'server-side-game-developer']
+        )
+
+        miss_summary = ', '.join(
+            f"{role_slug}->{details['resolved']} ({details['answered_role_questions']} q, {details['phase']})"
+            for role_slug, details in sorted(misses.items())
+        )
+        assert misses == {}, miss_summary
 
     def test_role_selector_uses_tie_breaks_after_low_margin_core_profile(self):
         session_model = AssessmentSession.objects.create(profile={})
@@ -246,6 +267,35 @@ class SeededMvpFlowTests(APITestCase):
 
     def _get_session_model(self, session_id):
         return AssessmentSession.objects.get(id=session_id)
+
+    def _collect_live_role_resolution_misses(self, role_slugs=None):
+        misses = {}
+        selected_role_slugs = role_slugs or list(ROLE_PROFILE_WEIGHTS.keys())
+
+        for role_slug in selected_role_slugs:
+            profile = ROLE_PROFILE_WEIGHTS[role_slug]
+            session = AssessmentSession.objects.create(profile={})
+            trace = []
+
+            while True:
+                question = get_current_question(session)
+                if question is None or question.stage != Question.Stage.ROLE:
+                    break
+                scale_value = self._ideal_scale_for_profile(question, profile)
+                trace.append((question.code, question.item_group, scale_value))
+                submit_answer(session=session, question=question, scale_value=scale_value)
+                session.refresh_from_db()
+
+            if session.best_fit_role is None or session.best_fit_role.slug != role_slug:
+                misses[role_slug] = {
+                    'resolved': session.best_fit_role.slug if session.best_fit_role else None,
+                    'phase': session.phase,
+                    'status': session.status,
+                    'answered_role_questions': session.answers.filter(question__stage=Question.Stage.ROLE).count(),
+                    'trace_tail': trace[-8:],
+                }
+
+        return misses
 
     def _scale_for_profile(self, question, profile_dimensions):
         agree_dimensions = set(question.agree_dimension_signals or {})
