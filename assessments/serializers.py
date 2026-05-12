@@ -16,6 +16,7 @@ from .services import (
     get_role_resolution_status,
     serialize_milestones,
 )
+from .roadmaps import get_survey2_question_ids
 
 
 class SessionCreateSerializer(serializers.Serializer):
@@ -376,3 +377,58 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
             'answers',
             'recommendations',
         )
+
+
+class Survey2SessionStateSerializer(serializers.Serializer):
+    completed = serializers.BooleanField(default=False)
+    answers = serializers.DictField(
+        child=serializers.IntegerField(min_value=1, max_value=5),
+        default=dict,
+    )
+    completed_at = serializers.DateTimeField(required=False, allow_null=True)
+
+    def validate_answers(self, value):
+        known_question_ids = get_survey2_question_ids()
+        for key in value:
+            if not str(key).strip():
+                msg = 'Answer keys must be non-empty strings.'
+                raise serializers.ValidationError(msg)
+            if key not in known_question_ids:
+                msg = f'Unknown Survey 2 question id "{key}".'
+                raise serializers.ValidationError(msg)
+        return value
+
+    def validate(self, attrs):
+        completed = attrs.get('completed', False)
+        answers = attrs.get('answers', {})
+        if completed:
+            missing_question_ids = sorted(get_survey2_question_ids() - set(answers))
+            if missing_question_ids:
+                raise serializers.ValidationError({'answers': f'Completed Survey 2 is missing answers for: {", ".join(missing_question_ids)}.'})
+        return attrs
+
+
+class Survey2ScaleOptionSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    value = serializers.IntegerField(min_value=1, max_value=5)
+
+
+class Survey2DimensionSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+    track = serializers.ChoiceField(choices=['psp', 'sdlc'])
+    low_score_action = serializers.CharField()
+
+
+class Survey2QuestionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    prompt = serializers.CharField()
+    dimension_key = serializers.CharField()
+
+
+class Survey2CatalogSerializer(serializers.Serializer):
+    version = serializers.CharField()
+    scale = Survey2ScaleOptionSerializer(many=True)
+    dimensions = Survey2DimensionSerializer(many=True)
+    questions = Survey2QuestionSerializer(many=True)
+    role_guidance = serializers.ListField(child=serializers.CharField())

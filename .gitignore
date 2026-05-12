@@ -23,7 +23,9 @@ media/
 build/
 dist/
 *.egg-info/
+.coverage
 coverage/
+package-lock.json
 
 # OS
 .DS_Store

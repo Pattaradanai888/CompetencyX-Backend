@@ -42,6 +42,9 @@ class Recommendation(models.Model):
         default=PolicyType.RULE_BASED,
     )
     score = models.FloatField(default=0.0)
+    state_key = models.CharField(max_length=255, blank=True)
+    feedback_reward_applied = models.BooleanField(default=False)
+    feedback_reward_applied_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -49,3 +52,35 @@ class Recommendation(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.topic_id or "none"}'
+
+
+class RecommendationQValue(models.Model):
+    state_key = models.CharField(max_length=255)
+    path_kind = models.CharField(
+        max_length=24,
+        choices=Recommendation.PathKind.choices,
+        default=Recommendation.PathKind.PREFERRED,
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='recommendation_q_values',
+    )
+    topic = models.ForeignKey(
+        RoadmapTopic,
+        on_delete=models.CASCADE,
+        related_name='recommendation_q_values',
+    )
+    q_value = models.FloatField(default=0.0)
+    reward_total = models.FloatField(default=0.0)
+    update_count = models.PositiveIntegerField(default=0)
+    last_reward = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['state_key', 'path_kind', 'role__slug', 'topic__display_order', 'topic__id']
+        unique_together = [('state_key', 'path_kind', 'role', 'topic')]
+
+    def __str__(self) -> str:
+        return f'{self.state_key}:{self.path_kind}:{self.role.slug}:{self.topic.slug}'

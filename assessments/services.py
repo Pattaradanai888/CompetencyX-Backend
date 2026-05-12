@@ -10,9 +10,9 @@ from django.utils import timezone
 from roadmaps.models import Question, Role
 from roadmaps.serializers import QuestionSerializer
 
+from . import recommendation_builder
 from .mastery import recompute_mastery, score_skill_question
 from .models import Answer, AssessmentSession, QuestionBanditStat, QuestionSelectionEvent
-from .recommendation_builder import refresh_recommendations
 from .role_inference import (
     ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
     ROLE_DISCOVERY_CORE_QUESTION_TARGET,
@@ -180,7 +180,7 @@ def submit_answer(  # noqa: PLR0913
     _recompute_best_fit_role(session)
     recompute_mastery(session, target_role=get_skill_target_role(session))
     _update_phase(session)
-    refresh_recommendations(session)
+    recommendation_builder.refresh_recommendations(session)
     _finalize_selection_event(selection_event, session=session, question=question)
     return answer
 
@@ -190,6 +190,10 @@ def serialize_milestones(session: AssessmentSession):
         'answered_role_questions': session.answers.filter(question__stage=Question.Stage.ROLE).count(),
         'answered_skill_questions': session.answers.filter(question__stage=Question.Stage.SKILL).count(),
     }
+
+
+def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> int:
+    return recommendation_builder.apply_recommendation_feedback_from_survey2(session)
 
 
 def get_current_question_data(session: AssessmentSession):
