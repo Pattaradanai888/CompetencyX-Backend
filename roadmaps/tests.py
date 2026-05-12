@@ -307,6 +307,8 @@ class SeedMvpContentTests(TestCase):
         assert 0 <= payload['questionnaire_metrics']['ambiguous_rate'] <= 1
         assert payload['questionnaire_metrics']['top_ranked_distribution']['hit_role_count'] > 0
         assert payload['questionnaire_metrics']['top_ranked_distribution']['zero_hit_role_count'] < payload['active_role_count']
+        assert payload['questionnaire_metrics']['top_ranked_distribution']['effective_role_count'] <= payload['active_role_count']
+        assert payload['questionnaire_metrics']['resolved_role_distribution']['effective_role_count'] <= payload['active_role_count']
 
     def test_role_question_validation_rejects_unknown_signal_dimension(self):
         roles_data, topics_data, questions_data = load_curated_catalog()

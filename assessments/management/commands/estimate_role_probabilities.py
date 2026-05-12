@@ -212,7 +212,21 @@ class Command(BaseCommand):
         ]
 
     def _distribution_metrics(self, counts: Counter[str], sample_count: int, role_slugs: list[str]) -> dict[str, object]:
-        probabilities = [counts[slug] / sample_count for slug in role_slugs]
+        total_count = sum(counts[slug] for slug in role_slugs)
+        if total_count <= 0:
+            return {
+                'sample_rate': 0.0,
+                'hit_role_count': 0,
+                'zero_hit_role_count': len(role_slugs),
+                'role_coverage_rate': 0.0,
+                'effective_role_count': 0.0,
+                'normalized_entropy': 0.0,
+                'top_role_slug': None,
+                'top_role_probability': 0.0,
+                'top_3_probability_mass': 0.0,
+            }
+
+        probabilities = [counts[slug] / total_count for slug in role_slugs]
         non_zero_probabilities = [probability for probability in probabilities if probability > 0]
         entropy = -sum(probability * math.log(probability) for probability in non_zero_probabilities)
         normalized_entropy = entropy / math.log(len(role_slugs)) if len(role_slugs) > 1 else 0.0
@@ -220,13 +234,14 @@ class Command(BaseCommand):
         top_slug, top_count = max(((slug, counts[slug]) for slug in role_slugs), key=lambda item: (item[1], item[0]))
         sorted_probabilities = sorted(probabilities, reverse=True)
         return {
+            'sample_rate': total_count / sample_count,
             'hit_role_count': sum(1 for probability in probabilities if probability > 0),
             'zero_hit_role_count': sum(1 for probability in probabilities if probability == 0),
             'role_coverage_rate': sum(1 for probability in probabilities if probability > 0) / len(role_slugs),
             'effective_role_count': (1 / concentration) if concentration > 0 else 0.0,
             'normalized_entropy': normalized_entropy,
             'top_role_slug': top_slug,
-            'top_role_probability': top_count / sample_count,
+            'top_role_probability': top_count / total_count,
             'top_3_probability_mass': sum(sorted_probabilities[:3]),
         }
 
