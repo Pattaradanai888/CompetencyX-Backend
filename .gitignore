@@ -23,10 +23,16 @@ media/
 build/
 dist/
 *.egg-info/
+coverage/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Local agent/tool state
+.claude/
+.serena/
+.codex
 
 
 .uv-cache/
