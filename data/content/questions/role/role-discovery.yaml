@@ -2,7 +2,12 @@ role_questions:
 - code: role-swebok-01-requirements
   item_group: core
   question_type: likert_5
-  prompt: When work is unclear, I first clarify the user problem before choosing a solution.
+  prompt: Under tight sprint deadlines with fuzzy requirements, I stop to run problem-discovery
+    workshops even if it risks delaying our initial coding start date.
+  translations:
+    th:
+      prompt: ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์
+        แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม
   agree_dimension_signals:
     requirements: 1
     people_product: 0.8
@@ -14,7 +19,14 @@ role_questions:
 - code: role-swebok-02-architecture
   item_group: core
   question_type: likert_5
-  prompt: I prefer settling the system shape before refining individual screens or task details.
+  prompt: Before coding a complex system, I refuse to start building screens until
+    I've mapped the database schema and integration boundaries, even if project managers
+    demand a quick UI demo.
+  translations:
+    th:
+      prompt: ก่อนจะเริ่มพัฒนาคีย์เวิร์กที่มีความซับซ้อน ฉันยืนกรานที่จะไม่ทำหน้าจอ
+        UI จนกว่าจะออกแบบโครงสร้าง Database และ Interface ร่วมระหว่างระบบให้จบ แม้จะถูกเร่งรัดให้ทำเดโมสวย
+        ๆ ไปอวดโชว์ก็ตาม
   agree_dimension_signals:
     architecture: 1
     backend_platform: 0.7
@@ -26,7 +38,14 @@ role_questions:
 - code: role-swebok-03-design
   item_group: core
   question_type: likert_5
-  prompt: I enjoy shaping user journeys and interaction flow before implementation details.
+  prompt: When designing a new user onboarding, I map the complete user journey and
+    interaction states before writing any code, even when pressed to use pre-built
+    components immediately.
+  translations:
+    th:
+      prompt: เมื่อต้องออกแบบระบบ Onboarding ใหม่ ฉันเลือกที่จะลงแรงวาด User Journey
+        และ Interaction Flow ให้ครบทุกเส้นทางก่อนเริ่มเขียนโค้ด แม้จะโดนกดดันให้รีบแกะ
+        Component สำเร็จรูปมาใช้เลยก็ตาม
   agree_dimension_signals:
     design: 1
     people_product: 0.6
@@ -38,7 +57,13 @@ role_questions:
 - code: role-swebok-04-construction
   item_group: core
   question_type: likert_5
-  prompt: I would rather build working features than mainly coordinate plans.
+  prompt: I would rather take on high-volume coding tickets in isolation than sit
+    through project planning and alignment meetings, even if it leads to integration
+    friction later.
+  translations:
+    th:
+      prompt: ฉันยอมเลือกปิดตัวลุยโค้ดทีเดียวหลาย ๆ ทิกเก็ต ดีกว่าต้องแบ่งเวลาไปเข้าประชุมประสานแผนงานหรือวางแผนสปรินต์
+        แม้จะเสี่ยงทำให้ระบบประกอบกันยากขึ้นในภายหลังก็ตาม
   agree_dimension_signals:
     construction: 1
     application_build: 0.7
@@ -51,7 +76,13 @@ role_questions:
 - code: role-swebok-05-testing
   item_group: core
   question_type: likert_5
-  prompt: I like proving behavior with tests before I fully trust a feature.
+  prompt: I refuse to ship features without full unit and integration test coverage,
+    even when product managers pressure us to bypass testing to meet a critical marketing
+    deadline.
+  translations:
+    th:
+      prompt: ฉันยืนกรานที่จะไม่ปล่อย Feature ที่ไม่มี Test Coverage ครอบคลุม (Unit
+        & Integration Tests) แม้จะถูก PM กดดันอย่างหนักให้ปล่อยของด่วนเพื่อทันแคมเปญการตลาดก็ตาม
   agree_dimension_signals:
     testing: 1
     quality: 0.6
@@ -64,7 +95,12 @@ role_questions:
 - code: role-swebok-06-operations
   item_group: core
   question_type: likert_5
-  prompt: I care a lot about how software behaves after it has been released.
+  prompt: I spend substantial time configuring application logging and alert dashboards
+    before launching a feature, even if the team views it as post-release overhead.
+  translations:
+    th:
+      prompt: ฉันเลือกเสียเวลานั่งเซ็ตระบบ Log และ Alert Dashboard ให้ละเอียดล่วงหน้าก่อนเอาโค้ดขึ้นระบบจริง
+        แม้เพื่อนในทีมจะมองว่าเป็นงานงอกส่วนเกินที่ค่อยทำทีหลังปล่อยของไปแล้วก็ได้
   agree_dimension_signals:
     operations: 1
     operations_security: 0.8
@@ -76,7 +112,13 @@ role_questions:
 - code: role-swebok-07-maintenance
   item_group: core
   question_type: likert_5
-  prompt: I prefer improving existing systems over starting fresh projects.
+  prompt: I prefer refactoring a legacy module to make it stable and maintainable
+    over building a greenfield service from scratch, even if refactoring gets zero
+    stakeholder recognition.
+  translations:
+    th:
+      prompt: ฉันเลือกที่จะจมอยู่กับการรื้อ Refactor โค้ดมรดก (Legacy Module) ให้มั่นคงและคลีนขึ้น
+        ดีกว่าการสร้างโปรเจกต์ใหม่ด้วยเทคโนโลยีใหม่ ๆ แม้งานรื้อนี้จะไม่มีสเตกโฮลเดอร์เห็นเป็นผลงานเลยก็ตาม
   agree_dimension_signals:
     maintenance: 1
     quality: 0.5
@@ -88,7 +130,13 @@ role_questions:
 - code: role-swebok-08-configuration-management
   item_group: core
   question_type: likert_5
-  prompt: I like keeping environments, versions, and releases orderly and predictable.
+  prompt: I spend time locking down version boundaries, Docker setups, and CI/CD pipelines
+    even when developers complain that strict configurations slow down their local
+    workflows.
+  translations:
+    th:
+      prompt: ฉันยอมเสียเวลาควบคุม Version, จัดแจง Docker และล็อก CI/CD Pipeline ให้เป็นระเบียบสุด
+        ๆ แม้คนในทีมจะบ่นว่าความเข้มงวดนี้ทำให้ขยับตัวแก้บั๊กใน Local ได้ช้าลงก็ตาม
   agree_dimension_signals:
     configuration_management: 1
     operations_security: 0.7
@@ -100,7 +148,13 @@ role_questions:
 - code: role-swebok-09-management
   item_group: core
   question_type: likert_5
-  prompt: I enjoy aligning people, risks, and delivery plans.
+  prompt: I would rather spend my days resolving team dependencies, mapping delivery
+    timelines, and managing stakeholder expectations than writing core application
+    code myself.
+  translations:
+    th:
+      prompt: ฉันยินดีวางมือจากการเขียนโค้ดฟีเจอร์หลัก แล้วทุ่มเวลากับการไล่เคลียร์
+        Dependency ของคนในทีม จัดการไทม์ไลน์ และเคลียร์กับลูกค้า เพื่อให้แผนการส่งมอบไม่หลุดพ้นจากเป้าหมาย
   agree_dimension_signals:
     management: 1
     leadership_process: 0.9
@@ -113,7 +167,12 @@ role_questions:
 - code: role-swebok-10-process
   item_group: core
   question_type: likert_5
-  prompt: I pay attention to how team workflow changes delivery quality.
+  prompt: I would advocate for stopping the sprint to resolve team workflow bottlenecks,
+    even if it reduces our immediate feature delivery velocity for the business.
+  translations:
+    th:
+      prompt: ฉันกล้าที่จะขอสั่งเบรก Sprint เพื่อคุยแก้ปัญหาคอขวดในกระบวนการทำงานของทีม
+        (Workflow Bottlenecks) แม้รู้ดีว่ามันจะทำให้อัตราความเร็วในการส่งมอบฟีเจอร์ลดฮวบลงก็ตาม
   agree_dimension_signals:
     process: 1
     leadership_process: 0.8
@@ -125,7 +184,12 @@ role_questions:
 - code: role-swebok-11-models-methods
   item_group: core
   question_type: likert_5
-  prompt: I like choosing a clear method before solving a problem.
+  prompt: I spend significant time analyzing architectural paradigms and design patterns
+    before coding, even when the team pressures me to start hacking a solution immediately.
+  translations:
+    th:
+      prompt: ฉันยอมจมอยู่กับการศึกษารูปแบบโครงสร้าง (Architectural Paradigms) หรือหาดีไซน์แพทเทิร์นที่เหมาะสมก่อนเขียนโค้ด
+        แม้ทีมจะพยายามเร่งให้ฉันรีบเขียน ๆ ไปก่อนก็ตาม
   agree_dimension_signals:
     models_methods: 1
     data_ai: 0.6
@@ -137,7 +201,12 @@ role_questions:
 - code: role-swebok-12-quality
   item_group: core
   question_type: likert_5
-  prompt: I pay attention to reliability and maintainability, not only what users see first.
+  prompt: I spend my sprint allocations optimizing API response times and system resilience,
+    even when customers complain that they want visible feature updates instead.
+  translations:
+    th:
+      prompt: ฉันเลือกที่จะลุยงานหลังบ้านเพื่อเพิ่มความเร็ว API และความล่มยากของระบบ
+        แม้ผู้ใช้งานจะคอยกดดันว่าอยากเห็นฟีเจอร์ใหม่ ๆ บนหน้าจ่อนเป็นอันดับแรกก็ตาม
   agree_dimension_signals:
     quality: 1
     leadership_process: 0.4
@@ -149,7 +218,12 @@ role_questions:
 - code: role-swebok-13-security
   item_group: core
   question_type: likert_5
-  prompt: I naturally look for misuse, risk, and abuse cases.
+  prompt: I strictly enforce rigorous security checks and input validation rules,
+    even when product designers argue that these security gates degrade the user experience.
+  translations:
+    th:
+      prompt: ฉันยอมโดนบ่นจากทีม Designer ว่าระบบทำออนบอร์ดดิ้งยาวเกินไป ดีกว่าต้องยอมปล่อยฟีเจอร์ออกไปโดยที่ยังไม่ได้เขียนโค้ดดักช่องโหว่ด้านความปลอดภัย
+        (Security Inputs Validation)
   agree_dimension_signals:
     security: 1
     operations_security: 0.9
@@ -161,7 +235,13 @@ role_questions:
 - code: role-swebok-14-professional-practice
   item_group: core
   question_type: likert_5
-  prompt: I enjoy explaining technical choices in a way others can use.
+  prompt: I spend time writing comprehensive API guides and architecture decision
+    records (ADRs) to mentor the team, even when it delays my personal coding task
+    deadlines.
+  translations:
+    th:
+      prompt: ฉันยินดีแชร์ความรู้โดยเขียนไกด์คู่มือระบบและบันทึกการตัดสินใจทางเทคนิค
+        (ADRs) ให้ทีมมีมาตรฐานเดียวกัน แม้จะทำให้ทาสก์เขียนโค้ดของตัวเองล่าช้าไปบ้างก็ตาม
   agree_dimension_signals:
     professional_practice: 1
     documentation_practice: 0.8
@@ -174,7 +254,12 @@ role_questions:
 - code: role-swebok-15-economics
   item_group: core
   question_type: likert_5
-  prompt: I think about cost, value, and tradeoffs when choosing work.
+  prompt: I would choose a cheap, slightly clunky third-party API that achieves the
+    business goal over spending weeks building an elegant custom service in-house.
+  translations:
+    th:
+      prompt: ฉันยอมเลือกใช้ API นอกแบบชำระเงินที่ตอบโจทย์ธุรกิจได้ทันที แม้ตัวโค้ดจะไม่ได้เนี้ยบหรูหรา
+        ดีกว่าต้องเสียเวลาสองสามสัปดาห์ปั้นระบบใหม่เองในบ้านให้สมบูรณ์แบบเชิงเทคนิค
   agree_dimension_signals:
     economics: 1
     people_product: 0.6
@@ -187,7 +272,12 @@ role_questions:
 - code: role-swebok-16-computing-foundations
   item_group: core
   question_type: likert_5
-  prompt: I enjoy the algorithms, data, and computing ideas behind software behavior.
+  prompt: I spend time optimizing memory footprints and algorithmic time complexities
+    of my data processing models, even when computing resources are cheap.
+  translations:
+    th:
+      prompt: ฉันยอมเสียเวลาวิเคราะห์เรื่องความซับซ้อนของ Algorithm (Time Complexity)
+        และการจัดการ Memory ในโค้ดดึงข้อมูล แม้เซิร์ฟเวอร์คลาวด์จะแรงและมีราคาถูกพอจะกดข้ามเรื่องนี้ได้ก็ตาม
   agree_dimension_signals:
     computing_ai: 1
     data_ai: 0.8
@@ -199,7 +289,12 @@ role_questions:
 - code: role-swebok-17-mathematical-foundations
   item_group: core
   question_type: likert_5
-  prompt: I like using numbers or statistical evidence to justify decisions.
+  prompt: I refuse to finalize a product change or hypothesis until I've run statistically
+    valid A/B tests, even when the executive team is confident in their gut feelings.
+  translations:
+    th:
+      prompt: ฉันจะไม่ตกลงเปลี่ยนฟีเจอร์ตามความรู้สึกส่วนตัวของใคร จนกว่าจะได้รัน
+        A/B Testing เก็บตัวเลขพิสูจน์เชิงสถิติจนชัวร์ แม้ผู้บริหารจะมั่นใจในสัญชาตญาณตัวเองมากก็ตาม
   agree_dimension_signals:
     math: 1
     data_ai: 0.8
@@ -211,7 +306,12 @@ role_questions:
 - code: role-swebok-18-engineering-foundations
   item_group: core
   question_type: likert_5
-  prompt: I prefer disciplined engineering tradeoffs over quick visual polish.
+  prompt: When resources are limited, I secure zero-downtime deployment pipelines
+    and API security over polishing the visual UI for stakeholders.
+  translations:
+    th:
+      prompt: ในวันที่ทรัพยากรมีจำกัด ฉันเลือกจัดสรรงบไปกับการวางระบบ Deployment แบบไม่ล่ม
+        (Zero-Downtime Pipeline) และความปลอดภัยของ API ก่อนเรื่องหน้าตา UI ที่เอาไว้โชว์สเตกโฮลเดอร์
   agree_dimension_signals:
     engineering: 1
     backend_platform: 0.6
@@ -223,7 +323,12 @@ role_questions:
 - code: role-swebok-19-user-needs-vs-internals
   item_group: core
   question_type: likert_5
-  prompt: I would rather interview users than tune an internal service.
+  prompt: I would rather spend my week conducting interactive user interviews to validate
+    feature ideas than tuning a microservice performance bottleneck.
+  translations:
+    th:
+      prompt: ฉันอยากเอาตัวเองออกไปนั่งจับเข่าคุยกับผู้ใช้งานจริงเพื่อหาสิ่งที่พวกเขาลำบากใจ
+        แทนที่จะมานั่งไล่จูนคอขวดในระบบหลังบ้าน (Microservice Performance Tuning)
   agree_dimension_signals:
     requirements: 1
     people_product: 1
@@ -236,7 +341,12 @@ role_questions:
 - code: role-swebok-20-structure-vs-iteration
   item_group: core
   question_type: likert_5
-  prompt: I prefer stable technical structure over fast trial-and-error changes.
+  prompt: I would rather spend a sprint building a rigid, highly scalable architecture
+    plan than spinning up rapid prototypes that might require complete rewrites.
+  translations:
+    th:
+      prompt: ฉันยอมทุ่มหมดเวลาทั้งสปรินต์ไปกับการปักเสาเข็มโครงสร้างเชิงเทคนิคให้แข็งแกร่ง
+        (Architecture Plan) ดีกว่าการทำต้นแบบลวก ๆ มาทดลองใช้แล้วต้องโละทิ้งเขียนใหม่หมดในอีกไม่กี่เดือน
   agree_dimension_signals:
     architecture: 1
     engineering: 0.5
@@ -249,7 +359,12 @@ role_questions:
 - code: role-swebok-21-screen-vs-data-flow
   item_group: core
   question_type: likert_5
-  prompt: I enjoy designing screens and interaction details more than shaping system behavior behind the scenes.
+  prompt: I enjoy perfecting interactive UI transitions and pixel layouts on the frontend
+    more than structuring complex background jobs and data pipelines.
+  translations:
+    th:
+      prompt: ฉันสนุกกับการขัดเกลาปุ่มกด เลย์เอาต์ และแอนิเมชันสวย ๆ บนหน้าจอเว็บมากกว่าการมานั่งปวดหัวคุมท่อส่งข้อมูล
+        (Data Pipeline) และจัดการคิวงานระบบหลังบ้าน
   agree_dimension_signals:
     design: 1
     web_frontend: 0.8
@@ -262,7 +377,11 @@ role_questions:
 - code: role-swebok-22-build-vs-analyze
   item_group: core
   question_type: likert_5
-  prompt: I would rather implement a feature than spend the day reading reports.
+  prompt: I would rather spend a full day coding complex business logic into a feature
+    than reviewing performance reports and metrics charts.
+  translations:
+    th:
+      prompt: ฉันขอเลือกนั่งเคาะแป้นเขียน Logic และพ่นฟีเจอร์ลงโค้ดทั้งวัน ดีกว่าการต้องมานั่งกวาดสายตาวิเคราะห์รายงานระบบหรือแดชบอร์ดประสิทธิภาพขององค์กร
   agree_dimension_signals:
     construction: 1
     application_build: 0.8
@@ -274,7 +393,12 @@ role_questions:
 - code: role-swebok-23-test-vs-operate
   item_group: core
   question_type: likert_5
-  prompt: I prefer finding defects before release over monitoring live systems.
+  prompt: I prefer writing deep QA edge-case testing suites to catch bugs before release
+    over configuring real-time alert logs to monitor production anomalies.
+  translations:
+    th:
+      prompt: ฉันชอบขลุกตัวอยู่กับการทำ QA Test Scenarios เพื่อสกัด Bug ให้หมดเกลี้ยงก่อนเอาขึ้นระบบจริง
+        มากกว่าการคอยไปนั่งเฝ้าหน้าจอ Monitor หรือรับ Alert เมื่อระบบ Production มีปัญหา
   agree_dimension_signals:
     testing: 1
     quality: 0.7
@@ -287,7 +411,12 @@ role_questions:
 - code: role-swebok-24-run-vs-plan
   item_group: core
   question_type: likert_5
-  prompt: I would rather improve deployment reliability than refine team planning.
+  prompt: I would rather refine zero-downtime deployment pipelines and automate infra-scaling
+    than attend sprint planning and estimation sessions.
+  translations:
+    th:
+      prompt: ฉันยินดีสละเวลาร่วมประชุมกรูมมิ่งหรือประเมินสตอรี่พอยต์ (Estimation
+        Sessions) เพื่อไปขัดเกลาท่อระบบการ Deploy หรือเขียนสคริปต์สเกลเครื่องอัตโนมัติ
   agree_dimension_signals:
     operations: 1
     operations_security: 0.8
@@ -300,7 +429,12 @@ role_questions:
 - code: role-swebok-25-maintain-vs-create
   item_group: core
   question_type: likert_5
-  prompt: I enjoy simplifying old code more than adding new product ideas.
+  prompt: I enjoy cleaning up spaghetti code and removing unused dependencies in legacy
+    files more than hacking together new, highly requested product prototypes.
+  translations:
+    th:
+      prompt: ฉันรู้สึกผ่อนคลายและสนุกเมื่อได้เคลียร์โค้ดรก ๆ (Spaghetti Code) ในโปรเจกต์มรดก
+        มากกว่าต้องรีบเขียนโค้ดทดลองฟีเจอร์ใหม่ที่ไม่รู้จะได้ใช้อีกกี่วัน
   agree_dimension_signals:
     maintenance: 1
     quality: 0.7
@@ -312,7 +446,13 @@ role_questions:
 - code: role-swebok-26-release-control-vs-creative-flow
   item_group: core
   question_type: likert_5
-  prompt: I prefer controlled releases over open-ended creative exploration.
+  prompt: I support enforcing strict feature-flag controls and slow rollout plans,
+    even when designers complain it stifles their ability to release creative updates
+    quickly.
+  translations:
+    th:
+      prompt: ฉันยืนยันให้จัดระบบ Feature Flags และค่อย ๆ เผยแพร่ฟีเจอร์ทีละกลุ่มย่อย
+        แม้ดีไซเนอร์จะบอกว่าตัวควบคุมนี้ทำให้ปล่อยของแปลกใหม่ให้ชาวโลกเล่นได้ช้าลงก็ตาม
   agree_dimension_signals:
     configuration_management: 1
     operations_security: 0.7
@@ -324,7 +464,13 @@ role_questions:
 - code: role-swebok-27-lead-vs-build
   item_group: core
   question_type: likert_5
-  prompt: I would rather unblock the team than personally code the feature.
+  prompt: I would rather spend my entire day resolving git merge conflicts, coaching
+    juniors, and unblocking teammates than coding a core feature myself.
+  translations:
+    th:
+      prompt: ฉันยินดีเสียเวลาทั้งสปรินต์ไปกับการนั่งตรวจโค้ด (Code Review) เคลียร์
+        Git Conflict และสอนน้องใหม่เพื่อแก้อาการคอขวดในทีม แทนที่จะปั้นฟีเจอร์เจ๋ง
+        ๆ ด้วยมือตัวเอง
   agree_dimension_signals:
     management: 1
     leadership_process: 1
@@ -338,7 +484,12 @@ role_questions:
 - code: role-swebok-28-process-vs-speed
   item_group: core
   question_type: likert_5
-  prompt: I prefer improving the workflow over shipping one more feature quickly.
+  prompt: I prefer spending time adding strict pre-commit hooks and linting rules
+    over shipping one extra business feature at the end of a sprint.
+  translations:
+    th:
+      prompt: ฉันยินยอมที่จะสละฟีเจอร์พิเศษท้ายรอบงานเพื่อไปติดตั้งกฎ Pre-commit Hooks
+        และด่านตรวจคุณภาพโค้ด (Linter) เพื่อรักษาฟอร์มการทำงานระยะยาวของทีม
   agree_dimension_signals:
     process: 1
     leadership_process: 0.8
@@ -350,7 +501,12 @@ role_questions:
 - code: role-swebok-29-method-vs-intuition
   item_group: core
   question_type: likert_5
-  prompt: I trust measured experiments more than gut feel.
+  prompt: I refuse to support architectural changes or UX flows based on 'developer
+    gut feel' without metric evidence from real-user instrumentation.
+  translations:
+    th:
+      prompt: ฉันยืนกรานที่จะไม่โหวตเปลี่ยนทิศทาง UI หรือปรับระบบตามความชอบส่วนตัว
+        (Gut Feel) ของทีมพัฒนา หากยังไม่มีตัวเลขการวัดผลจริงมาหนุนหลังอย่างเป็นรูปธรรม
   agree_dimension_signals:
     models_methods: 1
     math: 0.7
@@ -363,7 +519,13 @@ role_questions:
 - code: role-swebok-30-quality-vs-novelty
   item_group: core
   question_type: likert_5
-  prompt: I value steady quality more than trying a new technology just because it is new.
+  prompt: I refuse to let the team adopt a trending framework or database until we've
+    proven its long-term stability and team expertise, regardless of the developer
+    hype.
+  translations:
+    th:
+      prompt: ฉันจะไม่ยอมให้ทีมรีบสลับไปใช้ Framework คลื่นลูกใหม่ที่คนกำลังอวยกันตามกระแส
+        หากยังไม่ได้รับประกันเสถียรภาพระยะยาวและการดูแลรักษาของทีมอย่างถ่องแท้
   agree_dimension_signals:
     quality: 1
     maintenance: 0.6
@@ -375,7 +537,12 @@ role_questions:
 - code: role-swebok-31-security-vs-usability
   item_group: core
   question_type: likert_5
-  prompt: I would tighten access rules even if onboarding became slower.
+  prompt: I would enforce strict multi-factor authentication and role-based access
+    control even if onboarding became slower for new developers and employees.
+  translations:
+    th:
+      prompt: ฉันยินดีให้กระบวนการติดตั้งและขอสิทธิ์ใช้งานเครื่องมือพัฒนา (Access
+        Permission) มีหลายด่านจนน้องใหม่ออนบอร์ดได้ช้าลง หากมันช่วยให้รอดพ้นจากการถูกแฮกข้อมูลสำคัญได้ดีขึ้น
   agree_dimension_signals:
     security: 1
     operations_security: 0.8
@@ -388,7 +555,12 @@ role_questions:
 - code: role-swebok-32-explain-vs-implement
   item_group: core
   question_type: likert_5
-  prompt: I enjoy teaching developers as much as shipping production code.
+  prompt: I would rather spend my week preparing technical sharing sessions and peer-programming
+    with juniors than building production features by myself.
+  translations:
+    th:
+      prompt: ฉันขอเลือกที่จะใช้เวลาเตรียมสไลด์แชร์ความรู้เชิงเทคนิคหรือทำ Pair Programming
+        กับน้อง ๆ ดีกว่านั่งปั้นโค้ดส่งขึ้นระบบโปรดักชันอย่างเดียวโดด ๆ
   agree_dimension_signals:
     professional_practice: 1
     documentation_practice: 0.8
@@ -401,7 +573,11 @@ role_questions:
 - code: role-swebok-33-business-vs-technical
   item_group: core
   question_type: likert_5
-  prompt: I would prioritize business impact over technical elegance.
+  prompt: I would approve shipping a codebase filled with hardcoded shortcuts if it
+    was the only way to beat a competitor to market and win a crucial commercial deal.
+  translations:
+    th:
+      prompt: ฉันยอมปิดตาข้างหนึ่งปล่อยโค้ดที่มีการ Hardcode ทางลัดแบบหยาบ ๆ หากนั่นเป็นเพียงวิถีเดียวที่จะส่งฟีเจอร์ตัดหน้าคู่แข่งและปิดดีลการค้าครั้งประวัติศาสตร์ของบริษัทได้
   agree_dimension_signals:
     economics: 1
     people_product: 0.7
@@ -414,7 +590,13 @@ role_questions:
 - code: role-swebok-34-ai-vs-classic-apps
   item_group: core
   question_type: likert_5
-  prompt: I am more drawn to building AI or data capabilities than polishing general product workflows.
+  prompt: I would rather spend my sprint optimization cycles engineering data pipelines
+    and tuning AI models than building CRUD forms and general product web pages.
+  translations:
+    th:
+      prompt: ฉันอยากใช้พลังงานจมดิ่งกับการพัฒนาท่อข้อมูลขนาดใหญ่ (Data Pipelines)
+        และวิเคราะห์จูน Model AI ดีกว่าการนั่งออกแบบหน้าเว็บฟอร์มกรอกข้อมูลทั่วไป
+        (CRUD Web Forms)
   agree_dimension_signals:
     computing_ai: 1
     data_ai: 0.9
@@ -426,7 +608,12 @@ role_questions:
 - code: role-swebok-35-statistics-vs-craft
   item_group: core
   question_type: likert_5
-  prompt: I enjoy statistical evidence more than visual or interaction craft.
+  prompt: I find analyzing regression test patterns and user analytics reports more
+    satisfying than crafting beautiful frontend UI layouts or page transitions.
+  translations:
+    th:
+      prompt: ฉันฟินกับการแกะข้อมูลสถิติเพื่อดูเทรนด์การใช้งานของผู้ใช้และเจาะปัญหาหลังบ้าน
+        มากกว่าการมานั่งขัดเกลาหน้าตาของ UI หรือแอนิเมชันตอนเปลี่ยนหน้าแอป
   agree_dimension_signals:
     math: 1
     data_ai: 0.8
@@ -438,7 +625,13 @@ role_questions:
 - code: role-swebok-36-engineering-vs-product
   item_group: core
   question_type: likert_5
-  prompt: I would choose engineering robustness over faster market feedback.
+  prompt: I refuse to release a feature until its core systems are verified for performance
+    bottlenecks, even if business stakeholders demand faster release updates for market
+    testing.
+  translations:
+    th:
+      prompt: ฉันจะปักหลักไม่ยอมลอนช์ฟีเจอร์ถ้าความล่มยากและประสิทธิภาพ (Performance
+        Bottlenecks) ยังไม่ได้มาตรฐาน แม้ฝั่ง Business จะเร่งรัดเอาไปทดลองชิงตลาดด่วนแค่ไหนก็ตาม
   agree_dimension_signals:
     engineering: 1
     backend_platform: 0.7
@@ -452,7 +645,12 @@ role_questions:
 - code: role-swebok-tie-01-frontend-backend
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer browser behavior over server behavior.
+  prompt: I prefer optimizing browser performance, rendering lifecycles, and client-side
+    caching over managing server-side controllers and server memory management.
+  translations:
+    th:
+      prompt: ฉันชอบขลุกตัวอยู่กับการเค้นประสิทธิภาพฝั่ง Browser จัดการ Render Lifecycle
+        และ Client Caching มากกว่าไปกังวลเรื่องการจูน Thread เซิร์ฟเวอร์หรือจัดการเมมโมรี่หลังบ้าน
   agree_dimension_signals:
     web_frontend: 1
     design: 0.6
@@ -471,7 +669,12 @@ role_questions:
 - code: role-swebok-tie-02-devops-devsecops
   item_group: tie_break
   question_type: likert_5
-  prompt: I focus on delivery speed before security gates.
+  prompt: I focus on accelerating CI/CD pipeline speeds and reducing build times over
+    adding extra automated compliance and security scanners.
+  translations:
+    th:
+      prompt: ฉันมุ่งมั่นจะดึงความเร็วของ CI/CD Pipeline ให้เสร็จอย่างรวดเร็วที่สุด
+        ดีกว่าต้องเพิ่มสแกนเนอร์ด่านตรวจ Security และ Compliance หลายด่านจนต้องใช้เวลาบิลด์นานเป็นชั่วโมง
   agree_dimension_signals:
     operations: 1
     configuration_management: 0.7
@@ -488,7 +691,12 @@ role_questions:
 - code: role-swebok-tie-03-data-analyst-bi
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer open-ended analysis over recurring business dashboards.
+  prompt: I would rather perform open-ended exploratory analysis on raw, unstructured
+    data to uncover insights than build and schedule clean, recurring business dashboards.
+  translations:
+    th:
+      prompt: ฉันชอบการเข้าไปดิ้นรนคุ้ยหาอินไซต์จาก Data ดิบแบบปลายเปิดที่ไร้โครงสร้าง
+        (Exploratory Analysis) มากกว่าการมานั่งขัดเกลาทำแดชบอร์ดสรุปตัวเลขรายสัปดาห์ให้ลูกค้าดู
   agree_dimension_signals:
     data_ai: 0.8
     math: 0.7
@@ -505,7 +713,12 @@ role_questions:
 - code: role-swebok-tie-04-ai-engineer-scientist
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer shipping AI features over proving model assumptions.
+  prompt: I prefer integrating pretrained AI APIs into core application workflows
+    over spent weeks training models to prove academic accuracy metrics.
+  translations:
+    th:
+      prompt: ฉันเน้นที่จะหยิบจับ API ของ AI สำเร็จรูปมาเชื่อมต่อให้แอปใช้งานได้จริง
+        ดีกว่าทนหลังขดหลังแข็งนั่งจูนและพิสูจน์สมมติฐานทางวิชาการของ Model นานแรมสัปดาห์
   agree_dimension_signals:
     construction: 1
     architecture: 0.7
@@ -524,7 +737,12 @@ role_questions:
 - code: role-swebok-tie-05-data-engineer-mlops
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer data pipelines over model deployment systems.
+  prompt: I prefer building raw ETL pipelines and streaming data systems over designing
+    model monitoring and model serving infrastructure.
+  translations:
+    th:
+      prompt: ฉันหลงใหลการออกแบบท่อดึงข้อมูล ดัดแปลง และโหลด (ETL Pipeline) รวมถึงสตรีมมิ่งข้อมูลมากว่าการปั้นโครงสร้างเซิร์ฟเวอร์เสิร์ฟและคอยมอนิเตอร์ตัว
+        Model AI
   agree_dimension_signals:
     data_ai: 0.8
     construction: 0.7
@@ -542,7 +760,12 @@ role_questions:
 - code: role-swebok-tie-06-mobile-platform
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer Android platform work over Apple platform work.
+  prompt: I enjoy optimizing Android Kotlin applications and understanding JVM garbage
+    collection details more than designing iOS apps using Swift and UIKit/SwiftUI.
+  translations:
+    th:
+      prompt: ฉันสนุกกับการเค้นความจุของแอป Android ด้วย Kotlin และการแกะการทำงานของ
+        JVM Garbage Collection มากกว่าการทำแอป iOS ด้วย Swift และ SwiftUI
   agree_dimension_signals:
     android_platform: 1
     application_build: 0.6
@@ -558,7 +781,13 @@ role_questions:
 - code: role-swebok-tie-07-database-backend
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer database performance over general service logic.
+  prompt: I would rather spend my days optimizing complex SQL queries, index structures,
+    and transaction locks than writing standard backend REST API controllers.
+  translations:
+    th:
+      prompt: ฉันขอเลือกใช้ชีวิตกับการนั่งงัดประสิทธิภาพของ SQL Query ออกแบบคีย์ ดัชนี
+        และระบบล็อก Transaction ของฐานข้อมูลดีกว่าปั้น Endpoint ทำงานแบบ CRUD ไปวัน
+        ๆ
   agree_dimension_signals:
     database_postgresql: 1
     quality: 0.7
@@ -576,7 +805,12 @@ role_questions:
 - code: role-swebok-tie-08-blockchain-security
   item_group: tie_break
   question_type: likert_5
-  prompt: I enjoy smart-contract logic more than general security monitoring.
+  prompt: I enjoy auditing solidity smart-contract logic and exploring consensus mechanisms
+    more than managing cloud firewalls and standard server intrusion detections.
+  translations:
+    th:
+      prompt: ฉันชอบขุดคุ้ยหาช่องโหว่ใน Logic ของ Solidity Smart Contract และแกะเรื่องกลไกฉันทามติ
+        (Consensus) มากกว่าการคอยเฝ้าระบบตรวจจับผู้บุกรุกเซิร์ฟเวอร์คลาวด์ทั่วไป
   agree_dimension_signals:
     blockchain_platform: 1
     construction: 0.7
@@ -594,7 +828,12 @@ role_questions:
 - code: role-swebok-tie-09-qa-architect
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer test evidence over high-level structure decisions.
+  prompt: I trust automated integration test suites and functional regression tests
+    more than senior architecture blueprints that have not been validated by tests.
+  translations:
+    th:
+      prompt: ฉันเชื่อมั่นในรายงานการทดสอบระบบ (Integration Test Results) มากกว่าแบบร่างดีไซน์ของ
+        Senior Architect ที่ยังไม่มี Test Suite ใด ๆ มารองรับและพิสูจน์ยืนยันความถูกต้อง
   agree_dimension_signals:
     testing: 1
     quality: 0.8
@@ -610,7 +849,12 @@ role_questions:
 - code: role-swebok-tie-10-ux-product
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer designing flows over prioritizing business outcomes.
+  prompt: I prefer crafting user flow diagrams and screen wireframes over analyzing
+    customer acquisition costs and prioritize business impact matrices.
+  translations:
+    th:
+      prompt: ฉันรักการวาดออกแบบ User Flows และขึ้น Wireframe หน้าจอเพื่อให้ผู้ใช้ประทับใจ
+        มากกว่าการคอยนั่งอ่านรายงานวิเคราะห์ต้นทุนการตลาดหรือตั้งค่า KPI เชิงธุรกิจ
   agree_dimension_signals:
     design: 1
     requirements: 0.7
@@ -628,7 +872,13 @@ role_questions:
 - code: role-swebok-tie-11-docs-devrel
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer precise documentation over community demos.
+  prompt: I would rather write highly detailed, precise technical reference manuals
+    and API schemas than present at developer conferences and build public community
+    demos.
+  translations:
+    th:
+      prompt: ฉันพึงพอใจที่จะนั่งเขียนคู่มือเชิงลึก (Developer References) และจัดโครงสร้างของ
+        API Schema ให้เนี้ยบสุด ๆ มากกว่าออกงานสัมมนาหรือสร้างเดโมล่อเป้าดึงดูดคนในคอมมูนิตี้
   agree_dimension_signals:
     technical_documentation: 1
     maintenance: 0.6
@@ -644,7 +894,13 @@ role_questions:
 - code: role-swebok-tie-12-game-client-server
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer gameplay feel over multiplayer backend reliability.
+  prompt: I prefer spend time tuning gameplay controls, physics simulations, and frame
+    rates over optimizing server-side load balancers and multiplayer synchronization
+    databases.
+  translations:
+    th:
+      prompt: ฉันมีความสุขกับการไปขัดเกลาระบบการเคลื่อนไหว (Gameplay Controls) ค่าฟิสิกส์
+        และเฟรมเรตในแอปเกมมากกว่าแก้ปัญหาจูนเซิร์ฟเวอร์ล็อกอินหลังบ้านและซิงก์ข้อมูลผู้เล่น
   agree_dimension_signals:
     game_client: 1
     game_family: 0.9

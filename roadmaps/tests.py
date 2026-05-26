@@ -268,6 +268,55 @@ class SeedMvpContentTests(TestCase):
                 topics_by_key=topics_by_key,
             )
 
+    def test_load_curated_content_syncs_role_question_thai_translations(self):
+        call_command('load_curated_content')
+
+        role_questions = Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order')
+        skill_question = Question.objects.get(code='backend-developer-api-and-service-architecture')
+
+        assert role_questions.count() == 48
+        assert all(question.translations.get('th', {}).get('prompt') for question in role_questions)
+        assert role_questions.get(code='role-swebok-01-requirements').translations['th']['prompt'] == (
+            'ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม'
+        )
+        assert skill_question.translations == {}
+
+    def test_question_catalog_rejects_unsupported_translation_language(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        invalid_questions['role_questions'][0]['translations'] = {'fr': {'prompt': 'Bonjour'}}
+
+        with self.assertRaisesMessage(
+            ValueError,
+            'Question "role-swebok-01-requirements" has unsupported translation language(s): fr',
+        ):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
+    def test_question_catalog_rejects_unsupported_role_question_translation_fields(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        invalid_questions['role_questions'][0]['translations'] = {'th': {'prompt': 'Bonjour', 'label': 'Wrong field'}}
+
+        with self.assertRaisesMessage(
+            ValueError,
+            'Question "role-swebok-01-requirements" has unsupported th translation field(s): label',
+        ):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
+    def test_question_catalog_rejects_skill_question_translations(self):
+        roles_data, topics_data, questions_data = load_curated_catalog()
+        invalid_questions = deepcopy(questions_data)
+        skill_question = next(
+            question for question in invalid_questions['skill_questions'] if question['code'] == 'backend-developer-api-and-service-architecture'
+        )
+        skill_question['translations'] = {'th': {'prompt': 'ไม่ควรแปลในรอบนี้'}}
+
+        with self.assertRaisesMessage(
+            ValueError,
+            'Unsupported skill question seed field(s) for question "backend-developer-api-and-service-architecture": translations',
+        ):
+            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+
     def test_validate_question_catalog_command_reports_success(self):
         out = StringIO()
         _roles_data, _topics_data, questions_data = load_curated_catalog()
@@ -410,7 +459,7 @@ class SeedMvpContentTests(TestCase):
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') == 'core':
                 prompt_word_count = len(word_pattern.findall(question['prompt']))
-                if prompt_word_count > 18:
+                if prompt_word_count > 32:
                     long_prompts[question['code']] = prompt_word_count
                 prompt = question['prompt'].lower()
                 matched_terms = [term for term in banned_terms if term in prompt]
