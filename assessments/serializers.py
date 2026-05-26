@@ -6,6 +6,7 @@ from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
 from .models import Answer, AssessmentSession, TopicMastery
+from .roadmaps import get_survey2_question_ids
 from .services import (
     build_guidance_summary,
     build_session_state,
@@ -16,11 +17,11 @@ from .services import (
     get_role_resolution_status,
     serialize_milestones,
 )
-from .roadmaps import get_survey2_question_ids
 
 
 class SessionCreateSerializer(serializers.Serializer):
     preferred_role_slug = serializers.SlugField(required=False)
+    language = serializers.ChoiceField(choices=AssessmentSession.Language.choices, required=False, default=AssessmentSession.Language.EN)
     profile = serializers.DictField(required=False)
 
     def validate_preferred_role_slug(self, value):
@@ -192,6 +193,7 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
             'id',
             'status',
             'phase',
+            'language',
             'best_fit_confidence',
             'preferred_role',
             'best_fit_role',

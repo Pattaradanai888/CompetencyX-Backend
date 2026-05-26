@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from roadmaps.models import Role
 
 from .models import AssessmentSession
+from .roadmaps import get_survey2_catalog
 from .serializers import (
     AnswerSubmitSerializer,
     AssessmentHistorySerializer,
@@ -24,11 +25,11 @@ from .services import (
     get_role_insights,
     submit_answer,
 )
-from .roadmaps import get_survey2_catalog
 
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
     'preferred_role_slug': 'backend-engineer',
+    'language': 'en',
     'profile': {
         'education_level': 'student',
         'current_stage': 'beginner',
@@ -39,6 +40,7 @@ SESSION_RESPONSE_EXAMPLE = {
     'id': '2b39d41d-8de9-4b9b-b2ef-2a278b3f3770',
     'status': 'in_progress',
     'phase': 'role_discovery',
+    'language': 'en',
     'best_fit_confidence': 0.0,
     'preferred_role': {
         'id': 1,
@@ -334,6 +336,7 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
             )
         session = create_assessment_session(
             preferred_role=preferred_role,
+            language=serializer.validated_data.get('language', AssessmentSession.Language.EN),
             profile=serializer.validated_data.get('profile', {}),
         )
         return Response(

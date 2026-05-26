@@ -7,6 +7,10 @@ from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role
 
 
 class AssessmentSession(models.Model):
+    class Language(models.TextChoices):
+        EN = 'en', 'English'
+        TH = 'th', 'Thai'
+
     class Status(models.TextChoices):
         IN_PROGRESS = 'in_progress', 'In Progress'
         COMPLETED = 'completed', 'Completed'
@@ -51,6 +55,11 @@ class AssessmentSession(models.Model):
         default=Phase.ROLE_DISCOVERY,
     )
     best_fit_confidence = models.FloatField(default=0.0)
+    language = models.CharField(
+        max_length=8,
+        choices=Language.choices,
+        default=Language.EN,
+    )
     profile = models.JSONField(default=dict, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

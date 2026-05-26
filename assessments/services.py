@@ -69,18 +69,20 @@ class AssessmentFlowError(ValueError):
     """Raised when the assessment session flow is used incorrectly."""
 
 
-def create_assessment_session(*, preferred_role=None, profile=None) -> AssessmentSession:
+def create_assessment_session(*, preferred_role=None, profile=None, language=AssessmentSession.Language.EN) -> AssessmentSession:
     session = AssessmentSession.objects.create(
         preferred_role=preferred_role,
         best_fit_role=None,
         best_fit_confidence=0.0,
         phase=AssessmentSession.Phase.ROLE_DISCOVERY,
+        language=language,
         profile=profile or {},
     )
     logger.info(
-        'assessment.session_created session_id=%s preferred_role=%s profile_keys=%s',
+        'assessment.session_created session_id=%s preferred_role=%s language=%s profile_keys=%s',
         session.id,
         preferred_role.slug if preferred_role else None,
+        language,
         sorted((profile or {}).keys()),
     )
     return session
@@ -201,7 +203,7 @@ def get_current_question_data(session: AssessmentSession):
     if question is None:
         return None
 
-    return QuestionSerializer(question).data
+    return QuestionSerializer(question, context={'language': session.language}).data
 
 
 def build_session_state(session: AssessmentSession) -> dict[str, object]:
@@ -210,6 +212,7 @@ def build_session_state(session: AssessmentSession) -> dict[str, object]:
         'id': session.id,
         'status': session.status,
         'phase': session.phase,
+        'language': session.language,
         'best_fit_confidence': session.best_fit_confidence if role_resolved else 0.0,
         'preferred_role': session.preferred_role,
         'best_fit_role': session.best_fit_role if role_resolved else None,

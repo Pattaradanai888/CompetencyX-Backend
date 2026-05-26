@@ -21,6 +21,8 @@ QUESTION_BANK_DIR = CURATED_CONTENT_DIR / 'questions'
 LEGACY_QUESTION_FILE = CURATED_CONTENT_DIR / 'questions.yaml'
 UPSTREAM_SNAPSHOT_DIR = BASE_DATA_DIR / 'upstream' / 'roadmap_sh'
 MIN_TIE_BREAK_ROLE_COUNT = 2
+SUPPORTED_TRANSLATION_LANGUAGES = {'en', 'th'}
+QUESTION_TRANSLATION_FIELDS = {'prompt', 'help_text'}
 
 
 def seed_mvp_content(*, stdout=None):
@@ -205,6 +207,7 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'question_type': question_seed['question_type'],
                 'prompt': question_seed['prompt'],
                 'help_text': question_seed.get('help_text', ''),
+                'translations': question_seed.get('translations', {}),
                 'role': None,
                 'topic': None,
                 'difficulty': question_seed['difficulty'],
@@ -232,6 +235,7 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
                 'question_type': question_seed['question_type'],
                 'prompt': question_seed['prompt'],
                 'help_text': question_seed.get('help_text', ''),
+                'translations': {},
                 'role': role,
                 'topic': topic,
                 'difficulty': question_seed['difficulty'],
@@ -274,13 +278,37 @@ def _sync_question_options(question: Question, option_seeds: list[dict], *, topi
 
 
 def _validate_option_seed(option_seed: dict, *, question: Question) -> None:
-    unsupported_fields = {'dimension_signals', 'mastery_value', 'role_signals', 'role_weights'} & option_seed.keys()
+    unsupported_fields = {'dimension_signals', 'mastery_value', 'role_signals', 'role_weights', 'translations'} & option_seed.keys()
     if not unsupported_fields:
         return
 
     fields = ', '.join(sorted(unsupported_fields))
     msg = f'Unsupported option seed field(s) for question "{question.code}": {fields}'
     raise ValueError(msg)
+
+
+def _validate_translation_seed(translations: dict, *, item_label: str, allowed_fields: set[str]) -> None:
+    if not translations:
+        return
+    if not isinstance(translations, dict):
+        msg = f'{item_label} translations must be a mapping.'
+        raise TypeError(msg)
+
+    unsupported_languages = set(translations) - SUPPORTED_TRANSLATION_LANGUAGES
+    if unsupported_languages:
+        languages = ', '.join(sorted(unsupported_languages))
+        msg = f'{item_label} has unsupported translation language(s): {languages}'
+        raise ValueError(msg)
+
+    for language, translated_fields in translations.items():
+        if not isinstance(translated_fields, dict):
+            msg = f'{item_label} "{language}" translation must be a mapping.'
+            raise TypeError(msg)
+        unsupported_fields = set(translated_fields) - allowed_fields
+        if unsupported_fields:
+            fields = ', '.join(sorted(unsupported_fields))
+            msg = f'{item_label} has unsupported {language} translation field(s): {fields}'
+            raise ValueError(msg)
 
 
 def _validate_question_seed_uniqueness(question_seed: dict, *, existing_codes: set[str]) -> None:
@@ -301,6 +329,11 @@ def _validate_option_key_uniqueness(question_code: str, option_seed: dict, optio
 
 def _validate_role_question_seed(role_question: dict, *, role_slugs: set[str], existing_codes: set[str]) -> None:
     _validate_question_seed_uniqueness(role_question, existing_codes=existing_codes)
+    _validate_translation_seed(
+        role_question.get('translations', {}),
+        item_label=f'Question "{role_question["code"]}"',
+        allowed_fields=QUESTION_TRANSLATION_FIELDS,
+    )
     item_group = role_question.get('item_group', Question.ItemGroup.CORE)
     if item_group not in {Question.ItemGroup.CORE, Question.ItemGroup.TIE_BREAK}:
         msg = f'Role question "{role_question["code"]}" must use item_group "core" or "tie_break".'
@@ -353,6 +386,9 @@ def _validate_role_question_pairing(role_question: dict, *, item_group: str, rol
 
 def _validate_skill_question_seed(skill_question: dict, *, role_slugs: set[str], topic_keys: set[tuple[str, str]], existing_codes: set[str]):
     _validate_question_seed_uniqueness(skill_question, existing_codes=existing_codes)
+    if 'translations' in skill_question:
+        msg = f'Unsupported skill question seed field(s) for question "{skill_question["code"]}": translations'
+        raise ValueError(msg)
     role_slug = skill_question['role_slug']
     topic_slug = skill_question['topic_slug']
     if role_slug not in role_slugs:

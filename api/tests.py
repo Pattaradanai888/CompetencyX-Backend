@@ -99,6 +99,7 @@ class AssessmentFlowTests(APITestCase):
                 item_group=Question.ItemGroup.CORE,
                 question_type=Question.Type.LIKERT_5,
                 prompt=f'Role trait prompt {display_order}',
+                translations={'th': {'prompt': f'คำถามบทบาท {display_order}'}},
                 trait_positive_dimension=dimension,
                 agree_dimension_signals={dimension: 1.0},
                 disagree_dimension_signals={'people_product': 1.0},
@@ -216,6 +217,54 @@ class AssessmentFlowTests(APITestCase):
         )
         self.assertEqual(bad_scale_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Use one of', bad_scale_response.json()['scale_value'][0])
+
+    def test_session_language_defaults_to_english_and_rejects_unknown_language(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.json()['language'], AssessmentSession.Language.EN)
+
+        invalid_response = self.client.post(reverse('assessment-session-create'), {'language': 'jp'}, format='json')
+
+        self.assertEqual(invalid_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('language', invalid_response.json())
+
+    def test_thai_session_localizes_role_question_ui_without_changing_answer_contract(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'language': AssessmentSession.Language.TH}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        payload = create_response.json()
+        self.assertEqual(payload['language'], AssessmentSession.Language.TH)
+        self.assertEqual(payload['current_question']['prompt'], 'คำถามบทบาท 1')
+        self.assertEqual(
+            [choice['label'] for choice in payload['current_question']['response_scale']],
+            ['เห็นด้วยอย่างยิ่ง', 'เห็นด้วย', 'เป็นกลาง', 'ไม่เห็นด้วย', 'ไม่เห็นด้วยอย่างยิ่ง'],
+        )
+
+        answer_response = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': payload['current_question']['id'], 'scale_value': 2},
+            format='json',
+        )
+
+        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
+
+    def test_thai_session_does_not_localize_skill_questions(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'language': AssessmentSession.Language.TH}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        payload = create_response.json()
+        payload = self._answer_remaining_core_questions(payload['id'], payload)
+        skill_question = payload['current_question']
+
+        self.assertEqual(skill_question['question_type'], Question.Type.YES_NO_MAYBE)
+        self.assertEqual(skill_question['prompt'], 'Are you comfortable with HTTP methods and status codes?')
+        self.assertEqual([option['label'] for option in skill_question['options']], ['Yes', 'Maybe', 'No'])
+
+        answer_response = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': skill_question['id'], 'option_id': skill_question['options'][0]['id']},
+            format='json',
+        )
+
+        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
 
     def test_skill_questions_still_require_option_id(self):
         create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')

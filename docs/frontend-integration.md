@@ -26,6 +26,7 @@ Fields included:
 - `id`
 - `status`
 - `phase`
+- `language`
 - `best_fit_confidence`
 - `preferred_role`
 - `best_fit_role`
@@ -62,6 +63,20 @@ Fields removed from the in-progress session payload:
 - `response_scale`
 
 `discrimination_score` is no longer exposed in the public question payload.
+
+### Question language
+Create-session accepts an optional `language` field:
+
+```json
+{
+  "preferred_role_slug": "backend-developer",
+  "language": "th"
+}
+```
+
+Supported values are `en` and `th`. If omitted, the backend stores `language: "en"` on the session.
+
+For `role_discovery` questions only, `current_question.prompt`, `current_question.help_text`, and `response_scale[].label` are returned in the session language when a translation exists. Missing Thai translations fall back to English. Skill questions, roadmap content, recommendations, history text, and Survey 2 content remain English in this pass. Answer requests do not change: role questions still submit `scale_value`, and skill questions still submit `option_id`.
 
 Role-discovery questions now use `question_type: "likert_5"` and return no `options`. Render the five radio choices from `response_scale` and submit the selected numeric `value`.
 

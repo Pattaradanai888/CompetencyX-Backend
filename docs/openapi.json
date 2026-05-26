@@ -41,6 +41,7 @@
                                             "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
                                             "status": "in_progress",
                                             "phase": "role_discovery",
+                                            "language": "en",
                                             "best_fit_confidence": 0.0,
                                             "preferred_role": {
                                                 "id": 1,
@@ -167,6 +168,7 @@
                                             "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
                                             "status": "in_progress",
                                             "phase": "role_discovery",
+                                            "language": "en",
                                             "best_fit_confidence": 0.0,
                                             "preferred_role": {
                                                 "id": 1,
@@ -303,6 +305,7 @@
                                             "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
                                             "status": "in_progress",
                                             "phase": "role_discovery",
+                                            "language": "en",
                                             "best_fit_confidence": 0.0,
                                             "preferred_role": {
                                                 "id": 1,
@@ -1200,6 +1203,9 @@
                     "phase": {
                         "$ref": "#/components/schemas/PhaseEnum"
                     },
+                    "language": {
+                        "$ref": "#/components/schemas/LanguageEnum"
+                    },
                     "best_fit_confidence": {
                         "type": "number",
                         "format": "double",
@@ -1285,6 +1291,14 @@
                 ],
                 "type": "string",
                 "description": "* `beginner` - Beginner\n* `intermediate` - Intermediate\n* `advanced` - Advanced"
+            },
+            "LanguageEnum": {
+                "enum": [
+                    "en",
+                    "th"
+                ],
+                "type": "string",
+                "description": "* `en` - English\n* `th` - Thai"
             },
             "PathKindEnum": {
                 "enum": [
@@ -1569,6 +1583,14 @@
                     "preferred_role_slug": {
                         "type": "string",
                         "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "language": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/LanguageEnum"
+                            }
+                        ],
+                        "default": "en"
                     },
                     "profile": {
                         "type": "object",

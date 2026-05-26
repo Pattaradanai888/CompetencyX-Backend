@@ -106,6 +106,7 @@ class Question(models.Model):
     question_type = models.CharField(max_length=24, choices=Type.choices)
     prompt = models.TextField()
     help_text = models.TextField(blank=True)
+    translations = models.JSONField(default=dict, blank=True)
     role = models.ForeignKey(
         Role,
         null=True,
