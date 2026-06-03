@@ -27,10 +27,11 @@ def list_survey2_questions() -> list[dict[str, object]]:
             'id': question['question_id'],
             'prompt': question['prompt'],
             'dimension_key': question['dimension_key'],
+            'display_order': question['display_order'],
         }
         for question in Survey2Question.objects.filter(is_active=True)
         .order_by('display_order', 'question_id')
-        .values('question_id', 'prompt', 'dimension_key')
+        .values('question_id', 'prompt', 'dimension_key', 'display_order')
     ]
 
 

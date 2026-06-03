@@ -432,3 +432,22 @@ class Survey2CatalogSerializer(serializers.Serializer):
     dimensions = Survey2DimensionSerializer(many=True)
     questions = Survey2QuestionSerializer(many=True)
     role_guidance = serializers.ListField(child=serializers.CharField())
+
+
+class Survey2NextQuestionRequestSerializer(serializers.Serializer):
+    answers = serializers.DictField(
+        child=serializers.IntegerField(min_value=1, max_value=5),
+        default=dict,
+    )
+
+    def validate_answers(self, value):
+        known_question_ids = get_survey2_question_ids()
+        for key in value:
+            if key not in known_question_ids:
+                msg = f'Unknown Survey 2 question id "{key}".'
+                raise serializers.ValidationError(msg)
+        return value
+
+
+class Survey2NextQuestionResponseSerializer(serializers.Serializer):
+    next_question = Survey2QuestionSerializer(allow_null=True)

@@ -14,8 +14,11 @@ from .serializers import (
     RoleInsightsSerializer,
     SessionCreateSerializer,
     Survey2CatalogSerializer,
+    Survey2NextQuestionRequestSerializer,
+    Survey2NextQuestionResponseSerializer,
     Survey2SessionStateSerializer,
 )
+from .survey2_adaptive import apply_survey2_step_feedback, select_next_survey2_question
 from .services import (
     AssessmentFlowError,
     apply_recommendation_feedback_from_survey2,
@@ -616,6 +619,8 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
     )
     def post(self, request, pk, *args, **kwargs):
         session = get_object_or_404(self.get_queryset(), pk=pk)
+        previous_state = self._get_survey2_state(session)
+        previous_answers = previous_state.get('answers', {}) if isinstance(previous_state, dict) else {}
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serialized_state = serializer.data
@@ -624,6 +629,15 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         profile['survey2'] = serialized_state
         session.profile = profile
         session.save(update_fields=['profile', 'updated_at'])
+        if isinstance(serialized_state.get('answers'), dict):
+            new_answers = serialized_state['answers']
+            for question_id in new_answers:
+                if question_id not in previous_answers:
+                    apply_survey2_step_feedback(
+                        session,
+                        before_answers=new_answers,
+                        answered_question_id=question_id,
+                    )
         apply_recommendation_feedback_from_survey2(session)
 
         return Response(self.get_serializer(profile['survey2']).data, status=status.HTTP_200_OK)
@@ -658,3 +672,17 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
         target_role = session.preferred_role or session.best_fit_role
         catalog = get_survey2_catalog(target_role.slug if target_role else None)
         return Response(self.get_serializer(catalog).data, status=status.HTTP_200_OK)
+
+
+class AssessmentSurvey2NextQuestionAPIView(generics.GenericAPIView):
+    serializer_class = Survey2NextQuestionRequestSerializer
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+
+    def post(self, request, pk, *args, **kwargs):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        answers = serializer.validated_data.get('answers', {})
+        next_question = select_next_survey2_question(session, answers)
+        payload = Survey2NextQuestionResponseSerializer({'next_question': next_question}).data
+        return Response(payload, status=status.HTTP_200_OK)

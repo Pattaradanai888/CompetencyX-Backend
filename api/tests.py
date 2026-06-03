@@ -13,6 +13,7 @@ from assessments.models import (
     QuestionSelectionEvent,
     Survey2Dimension,
     Survey2Question,
+    Survey2QuestionQValue,
     Survey2RoleGuidance,
     TopicMastery,
 )
@@ -608,6 +609,36 @@ class AssessmentFlowTests(APITestCase):
 
         self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('answers', save_response.json())
+
+    def test_survey2_next_question_returns_unanswered_question(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        response = self.client.post(
+            reverse('assessment-survey2-next-question', kwargs={'pk': session_id}),
+            {'answers': {'psp-plan-estimate': 4}},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertIn('next_question', payload)
+        self.assertIsNotNone(payload['next_question'])
+        self.assertNotEqual(payload['next_question']['id'], 'psp-plan-estimate')
+
+    def test_survey2_state_save_updates_q_value_for_new_answers(self):
+        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_id = create_response.json()['id']
+
+        response = self.client.post(
+            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            {'completed': False, 'answers': {'psp-plan-estimate': 5}, 'completed_at': None},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(Survey2QuestionQValue.objects.filter(question_id='psp-plan-estimate').exists())
 
     def test_role_selection_event_records_reward_for_core_sequence(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
