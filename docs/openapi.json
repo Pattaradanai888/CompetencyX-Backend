@@ -130,15 +130,6 @@
                         "in": "path",
                         "name": "id",
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "pk",
-                        "schema": {
                             "type": "string"
                         },
                         "description": "Assessment session UUID.",
@@ -255,15 +246,6 @@
                     {
                         "in": "path",
                         "name": "id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "pk",
                         "schema": {
                             "type": "string"
                         },
@@ -395,15 +377,6 @@
                         "in": "path",
                         "name": "id",
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "pk",
-                        "schema": {
                             "type": "string"
                         },
                         "description": "Assessment session UUID.",
@@ -488,15 +461,6 @@
                     {
                         "in": "path",
                         "name": "id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "pk",
                         "schema": {
                             "type": "string"
                         },
@@ -594,15 +558,6 @@
                     {
                         "in": "path",
                         "name": "id",
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        },
-                        "required": true
-                    },
-                    {
-                        "in": "path",
-                        "name": "pk",
                         "schema": {
                             "type": "string"
                         },
@@ -729,6 +684,238 @@
                             }
                         },
                         "description": "Final recommendations, mastery scores, and gap topics."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/survey2/": {
+            "get": {
+                "operationId": "getAssessmentSurvey2Session",
+                "summary": "Get Survey 2 saved answers for an assessment session",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey2SessionState"
+                                },
+                                "examples": {
+                                    "Survey2State": {
+                                        "value": {
+                                            "completed": true,
+                                            "answers": {
+                                                "q-req": 4,
+                                                "q-design": 5,
+                                                "q-dev": 4,
+                                                "q-test": 3,
+                                                "q-release": 3,
+                                                "q-psp": 4
+                                            },
+                                            "completed_at": "2026-05-08T20:00:00Z"
+                                        },
+                                        "summary": "Survey 2 state"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Saved Survey 2 state for this assessment session."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            },
+            "post": {
+                "operationId": "saveAssessmentSurvey2Session",
+                "summary": "Save Survey 2 answers for an assessment session",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Survey2SessionState"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey2SessionState"
+                                },
+                                "examples": {
+                                    "SavedSurvey2State": {
+                                        "value": {
+                                            "completed": true,
+                                            "answers": {
+                                                "q-req": 4,
+                                                "q-design": 5,
+                                                "q-dev": 4,
+                                                "q-test": 3,
+                                                "q-release": 3,
+                                                "q-psp": 4
+                                            },
+                                            "completed_at": "2026-05-08T20:00:00Z"
+                                        },
+                                        "summary": "Saved Survey 2 state"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Survey 2 state was saved."
+                    },
+                    "400": {
+                        "description": "Validation error in Survey 2 payload."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/survey2/catalog/": {
+            "get": {
+                "operationId": "getAssessmentSurvey2Catalog",
+                "summary": "Get Survey 2 PSP and SDLC questionnaire catalog for an assessment session",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey2Catalog"
+                                }
+                            }
+                        },
+                        "description": "Survey 2 question, dimension, scale, and role guidance catalog."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
+        "/api/assessment-sessions/{id}/survey2/next-question/": {
+            "post": {
+                "operationId": "getAssessmentSurvey2NextQuestion",
+                "summary": "Get the next adaptive Survey 2 question",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Survey2NextQuestionRequest"
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Survey2NextQuestionResponse"
+                                },
+                                "examples": {
+                                    "NextQuestionResponse": {
+                                        "value": {
+                                            "next_question": {
+                                                "id": "q-dev",
+                                                "prompt": "I can implement features using clear design and coding practices.",
+                                                "dimension_key": "development"
+                                            }
+                                        },
+                                        "summary": "Next question response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Next unanswered Survey 2 question selected from the current answer state, or null when complete."
+                    },
+                    "400": {
+                        "description": "Validation error in Survey 2 answers."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -1072,7 +1259,8 @@
                     },
                     "best_fit_confidence": {
                         "type": "number",
-                        "format": "double"
+                        "format": "double",
+                        "readOnly": true
                     },
                     "preferred_role": {
                         "allOf": [
@@ -1088,6 +1276,7 @@
                                 "$ref": "#/components/schemas/Role"
                             }
                         ],
+                        "nullable": true,
                         "readOnly": true
                     },
                     "profile": {},
@@ -1169,6 +1358,7 @@
                     }
                 },
                 "required": [
+                    "best_fit_confidence",
                     "best_fit_path_recommendation",
                     "best_fit_role",
                     "guidance_summary",
@@ -1584,6 +1774,155 @@
                 "type": "string",
                 "description": "* `in_progress` - In Progress\n* `completed` - Completed"
             },
+            "Survey2Catalog": {
+                "type": "object",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "scale": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Survey2ScaleOption"
+                        }
+                    },
+                    "dimensions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Survey2Dimension"
+                        }
+                    },
+                    "questions": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Survey2Question"
+                        }
+                    },
+                    "role_guidance": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "dimensions",
+                    "questions",
+                    "role_guidance",
+                    "scale",
+                    "version"
+                ]
+            },
+            "Survey2Dimension": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "track": {
+                        "$ref": "#/components/schemas/TrackEnum"
+                    },
+                    "low_score_action": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "key",
+                    "label",
+                    "low_score_action",
+                    "track"
+                ]
+            },
+            "Survey2NextQuestionRequest": {
+                "type": "object",
+                "properties": {
+                    "answers": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "maximum": 5,
+                            "minimum": 1
+                        }
+                    }
+                }
+            },
+            "Survey2NextQuestionResponse": {
+                "type": "object",
+                "properties": {
+                    "next_question": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Survey2Question"
+                            }
+                        ],
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "next_question"
+                ]
+            },
+            "Survey2Question": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "prompt": {
+                        "type": "string"
+                    },
+                    "dimension_key": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "dimension_key",
+                    "id",
+                    "prompt"
+                ]
+            },
+            "Survey2ScaleOption": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "integer",
+                        "maximum": 5,
+                        "minimum": 1
+                    }
+                },
+                "required": [
+                    "label",
+                    "value"
+                ]
+            },
+            "Survey2SessionState": {
+                "type": "object",
+                "properties": {
+                    "completed": {
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "answers": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "integer",
+                            "maximum": 5,
+                            "minimum": 1
+                        }
+                    },
+                    "completed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                }
+            },
             "TopicMastery": {
                 "type": "object",
                 "properties": {
@@ -1640,6 +1979,14 @@
                     "required_mastery_threshold",
                     "topic_id"
                 ]
+            },
+            "TrackEnum": {
+                "enum": [
+                    "psp",
+                    "sdlc"
+                ],
+                "type": "string",
+                "description": "* `psp` - psp\n* `sdlc` - sdlc"
             }
         },
         "securitySchemes": {
