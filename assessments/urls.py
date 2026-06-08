@@ -8,6 +8,7 @@ from .views import (
     AssessmentSessionInsightsAPIView,
     AssessmentSessionResultAPIView,
     AssessmentSurvey2CatalogAPIView,
+    AssessmentSurvey2NextQuestionAPIView,
     AssessmentSurvey2SessionAPIView,
 )
 
@@ -20,5 +21,6 @@ urlpatterns = [
     path('<uuid:pk>/history/', AssessmentSessionHistoryAPIView.as_view(), name='assessment-session-history'),
     path('<uuid:pk>/answers/', AssessmentAnswerSubmitAPIView.as_view(), name='assessment-answer-submit'),
     path('<uuid:pk>/survey2/catalog/', AssessmentSurvey2CatalogAPIView.as_view(), name='assessment-survey2-catalog'),
+    path('<uuid:pk>/survey2/next-question/', AssessmentSurvey2NextQuestionAPIView.as_view(), name='assessment-survey2-next-question'),
     path('<uuid:pk>/survey2/', AssessmentSurvey2SessionAPIView.as_view(), name='assessment-survey2-session'),
 ]

@@ -263,3 +263,20 @@ class Survey2RoleGuidance(models.Model):
     def __str__(self) -> str:
         role_slug = self.role.slug if self.role_id else 'default'
         return f'{role_slug}:{self.display_order}'
+
+
+class Survey2QuestionQValue(models.Model):
+    state_key = models.CharField(max_length=255)
+    question_id = models.SlugField(max_length=64)
+    q_value = models.FloatField(default=0.0)
+    reward_total = models.FloatField(default=0.0)
+    update_count = models.PositiveIntegerField(default=0)
+    last_reward = models.FloatField(default=0.0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['state_key', 'question_id']
+        unique_together = [('state_key', 'question_id')]
+
+    def __str__(self) -> str:
+        return f'{self.state_key}:{self.question_id}:{self.q_value:.4f}'

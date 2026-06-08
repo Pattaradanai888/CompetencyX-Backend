@@ -378,8 +378,10 @@ def _recompute_best_fit_role(session: AssessmentSession) -> None:
 def _update_phase(session: AssessmentSession) -> None:
     previous_phase = session.phase
     previous_status = session.status
+    role_answers_count = session.answers.filter(question__stage=Question.Stage.ROLE).count()
+    skip_role_discovery = session.preferred_role_id is not None and role_answers_count == 0
     has_remaining_role_questions = _has_remaining_role_questions(session)
-    if not _is_role_inference_resolved(session) and has_remaining_role_questions:
+    if not skip_role_discovery and not _is_role_inference_resolved(session) and has_remaining_role_questions:
         session.phase = AssessmentSession.Phase.ROLE_DISCOVERY
         session.status = AssessmentSession.Status.IN_PROGRESS
         session.completed_at = None
@@ -399,7 +401,7 @@ def _update_phase(session: AssessmentSession) -> None:
             session.completed_at.isoformat() if session.completed_at else None,
         )
         return
-    if not _is_role_inference_resolved(session):
+    if not skip_role_discovery and not _is_role_inference_resolved(session):
         session.phase = AssessmentSession.Phase.ROLE_AMBIGUITY
         session.status = AssessmentSession.Status.IN_PROGRESS
         session.completed_at = None

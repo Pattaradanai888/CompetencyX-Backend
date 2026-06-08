@@ -15,6 +15,8 @@ from .serializers import (
     RoleInsightsSerializer,
     SessionCreateSerializer,
     Survey2CatalogSerializer,
+    Survey2NextQuestionRequestSerializer,
+    Survey2NextQuestionResponseSerializer,
     Survey2SessionStateSerializer,
 )
 from .services import (
@@ -25,6 +27,7 @@ from .services import (
     get_role_insights,
     submit_answer,
 )
+from .survey2_adaptive import apply_survey2_step_feedback, select_next_survey2_question
 
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
@@ -303,6 +306,21 @@ SURVEY2_RESPONSE_EXAMPLE = {
     'completed_at': '2026-05-08T20:00:00Z',
 }
 
+SURVEY2_NEXT_QUESTION_REQUEST_EXAMPLE = {
+    'answers': {
+        'q-req': 4,
+        'q-design': 5,
+    },
+}
+
+SURVEY2_NEXT_QUESTION_RESPONSE_EXAMPLE = {
+    'next_question': {
+        'id': 'q-dev',
+        'prompt': 'I can implement features using clear design and coding practices.',
+        'dimension_key': 'development',
+    },
+}
+
 
 class AssessmentSessionCreateAPIView(generics.GenericAPIView):
     serializer_class = SessionCreateSerializer
@@ -358,7 +376,7 @@ class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -388,7 +406,7 @@ class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -423,7 +441,7 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -461,7 +479,7 @@ class AssessmentSessionHistoryAPIView(generics.RetrieveAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -504,7 +522,7 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -574,7 +592,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -600,7 +618,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -619,6 +637,8 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
     )
     def post(self, request, pk, *args, **kwargs):
         session = get_object_or_404(self.get_queryset(), pk=pk)
+        previous_state = self._get_survey2_state(session)
+        previous_answers = previous_state.get('answers', {}) if isinstance(previous_state, dict) else {}
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serialized_state = serializer.data
@@ -627,6 +647,15 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
         profile['survey2'] = serialized_state
         session.profile = profile
         session.save(update_fields=['profile', 'updated_at'])
+        if isinstance(serialized_state.get('answers'), dict):
+            new_answers = serialized_state['answers']
+            for question_id in new_answers:
+                if question_id not in previous_answers:
+                    apply_survey2_step_feedback(
+                        session,
+                        before_answers=new_answers,
+                        answered_question_id=question_id,
+                    )
         apply_recommendation_feedback_from_survey2(session)
 
         return Response(self.get_serializer(profile['survey2']).data, status=status.HTTP_200_OK)
@@ -642,7 +671,7 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
-                name='pk',
+                name='id',
                 type=str,
                 location=OpenApiParameter.PATH,
                 description='Assessment session UUID.',
@@ -661,3 +690,43 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
         target_role = session.preferred_role or session.best_fit_role
         catalog = get_survey2_catalog(target_role.slug if target_role else None)
         return Response(self.get_serializer(catalog).data, status=status.HTTP_200_OK)
+
+
+class AssessmentSurvey2NextQuestionAPIView(generics.GenericAPIView):
+    serializer_class = Survey2NextQuestionRequestSerializer
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+
+    @extend_schema(
+        operation_id='getAssessmentSurvey2NextQuestion',
+        summary='Get the next adaptive Survey 2 question',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        request=Survey2NextQuestionRequestSerializer,
+        responses={
+            200: OpenApiResponse(
+                response=Survey2NextQuestionResponseSerializer,
+                description='Next unanswered Survey 2 question selected from the current answer state, or null when complete.',
+                examples=[
+                    OpenApiExample('Next question request', value=SURVEY2_NEXT_QUESTION_REQUEST_EXAMPLE, request_only=True),
+                    OpenApiExample('Next question response', value=SURVEY2_NEXT_QUESTION_RESPONSE_EXAMPLE, response_only=True, status_codes=['200']),
+                ],
+            ),
+            400: OpenApiResponse(description='Validation error in Survey 2 answers.'),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    def post(self, request, pk, *args, **kwargs):
+        session = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        answers = serializer.validated_data.get('answers', {})
+        next_question = select_next_survey2_question(session, answers)
+        payload = Survey2NextQuestionResponseSerializer({'next_question': next_question}).data
+        return Response(payload, status=status.HTTP_200_OK)
