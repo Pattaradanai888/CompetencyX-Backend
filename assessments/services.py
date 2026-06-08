@@ -8,19 +8,25 @@ from django.db.models import Q
 from django.utils import timezone
 
 from roadmaps.models import Question, Role
+from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 from roadmaps.serializers import QuestionSerializer
 
 from . import recommendation_builder
 from .mastery import recompute_mastery, score_skill_question
 from .models import Answer, AssessmentSession, QuestionBanditStat, QuestionSelectionEvent
 from .role_inference import (
+    DEFAULT_ROLE_PRIOR_WEIGHT,
+    ROLE_SCORE_SOFTMAX_TEMPERATURE,
+    SOFTMAX_OMEGA,
+    _ROLE_DIMENSION_IDF,
     ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
     ROLE_DISCOVERY_CORE_QUESTION_TARGET,
     ROLE_DISCOVERY_MIN_MARGIN,
-    ROLE_SELECTION_POLICY_INFO_GAIN,
-    RoleQuestionSelectionError,
+    ROLE_EVIDENCE_LOGISTIC_SCALE,
+    ROLE_EVIDENCE_SCORE_SCALE,
+    _build_role_distribution,
+    _build_role_evidence_snapshot,
     _compute_role_distribution,
-    _get_answered_core_role_question_count,
     _get_role_inference_snapshot,
     _get_selectable_role_candidates,
     _get_sorted_role_scores,
@@ -29,9 +35,10 @@ from .role_inference import (
     _is_role_inference_resolved,
     _is_role_resolution_exhausted_with_viable_winner,
     _is_top_role_specialization_satisfied,
+    _log_sigmoid,
     _normalize_entropy,
+    _score_dimension_overlap,
     _score_role_question,
-    _select_role_info_gain_question,
     get_role_resolution_status,
     get_top_role_candidates,
 )
@@ -50,6 +57,8 @@ SUPPORTED_POLICY_MODES = {
     QuestionSelectionEvent.PolicyMode.SHADOW_BANDIT,
     QuestionSelectionEvent.PolicyMode.LIVE_BANDIT,
 }
+
+_QUESTION_STATIC_CACHE = {}
 
 
 @dataclass(frozen=True)
@@ -469,27 +478,176 @@ def _get_policy_mode() -> str:
     return configured_mode
 
 
-def _select_question_for_session(session: AssessmentSession, candidates: list[Question], *, stage: str) -> QuestionSelectionDecision:
+def _select_question_for_session(session: AssessmentSession, candidates: list[Question], *, stage: str) -> QuestionSelectionDecision:  # noqa: C901, PLR0912, PLR0915
+    if not candidates:
+        if stage == Question.Stage.ROLE:
+            msg = 'No role questions are selectable for this session.'
+        else:
+            msg = 'No skill questions are selectable for this session.'
+        raise AssessmentFlowError(msg)
+
+    pre_selection_uncertainty = _calculate_stage_uncertainty(session, stage)
     heuristic_question = max(candidates, key=lambda question: _get_heuristic_score(session, question))
     candidate_scores: list[dict[str, object]] = []
     selection_score: float | None = None
 
     if stage == Question.Stage.ROLE:
-        try:
-            role_question, candidate_scores = _select_role_info_gain_question(session, candidates)
-        except RoleQuestionSelectionError as exc:
-            raise AssessmentFlowError(str(exc)) from exc
-        policy_mode = (
-            QuestionSelectionEvent.PolicyMode.CORE_SEQUENCE
-            if _get_answered_core_role_question_count(session) < ROLE_DISCOVERY_CORE_QUESTION_TARGET
-            else ROLE_SELECTION_POLICY_INFO_GAIN
-        )
-        chosen_question = role_question
-        bandit_question = role_question
-        selection_score = next(
-            (float(candidate['selection_score']) for candidate in candidate_scores if candidate['question_id'] == chosen_question.id),
-            None,
-        )
+        policy_mode = _get_policy_mode()
+
+        if policy_mode == QuestionSelectionEvent.PolicyMode.INFO_GAIN:
+            evidence_snapshot = _build_role_evidence_snapshot(session)
+            active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
+            current_role_scores = {
+                role_slug: evidence_snapshot.role_scores.get(role_slug, 0.0)
+                for role_slug in active_role_slugs
+            }
+            current_distribution = _build_role_distribution(current_role_scores, active_role_slugs)
+
+            num_roles = len(active_role_slugs)
+            if num_roles <= 1:
+                expected_entropies = {q.id: 0.0 for q in candidates}
+            else:
+                inv_log_num_roles = 1.0 / math.log(num_roles)
+                current_scores_list = [current_role_scores[slug] for slug in active_role_slugs]
+                current_dist_list = [current_distribution[slug] for slug in active_role_slugs]
+
+                expected_entropies = {}
+
+                for question in candidates:
+                    cache_key = (question.id, tuple(active_role_slugs))
+                    if cache_key not in _QUESTION_STATIC_CACHE:
+                        overlap_diffs = []
+                        for role_slug in active_role_slugs:
+                            profile = ROLE_PROFILE_WEIGHTS.get(role_slug, {})
+                            agree_overlap = _score_dimension_overlap(question.agree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
+                            disagree_overlap = _score_dimension_overlap(question.disagree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
+                            if not question.agree_dimension_signals and question.trait_positive_dimension:
+                                agree_overlap = _score_dimension_overlap({question.trait_positive_dimension: 1.0}, profile, _ROLE_DIMENSION_IDF)
+                            x = agree_overlap - disagree_overlap
+                            overlap_diffs.append(x)
+
+                        # Precompute role score deltas for v in [-2, -1, 1, 2]
+                        deltas = {}
+                        for v in [-2, -1, 1, 2]:
+                            answer_direction = 1.0 if v > 0 else -1.0
+                            answer_strength = min(1.0, abs(float(v)) / 2.0)
+                            v_deltas = []
+                            for x in overlap_diffs:
+                                role_signal = answer_direction * x
+                                d = ROLE_EVIDENCE_SCORE_SCALE * answer_strength * _log_sigmoid(ROLE_EVIDENCE_LOGISTIC_SCALE * role_signal)
+                                v_deltas.append(d)
+                            deltas[v] = v_deltas
+                        _QUESTION_STATIC_CACHE[cache_key] = (overlap_diffs, deltas)
+
+                    overlap_diffs, deltas = _QUESTION_STATIC_CACHE[cache_key]
+
+                    # Compute P(v) for all v in [-2, -1, 0, 1, 2]
+                    p_neg2 = 0.0
+                    p_neg1 = 0.0
+                    p_0 = 0.0
+                    p_pos1 = 0.0
+                    p_pos2 = 0.0
+                    for idx in range(num_roles):
+                        curr_dist = current_dist_list[idx]
+                        x = overlap_diffs[idx]
+                        e1 = math.exp(SOFTMAX_OMEGA * x)
+                        e2 = e1 * e1
+                        u_neg2 = 0.10 / e2
+                        u_neg1 = 0.20 / e1
+                        u_0 = 0.40
+                        u_pos1 = 0.20 * e1
+                        u_pos2 = 0.10 * e2
+                        inv_total_u = 1.0 / (u_neg2 + u_neg1 + u_0 + u_pos1 + u_pos2)
+                        p_neg2 += (u_neg2 * inv_total_u) * curr_dist
+                        p_neg1 += (u_neg1 * inv_total_u) * curr_dist
+                        p_0 += (u_0 * inv_total_u) * curr_dist
+                        p_pos1 += (u_pos1 * inv_total_u) * curr_dist
+                        p_pos2 += (u_pos2 * inv_total_u) * curr_dist
+
+                    expected_entropy = 0.0
+                    for v in [-2, -1, 1, 2]:
+                        p_v = p_neg2 if v == -2 else (p_neg1 if v == -1 else (p_pos1 if v == 1 else p_pos2))  # noqa: PLR2004
+                        if p_v <= 0:
+                            continue
+
+                        v_deltas = deltas[v]
+                        # Single-pass entropy calculation
+                        max_score = -999999.0
+                        new_scores = []
+                        all_zero = True
+                        for idx in range(num_roles):
+                            ns = current_scores_list[idx] + v_deltas[idx]
+                            new_scores.append(ns)
+                            max_score = max(max_score, ns)
+                            if ns != 0.0:
+                                all_zero = False
+
+                        if all_zero:
+                            new_entropy = 1.0
+                        else:
+                            total = 0.0
+                            sum_adj_log_adj = 0.0
+                            for ns in new_scores:
+                                adj = math.exp((ns - max_score) * ROLE_SCORE_SOFTMAX_TEMPERATURE) + DEFAULT_ROLE_PRIOR_WEIGHT
+                                total += adj
+                                sum_adj_log_adj += adj * math.log(adj)
+
+                            if total <= 0:
+                                new_entropy = 1.0
+                            else:
+                                entropy = math.log(total) - sum_adj_log_adj / total
+                                new_entropy = min(1.0, entropy * inv_log_num_roles)
+
+                        expected_entropy += p_v * new_entropy
+
+                    # Bypass evaluation for v = 0 response: use pre_selection_uncertainty
+                    if p_0 > 0:
+                        expected_entropy += p_0 * pre_selection_uncertainty
+
+                    expected_entropies[question.id] = expected_entropy
+
+            def selection_key(q: Question) -> tuple:
+                h_score = _get_heuristic_score(session, q)
+                return (
+                    expected_entropies[q.id],
+                    -h_score[0],
+                    -h_score[1],
+                    q.display_order,
+                    q.id
+                )
+
+            chosen_question = min(candidates, key=selection_key)
+            bandit_question = chosen_question
+            selection_score = float(pre_selection_uncertainty - expected_entropies[chosen_question.id])
+
+            for question in candidates:
+                q_expected_entropy = expected_entropies[question.id]
+                q_info_gain = float(pre_selection_uncertainty - q_expected_entropy)
+                candidate_scores.append(
+                    {
+                        'question_id': question.id,
+                        'question_code': question.code,
+                        'policy_score': q_info_gain,
+                        'selection_score': q_info_gain,
+                        'heuristic_score': list(_get_heuristic_score(session, question)),
+                        'expected_entropy': q_expected_entropy,
+                    }
+                )
+        else:
+            chosen_question = candidates[0]
+            policy_mode = QuestionSelectionEvent.PolicyMode.CORE_SEQUENCE
+            bandit_question = chosen_question
+            selection_score = float(ROLE_DISCOVERY_CORE_QUESTION_TARGET - chosen_question.display_order)
+            candidate_scores.extend(
+                {
+                    'question_id': question.id,
+                    'question_code': question.code,
+                    'policy_score': 0.0,
+                    'selection_score': float(ROLE_DISCOVERY_CORE_QUESTION_TARGET - question.display_order),
+                    'heuristic_score': [0.0],
+                }
+                for question in candidates
+            )
     else:
         bandit_question = _select_bandit_question(session, candidates, stage=stage)
         policy_mode = _get_policy_mode()
@@ -517,7 +675,7 @@ def _select_question_for_session(session: AssessmentSession, candidates: list[Qu
         bandit_question=bandit_question,
         candidate_scores=candidate_scores,
         selection_score=selection_score,
-        pre_selection_uncertainty=_calculate_stage_uncertainty(session, stage),
+        pre_selection_uncertainty=pre_selection_uncertainty,
     )
 
 

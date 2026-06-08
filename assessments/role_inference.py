@@ -8,19 +8,22 @@ from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_PROFILE_WEIGHTS
 from .models import AssessmentSession
 
 
-ROLE_DISCOVERY_CONFIDENCE_THRESHOLD = 0.28
-ROLE_DISCOVERY_MIN_MARGIN = 0.75
+ROLE_DISCOVERY_CONFIDENCE_THRESHOLD = 0.289
+ROLE_DISCOVERY_MIN_MARGIN = 0.300
 ROLE_DISCOVERY_CORE_QUESTION_TARGET = 36
-ROLE_DISCOVERY_MIN_QUESTIONS = ROLE_DISCOVERY_CORE_QUESTION_TARGET
-MIN_TIE_BREAK_ROLE_COUNT = 2
-ROLE_TIE_BREAK_CLUSTER_SIZE = 3
-ROLE_TIE_BREAK_QUESTION_TARGET = 6
-ROLE_SELECTION_POLICY_INFO_GAIN = 'info_gain'
-DEFAULT_ROLE_PRIOR_WEIGHT = 0.001
-ROLE_SCORE_SOFTMAX_TEMPERATURE = 1.15
-ROLE_EVIDENCE_LOGISTIC_SCALE = 0.7
-ROLE_EVIDENCE_SCORE_SCALE = 3.0
-ROLE_SPECIALIZATION_EVIDENCE_THRESHOLD = 0.5
+DEFAULT_ROLE_PRIOR_WEIGHT = 0.00076
+ROLE_SCORE_SOFTMAX_TEMPERATURE = 2.242
+ROLE_EVIDENCE_LOGISTIC_SCALE = 1.989
+ROLE_EVIDENCE_SCORE_SCALE = 5.229
+ROLE_SPECIALIZATION_EVIDENCE_THRESHOLD = 0.322
+SOFTMAX_OMEGA = 0.203
+BASELINE_DIST = {
+    -2: 0.10,
+    -1: 0.20,
+     0: 0.40,
+     1: 0.20,
+     2: 0.10,
+}
 ROLE_SPECIALIZATION_REQUIREMENTS = {
     'android-developer': ('android_platform',),
     'bi-analyst': ('business_intelligence',),
@@ -101,22 +104,13 @@ def _get_likert_dimension_signals(question: Question, scale_value: int | None) -
     for dimension_key, raw_weight in (source_signals or {}).items():
         try:
             weight = float(raw_weight)
+
         except (TypeError, ValueError):
             continue
         if not dimension_key or weight <= 0:
             continue
         signals[str(dimension_key)] = signals.get(str(dimension_key), 0.0) + (weight * multiplier)
     return signals
-
-
-def _score_roles_from_dimensions(dimension_scores: dict[str, float]) -> dict[str, float]:
-    if not dimension_scores:
-        return {}
-
-    role_scores: dict[str, float] = {}
-    for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        role_scores[role_slug] = _score_dimension_overlap(dimension_scores, profile, _ROLE_DIMENSION_IDF)
-    return role_scores
 
 
 def _score_roles_for_answer(question: Question, scale_value: int | None) -> dict[str, float]:
@@ -352,143 +346,6 @@ def _get_unmet_role_specialization_dimensions(role_slug: str, snapshot: dict[str
     return required_dimensions
 
 
-def _question_targets_specialization(question: Question, role_slug: str, required_dimensions: tuple[str, ...]) -> bool:
-    if role_slug not in (question.discriminates_between or []):
-        return False
-    dimension_keys = set(question.agree_dimension_signals or {}) | set(question.disagree_dimension_signals or {})
-    return bool(dimension_keys & set(required_dimensions))
-
-
-def _select_role_info_gain_question(session: AssessmentSession, candidates: list[Question]) -> tuple[Question, list[dict[str, object]]]:
-    if _get_answered_core_role_question_count(session) < ROLE_DISCOVERY_CORE_QUESTION_TARGET:
-        ordered_core_candidates = sorted(
-            [question for question in candidates if question.item_group == Question.ItemGroup.CORE],
-            key=lambda question: (question.display_order, question.id),
-        )
-        if ordered_core_candidates:
-            return (
-                ordered_core_candidates[0],
-                [
-                    {
-                        'question_id': question.id,
-                        'question_code': question.code,
-                        'policy_score': 0.0,
-                        'selection_score': float(ROLE_DISCOVERY_CORE_QUESTION_TARGET - question.display_order),
-                        'heuristic_score': list(_score_role_question(question)),
-                    }
-                    for question in ordered_core_candidates
-                ],
-            )
-
-    eligible_candidates = sorted(candidates, key=lambda question: (question.display_order, question.id))
-    if not eligible_candidates:
-        msg = 'No role questions are selectable for this session.'
-        raise RoleQuestionSelectionError(msg)
-
-    active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
-    current_distribution = _compute_role_distribution(session)
-    current_entropy = _normalize_entropy(current_distribution, active_role_slugs)
-    evidence_snapshot = _build_role_evidence_snapshot(session)
-    coverage_snapshot = evidence_snapshot.dimension_evidence_counts
-    scored_candidates: list[dict[str, object]] = []
-
-    for question in eligible_candidates:
-        expected_entropy = _calculate_expected_role_entropy(question, current_distribution, evidence_snapshot, active_role_slugs)
-        expected_information_gain = max(0.0, current_entropy - expected_entropy)
-        coverage_bonus = _calculate_coverage_bonus(question, coverage_snapshot)
-        discrimination_prior = min(1.0, max(float(question.discrimination_score), 0.0) / 5.0)
-        selection_score = expected_information_gain + (0.2 * coverage_bonus) + (0.05 * discrimination_prior)
-        heuristic_score = _score_role_question(question)
-        scored_candidates.append(
-            {
-                'question_id': question.id,
-                'question_code': question.code,
-                'policy_score': expected_information_gain,
-                'selection_score': selection_score,
-                'heuristic_score': list(heuristic_score),
-                'expected_entropy': expected_entropy,
-                'coverage_bonus': coverage_bonus,
-            }
-        )
-
-    chosen_candidate = max(
-        scored_candidates,
-        key=lambda candidate: (
-            float(candidate['selection_score']),
-            tuple(candidate['heuristic_score']),
-        ),
-    )
-    return (
-        next(question for question in eligible_candidates if question.id == chosen_candidate['question_id']),
-        scored_candidates,
-    )
-
-
-def _calculate_expected_role_entropy(
-    question: Question,
-    _current_distribution: dict[str, float],
-    evidence_snapshot: RoleEvidenceSnapshot,
-    active_role_slugs: list[str],
-) -> float:
-    if question.question_type != Question.Type.LIKERT_5:
-        return 1.0
-
-    scale_values = (-2, -1, 0, 1, 2)
-    scale_probability = 1.0 / len(scale_values)
-    expected_entropy = 0.0
-    for scale_value in scale_values:
-        projected_scores = _project_role_scores_for_scale(evidence_snapshot, question, scale_value)
-        projected_distribution = _build_role_distribution(projected_scores, active_role_slugs)
-        expected_entropy += scale_probability * _normalize_entropy(projected_distribution, active_role_slugs)
-    return expected_entropy
-
-
-def _calculate_expected_cluster_entropy(
-    question: Question,
-    evidence_snapshot: RoleEvidenceSnapshot,
-    active_role_slugs: list[str],
-    top_cluster: set[str],
-) -> float:
-    if question.question_type != Question.Type.LIKERT_5:
-        return 1.0
-
-    scale_values = (-2, -1, 0, 1, 2)
-    scale_probability = 1.0 / len(scale_values)
-    expected_entropy = 0.0
-    for scale_value in scale_values:
-        projected_scores = _project_role_scores_for_scale(evidence_snapshot, question, scale_value)
-        expected_entropy += scale_probability * _cluster_entropy(projected_scores, active_role_slugs, top_cluster)
-    return expected_entropy
-
-
-def _cluster_entropy(role_scores: dict[str, float], active_role_slugs: list[str], top_cluster: set[str]) -> float:
-    cluster_roles = [role_slug for role_slug in active_role_slugs if role_slug in top_cluster]
-    if len(cluster_roles) <= 1:
-        return 0.0
-    cluster_distribution = _build_role_distribution(role_scores, cluster_roles)
-    return _normalize_entropy(cluster_distribution, cluster_roles)
-
-
-def _get_top_role_cluster(snapshot: dict[str, object]) -> set[str]:
-    return {role['slug'] for role in snapshot['ranked_roles'][:ROLE_TIE_BREAK_CLUSTER_SIZE] if role.get('slug')}
-
-
-def _tie_break_matches_cluster(question: Question, top_cluster: set[str]) -> bool:
-    return len(set(question.discriminates_between or []) & top_cluster) >= MIN_TIE_BREAK_ROLE_COUNT
-
-
-def _calculate_coverage_bonus(question: Question, dimension_evidence_counts: dict[str, int]) -> float:
-    dimension_keys = set(question.agree_dimension_signals or {}) | set(question.disagree_dimension_signals or {})
-    if not dimension_keys and question.trait_positive_dimension:
-        dimension_keys.add(question.trait_positive_dimension)
-    dimension_keys.discard(None)
-    dimension_keys.discard('')
-    if not dimension_keys:
-        return 0.0
-    coverage_scores = [1.0 / (1.0 + float(dimension_evidence_counts.get(dimension_key, 0))) for dimension_key in dimension_keys]
-    return sum(coverage_scores) / len(coverage_scores)
-
-
 def _get_top_supporting_pillars(role_slug: str, dimension_scores: dict[str, float], *, limit: int = 3) -> list[str]:
     profile = ROLE_PROFILE_WEIGHTS.get(role_slug, {})
     weighted_dimensions = [
@@ -501,65 +358,14 @@ def _get_top_supporting_pillars(role_slug: str, dimension_scores: dict[str, floa
     return [label for label, weighted_score in sorted(weighted_dimensions, key=lambda item: (-item[1], item[0]))[:limit] if weighted_score > 0]
 
 
-def _project_role_scores_for_scale(evidence_snapshot: RoleEvidenceSnapshot, question: Question, scale_value: int) -> dict[str, float]:
-    projected_role_scores = dict(evidence_snapshot.role_scores)
-    for role_slug, delta in _score_roles_for_answer(question, scale_value).items():
-        projected_role_scores[role_slug] = projected_role_scores.get(role_slug, 0.0) + delta
-    return projected_role_scores
-
-
-def _get_role_tie_break_candidates(
-    session: AssessmentSession,
-    candidates: list[Question],
-    *,
-    snapshot: dict[str, object] | None = None,
-) -> list[Question]:
-    snapshot = snapshot or _get_role_inference_snapshot(session)
-    if (
-        int(snapshot['answered_core_questions']) < ROLE_DISCOVERY_CORE_QUESTION_TARGET
-        or int(snapshot['answered_tie_break_questions']) >= ROLE_TIE_BREAK_QUESTION_TARGET
-        or _is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot)
-    ):
-        return []
-
-    tie_break_candidates = [question for question in candidates if question.item_group == Question.ItemGroup.TIE_BREAK]
-    selected_candidates: list[Question] = []
-
-    top_role_slug = str(snapshot['top_role_slug'] or '')
-    unmet_specialization_dimensions = _get_unmet_top_role_specialization_dimensions(snapshot)
-    if tie_break_candidates and top_role_slug and unmet_specialization_dimensions:
-        selected_candidates = [
-            question
-            for question in tie_break_candidates
-            if _question_targets_specialization(question, top_role_slug, unmet_specialization_dimensions)
-        ]
-
-    if tie_break_candidates and not selected_candidates:
-        top_cluster = _get_top_role_cluster(snapshot)
-        matching_candidates = [question for question in tie_break_candidates if _tie_break_matches_cluster(question, top_cluster)]
-
-        active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
-        evidence_snapshot = _build_role_evidence_snapshot(session)
-        current_entropy = _cluster_entropy(evidence_snapshot.role_scores, active_role_slugs, top_cluster)
-        for question in matching_candidates:
-            expected_entropy = _calculate_expected_cluster_entropy(question, evidence_snapshot, active_role_slugs, top_cluster)
-            if current_entropy - expected_entropy > 0.0:
-                selected_candidates.append(question)
-
-    return sorted(selected_candidates, key=lambda question: (question.display_order, question.id))
-
-
 def _get_selectable_role_candidates(
     session: AssessmentSession,
     candidates: list[Question],
     *,
     snapshot: dict[str, object] | None = None,
 ) -> list[Question]:
-    snapshot = snapshot or _get_role_inference_snapshot(session)
-    if int(snapshot['answered_core_questions']) < ROLE_DISCOVERY_CORE_QUESTION_TARGET:
-        core_candidates = [question for question in candidates if question.item_group == Question.ItemGroup.CORE]
-        return sorted(core_candidates, key=lambda question: (question.display_order, question.id))
-    return _get_role_tie_break_candidates(session, candidates, snapshot=snapshot)
+    core_candidates = [question for question in candidates if question.item_group == Question.ItemGroup.CORE]
+    return sorted(core_candidates, key=lambda question: (question.display_order, question.id))
 
 
 def _score_role_question(question: Question):
@@ -572,3 +378,27 @@ def _score_role_question(question: Question):
         -question.display_order,
         -question.id,
     )
+
+
+def calculate_p_v_given_r_q(question: Question, role_slug: str) -> dict[int, float]:
+    profile = ROLE_PROFILE_WEIGHTS.get(role_slug, {})
+    agree_overlap = _score_dimension_overlap(question.agree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
+    disagree_overlap = _score_dimension_overlap(question.disagree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
+    if not question.agree_dimension_signals and question.trait_positive_dimension:
+        agree_overlap = _score_dimension_overlap({question.trait_positive_dimension: 1.0}, profile, _ROLE_DIMENSION_IDF)
+    x = agree_overlap - disagree_overlap
+
+    log_utilities = {}
+    for v in [-2, -1, 0, 1, 2]:
+        log_utilities[v] = math.log(BASELINE_DIST[v]) + SOFTMAX_OMEGA * v * x
+
+    max_log_u = max(log_utilities.values())
+    exps = {v: math.exp(log_utilities[v] - max_log_u) for v in [-2, -1, 0, 1, 2]}
+    total_exp = sum(exps.values())
+
+    return {v: exps[v] / total_exp for v in [-2, -1, 0, 1, 2]}
+
+
+def _calculate_p_v_given_r_q(question: Question, role_slug: str) -> dict[int, float]:
+    return calculate_p_v_given_r_q(question, role_slug)
+

@@ -44,6 +44,11 @@ python manage.py seed_mvp_content
 python manage.py load_curated_content
 python manage.py seed_survey2_catalog
 uv run python manage.py validate_question_catalog
+
+# Benchmarking & Simulation
+python manage.py benchmark_entropy
+uv run python simulate_multiprocess_inmemory.py --samples 1000
+uv run python tune_hyperparameters.py --mode genetic --pop-size 60 --generations 15
 ```
 
 ## Project Layout
@@ -55,3 +60,6 @@ uv run python manage.py validate_question_catalog
 - `config/` - Django settings and root URLs
 - `data/content/` - curated roles, topics, and questions
 - `data/upstream/` - imported source snapshots
+- `simulate_multiprocess_inmemory.py` - Monte Carlo simulation of career path distributions in memory
+- `tune_hyperparameters.py` - Hyperparameter genetic search algorithm sweep tool for scoring engine optimization
+

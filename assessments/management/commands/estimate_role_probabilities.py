@@ -29,6 +29,8 @@ class Command(BaseCommand):
         parser.add_argument('--format', choices=('text', 'json'), default='text')
         parser.add_argument('--seed-content', action='store_true')
         parser.add_argument('--verbose-events', action='store_true')
+        parser.add_argument('--policy-mode', choices=('core_sequence', 'info_gain'), default=None,
+                            help='Override ASSESSMENT_BANDIT_POLICY_MODE for the simulation.')
 
     def handle(self, *args, **options):
         if options['samples'] <= 0:
@@ -56,15 +58,29 @@ class Command(BaseCommand):
         likert_weights = self._parse_likert_weights(options['likert_weights'])
         rng = random.Random(options['random_seed'])  # noqa: S311
 
-        summary = self._estimate_probabilities(
-            samples=options['samples'],
-            prefix_answers=prefix_answers,
-            likert_weights=likert_weights,
-            preferred_role=preferred_role,
-            top_roles=options['top_roles'],
-            rng=rng,
-            suppress_assessment_logs=not options['verbose_events'],
-        )
+        policy_mode = options.get('policy_mode')
+        if policy_mode:
+            from django.test import override_settings
+            with override_settings(ASSESSMENT_BANDIT_POLICY_MODE=policy_mode):
+                summary = self._estimate_probabilities(
+                    samples=options['samples'],
+                    prefix_answers=prefix_answers,
+                    likert_weights=likert_weights,
+                    preferred_role=preferred_role,
+                    top_roles=options['top_roles'],
+                    rng=rng,
+                    suppress_assessment_logs=not options['verbose_events'],
+                )
+        else:
+            summary = self._estimate_probabilities(
+                samples=options['samples'],
+                prefix_answers=prefix_answers,
+                likert_weights=likert_weights,
+                preferred_role=preferred_role,
+                top_roles=options['top_roles'],
+                rng=rng,
+                suppress_assessment_logs=not options['verbose_events'],
+            )
 
         if options['format'] == 'json':
             self.stdout.write(json.dumps(summary, indent=2, sort_keys=True))

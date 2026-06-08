@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from django.core.management import call_command
 from django.test import override_settings
 from django.urls import reverse
@@ -770,3 +771,68 @@ class AssessmentFlowTests(APITestCase):
         )
         self.assertIn(broad_question, Question.objects.filter(stage=Question.Stage.ROLE))
         self.assertEqual(candidates, [])
+
+
+class InfoGainTests(APITestCase):
+    def setUp(self):
+        self.role_backend = Role.objects.create(slug='backend-developer', name='Backend', is_active=True)
+        self.role_frontend = Role.objects.create(slug='frontend-developer', name='Frontend', is_active=True)
+
+        self.q1 = Question.objects.create(
+            code='q1',
+            stage=Question.Stage.ROLE,
+            item_group=Question.ItemGroup.CORE,
+            question_type=Question.Type.LIKERT_5,
+            prompt='Prompt 1',
+            trait_positive_dimension='design',
+            agree_dimension_signals={'design': 1.0},
+            display_order=1,
+            discrimination_score=1.0,
+        )
+        self.q2 = Question.objects.create(
+            code='q2',
+            stage=Question.Stage.ROLE,
+            item_group=Question.ItemGroup.CORE,
+            question_type=Question.Type.LIKERT_5,
+            prompt='Prompt 2',
+            trait_positive_dimension='construction',
+            agree_dimension_signals={'construction': 1.0},
+            display_order=2,
+            discrimination_score=2.0,
+        )
+        call_command('seed_survey2_catalog')
+
+    @override_settings(ASSESSMENT_BANDIT_POLICY_MODE='info_gain')
+    def test_info_gain_question_selection(self):
+        from assessments.role_inference import calculate_p_v_given_r_q
+        from assessments.services import _select_question_for_session
+
+        probs = calculate_p_v_given_r_q(self.q1, 'backend-developer')
+        self.assertEqual(len(probs), 5)
+        self.assertAlmostEqual(sum(probs.values()), 1.0)
+
+        session = AssessmentSession.objects.create(profile={})
+        candidates = [self.q1, self.q2]
+
+        decision = _select_question_for_session(session, candidates, stage=Question.Stage.ROLE)
+        self.assertEqual(decision.policy_mode, 'info_gain')
+        self.assertIsNotNone(decision.chosen_question)
+
+        for score in decision.candidate_scores:
+            self.assertIn('expected_entropy', score)
+            self.assertIn('policy_score', score)
+
+    def test_estimate_role_probabilities_command_policy_mode(self):
+        from django.core.management import call_command
+        call_command('estimate_role_probabilities', samples=2, policy_mode='core_sequence')
+        call_command('estimate_role_probabilities', samples=2, policy_mode='info_gain')
+
+    def test_select_question_for_session_empty_candidates(self):
+        from assessments.services import AssessmentFlowError, _select_question_for_session
+        session = AssessmentSession.objects.create(profile={})
+        with pytest.raises(AssessmentFlowError) as context:
+            _select_question_for_session(session, [], stage=Question.Stage.ROLE)
+        self.assertEqual(str(context.value), 'No role questions are selectable for this session.')
+        with pytest.raises(AssessmentFlowError) as context:
+            _select_question_for_session(session, [], stage=Question.Stage.SKILL)
+        self.assertEqual(str(context.value), 'No skill questions are selectable for this session.')
