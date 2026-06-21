@@ -318,11 +318,14 @@ def _is_role_resolution_exhausted_with_viable_winner(
         return False
     if int(snapshot['answered_core_questions']) < ROLE_DISCOVERY_CORE_QUESTION_TARGET:
         return False
-    return (
-        float(snapshot['confidence']) >= ROLE_DISCOVERY_CONFIDENCE_THRESHOLD
-        and float(snapshot['margin_share']) >= ROLE_DISCOVERY_MIN_MARGIN
-        and _is_top_role_specialization_satisfied(snapshot)
-    )
+    remaining = _has_remaining_role_questions(session)
+    if remaining:
+        return (
+            float(snapshot['confidence']) >= ROLE_DISCOVERY_CONFIDENCE_THRESHOLD
+            and float(snapshot['margin_share']) >= ROLE_DISCOVERY_MIN_MARGIN
+            and _is_top_role_specialization_satisfied(snapshot)
+        )
+    return True
 
 
 def _is_top_role_specialization_satisfied(snapshot: dict[str, object]) -> bool:

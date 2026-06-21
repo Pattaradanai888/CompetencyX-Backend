@@ -15,15 +15,15 @@ from . import recommendation_builder
 from .mastery import recompute_mastery, score_skill_question
 from .models import Answer, AssessmentSession, QuestionBanditStat, QuestionSelectionEvent
 from .role_inference import (
-    DEFAULT_ROLE_PRIOR_WEIGHT,
-    ROLE_SCORE_SOFTMAX_TEMPERATURE,
-    SOFTMAX_OMEGA,
     _ROLE_DIMENSION_IDF,
+    DEFAULT_ROLE_PRIOR_WEIGHT,
     ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
     ROLE_DISCOVERY_CORE_QUESTION_TARGET,
     ROLE_DISCOVERY_MIN_MARGIN,
     ROLE_EVIDENCE_LOGISTIC_SCALE,
     ROLE_EVIDENCE_SCORE_SCALE,
+    ROLE_SCORE_SOFTMAX_TEMPERATURE,
+    SOFTMAX_OMEGA,
     _build_role_distribution,
     _build_role_evidence_snapshot,
     _compute_role_distribution,
@@ -78,9 +78,16 @@ class AssessmentFlowError(ValueError):
     """Raised when the assessment session flow is used incorrectly."""
 
 
-def create_assessment_session(*, preferred_role=None, profile=None, language=AssessmentSession.Language.EN) -> AssessmentSession:
+def create_assessment_session(
+    *,
+    preferred_role=None,
+    current_role=None,
+    profile=None,
+    language=AssessmentSession.Language.EN,
+) -> AssessmentSession:
     session = AssessmentSession.objects.create(
         preferred_role=preferred_role,
+        current_role=current_role,
         best_fit_role=None,
         best_fit_confidence=0.0,
         phase=AssessmentSession.Phase.ROLE_DISCOVERY,
@@ -88,9 +95,10 @@ def create_assessment_session(*, preferred_role=None, profile=None, language=Ass
         profile=profile or {},
     )
     logger.info(
-        'assessment.session_created session_id=%s preferred_role=%s language=%s profile_keys=%s',
+        'assessment.session_created session_id=%s preferred_role=%s current_role=%s language=%s profile_keys=%s',
         session.id,
         preferred_role.slug if preferred_role else None,
+        current_role.slug if current_role else None,
         language,
         sorted((profile or {}).keys()),
     )
@@ -224,6 +232,7 @@ def build_session_state(session: AssessmentSession) -> dict[str, object]:
         'language': session.language,
         'best_fit_confidence': session.best_fit_confidence if role_resolved else 0.0,
         'preferred_role': session.preferred_role,
+        'current_role': session.current_role,
         'best_fit_role': session.best_fit_role if role_resolved else None,
         'profile': session.profile,
         'started_at': session.started_at,
@@ -298,8 +307,13 @@ def get_preferred_role_gap_topics(session: AssessmentSession, *, limit: int = MA
     return ranked_topics[:limit]
 
 
-def build_guidance_summary(session: AssessmentSession) -> str:
+def build_guidance_summary(session: AssessmentSession) -> str:  # noqa: C901, PLR0911, PLR0912
     if not _is_core_role_profile_complete(session):
+        if session.current_role_id is not None and session.preferred_role_id is not None:
+            return (
+                f'You are currently a {session.current_role.name} and want to pursue {session.preferred_role.name}. '
+                'Complete the role-discovery profile to compare your current fit against that target.'
+            )
         return (
             f'You want to pursue {session.preferred_role.name}. Complete the role-discovery profile to compare fit.'
             if session.preferred_role_id is not None
@@ -308,6 +322,7 @@ def build_guidance_summary(session: AssessmentSession) -> str:
 
     alignment_status = get_role_alignment_status(session)
     preferred_role = session.preferred_role
+    current_role = session.current_role
     best_fit_role = session.best_fit_role
     role_snapshot = get_top_role_candidates(session)
     gap_topics = get_preferred_role_gap_topics(session)
@@ -318,16 +333,37 @@ def build_guidance_summary(session: AssessmentSession) -> str:
         candidate_names = ' and '.join(candidate['name'] for candidate in role_snapshot[:2])
         return f'Your answers are not confident enough to separate {candidate_names} yet.'
 
+    low_confidence = session.best_fit_confidence < ROLE_DISCOVERY_CONFIDENCE_THRESHOLD
+    no_more_role_questions = not _has_remaining_role_questions(session)
+    if best_fit_role and low_confidence and no_more_role_questions:
+        base_message = f'Based on your answers, {best_fit_role.name} appears to be your closest match.'
+        if gap_names:
+            return f'{base_message} Focus next on {gap_names}.'
+        return base_message
+
     if preferred_role is None and best_fit_role is None:
         return 'Answer the role-discovery questions to identify the best-fit roadmap.'
 
     if preferred_role is not None and best_fit_role is None:
+        if current_role is not None:
+            return (
+                f'You are currently a {current_role.name} and want to pursue {preferred_role.name}. '
+                'Answer the role-discovery questions to see how close your current fit is to that target.'
+            )
         return f'You want to pursue {preferred_role.name}. Answer the role-discovery questions to see how close your current fit is.'
 
     if preferred_role is None and best_fit_role is not None:
         base_message = f'Your current answers align best with {best_fit_role.name}.'
     elif alignment_status == 'aligned':
-        base_message = f'You are tracking well toward {preferred_role.name}.'
+        if current_role is not None:
+            base_message = f'You are currently a {current_role.name} and are tracking well toward {preferred_role.name}.'
+        else:
+            base_message = f'You are tracking well toward {preferred_role.name}.'
+    elif current_role is not None:
+        base_message = (
+            f'Your current answers look closer to {best_fit_role.name}, but you can still pursue {preferred_role.name} '
+            f'from your current {current_role.name} role.'
+        )
     else:
         base_message = f'Your current answers look closer to {best_fit_role.name}, but you can still pursue {preferred_role.name}.'
 

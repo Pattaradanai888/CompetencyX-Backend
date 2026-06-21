@@ -290,14 +290,32 @@ class AssessmentFlowTests(APITestCase):
         )
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = create_response.json()
-        self.assertEqual(payload['phase'], AssessmentSession.Phase.SKILL_ASSESSMENT)
+        self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
         self.assertEqual(payload['preferred_role']['slug'], self.backend_role.slug)
         self.assertIsNone(payload['best_fit_role'])
         self.assertNotIn('mastery_scores', payload)
         self.assertNotIn('top_role_candidates', payload)
         self.assertNotIn('discrimination_score', payload['current_question'])
-        self.assertEqual(payload['current_question']['stage'], Question.Stage.SKILL)
-        self.assertEqual(payload['current_question']['code'], 'backend-http-basics')
+        self.assertEqual(payload['current_question']['stage'], Question.Stage.ROLE)
+        self.assertEqual(payload['current_question']['code'], 'role-core-01')
+
+    def test_current_role_is_saved_separately_from_target_role(self):
+        create_response = self.client.post(
+            reverse('assessment-session-create'),
+            {
+                'current_role_slug': self.frontend_role.slug,
+                'preferred_role_slug': self.backend_role.slug,
+                'profile': {'education_level': 'student'},
+            },
+            format='json',
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        payload = create_response.json()
+        self.assertEqual(payload['preferred_role']['slug'], self.backend_role.slug)
+        self.assertEqual(payload['current_role']['slug'], self.frontend_role.slug)
+        self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
+        self.assertEqual(payload['current_question']['stage'], Question.Stage.ROLE)
+        self.assertIn('currently a', payload['guidance_summary'].lower())
 
     def test_completed_results_return_dual_path_recommendations(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')

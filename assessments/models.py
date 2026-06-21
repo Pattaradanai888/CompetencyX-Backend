@@ -37,6 +37,13 @@ class AssessmentSession(models.Model):
         on_delete=models.SET_NULL,
         related_name='preferred_sessions',
     )
+    current_role = models.ForeignKey(
+        Role,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='current_sessions',
+    )
     best_fit_role = models.ForeignKey(
         Role,
         null=True,

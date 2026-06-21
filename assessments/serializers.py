@@ -21,10 +21,17 @@ from .services import (
 
 class SessionCreateSerializer(serializers.Serializer):
     preferred_role_slug = serializers.SlugField(required=False)
+    current_role_slug = serializers.SlugField(required=False)
     language = serializers.ChoiceField(choices=AssessmentSession.Language.choices, required=False, default=AssessmentSession.Language.EN)
     profile = serializers.DictField(required=False)
 
     def validate_preferred_role_slug(self, value):
+        if not Role.objects.filter(slug=value, is_active=True).exists():
+            msg = 'Unknown role slug.'
+            raise serializers.ValidationError(msg)
+        return value
+
+    def validate_current_role_slug(self, value):
         if not Role.objects.filter(slug=value, is_active=True).exists():
             msg = 'Unknown role slug.'
             raise serializers.ValidationError(msg)
@@ -179,6 +186,7 @@ class RoleInsightsSerializer(serializers.ModelSerializer):
 
 class AssessmentSessionSerializer(serializers.ModelSerializer):
     preferred_role = RoleSerializer(read_only=True)
+    current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
     best_fit_confidence = serializers.SerializerMethodField()
     milestones = serializers.SerializerMethodField()
@@ -196,6 +204,7 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
             'language',
             'best_fit_confidence',
             'preferred_role',
+            'current_role',
             'best_fit_role',
             'profile',
             'started_at',
@@ -273,6 +282,7 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
     preferred_role = RoleSerializer(read_only=True)
+    current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
     best_fit_confidence = serializers.SerializerMethodField()
     mastery_scores = TopicMasterySerializer(many=True, read_only=True)
@@ -294,6 +304,7 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             'phase',
             'best_fit_confidence',
             'preferred_role',
+            'current_role',
             'best_fit_role',
             'profile',
             'started_at',

@@ -143,7 +143,8 @@ class SeededMvpFlowTests(APITestCase):
         assert payload['phase'] in {'skill_assessment', 'recommendation_ready'}
         assert payload['role_resolution_status'] == 'resolved'
         assert payload['best_fit_role'] is not None
-    def test_weak_exhausted_role_path_stops_as_ambiguous(self):
+
+    def test_weak_exhausted_role_path_proceeds_with_best_fit(self):
         scale_values = [0] * 36
         tie_break_answers = {
             'role-swebok-tie-05-data-engineer-mlops': 0,
@@ -179,11 +180,10 @@ class SeededMvpFlowTests(APITestCase):
             assert answer_response.status_code == status.HTTP_200_OK
             payload = answer_response.json()
 
-        assert payload['phase'] == AssessmentSession.Phase.ROLE_AMBIGUITY
-        assert payload['role_resolution_status'] == 'ambiguous'
+        assert payload['phase'] in {'skill_assessment', 'recommendation_ready'}
+        assert payload['role_resolution_status'] == 'resolved'
+        assert payload['best_fit_role'] is not None
         assert payload['current_question'] is None
-        assert payload['best_fit_role'] is None
-        assert payload['best_fit_confidence'] == 0.0
 
     def _get_session_model(self, session_id):
         return AssessmentSession.objects.get(id=session_id)

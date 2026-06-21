@@ -41,3 +41,66 @@ skill_questions:
         label: No
         display_order: 3
         topic_signals: [{topic_slug: configuration-and-release-automation, mastery_delta: 0.0}]
+  - code: devops-engineer-operations-monitoring
+    role_slug: devops-engineer
+    topic_slug: operations-foundations
+    question_type: yes_no_maybe
+    prompt: Have you used monitoring, alerts, or incident response in an operations workflow?
+    difficulty: 2
+    discrimination_score: 2.1
+    display_order: 23
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: operations-foundations, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: operations-foundations, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: operations-foundations, mastery_delta: 0.0}]
+  - code: devops-engineer-infrastructure-as-code
+    role_slug: devops-engineer
+    topic_slug: configuration-and-release-automation
+    question_type: yes_no_maybe
+    prompt: Can you describe how you would manage infrastructure as code for a release pipeline?
+    difficulty: 3
+    discrimination_score: 2.2
+    display_order: 24
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: configuration-and-release-automation, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: configuration-and-release-automation, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: configuration-and-release-automation, mastery_delta: 0.0}]
+  - code: devops-engineer-flow-improvement
+    role_slug: devops-engineer
+    topic_slug: devops-process-improvement
+    question_type: yes_no_maybe
+    prompt: Have you improved lead time, release frequency, or feedback loops in a delivery process?
+    difficulty: 3
+    discrimination_score: 2.3
+    display_order: 25
+    options:
+      - key: "yes"
+        label: Yes
+        display_order: 1
+        topic_signals: [{topic_slug: devops-process-improvement, mastery_delta: 1.0}]
+      - key: "maybe"
+        label: Maybe
+        display_order: 2
+        topic_signals: [{topic_slug: devops-process-improvement, mastery_delta: 0.5}]
+      - key: "no"
+        label: No
+        display_order: 3
+        topic_signals: [{topic_slug: devops-process-improvement, mastery_delta: 0.0}]

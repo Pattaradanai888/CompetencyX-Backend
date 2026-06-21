@@ -32,6 +32,7 @@ from .survey2_adaptive import apply_survey2_step_feedback, select_next_survey2_q
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
     'preferred_role_slug': 'backend-engineer',
+    'current_role_slug': 'frontend-engineer',
     'language': 'en',
     'profile': {
         'education_level': 'student',
@@ -50,6 +51,12 @@ SESSION_RESPONSE_EXAMPLE = {
         'slug': 'backend-engineer',
         'name': 'Backend Engineer',
         'description': 'Builds APIs and backend services.',
+    },
+    'current_role': {
+        'id': 2,
+        'slug': 'frontend-engineer',
+        'name': 'Frontend Engineer',
+        'description': 'Builds user interfaces.',
     },
     'best_fit_role': None,
     'profile': {
@@ -352,8 +359,16 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
                 slug=serializer.validated_data['preferred_role_slug'],
                 is_active=True,
             )
+        current_role = None
+        if serializer.validated_data.get('current_role_slug'):
+            current_role = get_object_or_404(
+                Role,
+                slug=serializer.validated_data['current_role_slug'],
+                is_active=True,
+            )
         session = create_assessment_session(
             preferred_role=preferred_role,
+            current_role=current_role,
             language=serializer.validated_data.get('language', AssessmentSession.Language.EN),
             profile=serializer.validated_data.get('profile', {}),
         )
@@ -366,6 +381,7 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
 class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
     queryset = AssessmentSession.objects.select_related(
         'preferred_role',
+        'current_role',
         'best_fit_role',
     )
     serializer_class = AssessmentSessionSerializer
@@ -397,7 +413,7 @@ class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
     serializer_class = RoleInsightsSerializer
 
     @extend_schema(
@@ -428,7 +444,7 @@ class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role').prefetch_related(
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role').prefetch_related(
         'mastery_scores__topic',
         'recommendations__role',
         'recommendations__topic',
@@ -663,7 +679,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
 
 class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
     serializer_class = Survey2CatalogSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
 
     @extend_schema(
         operation_id='getAssessmentSurvey2Catalog',
@@ -694,7 +710,7 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
 
 class AssessmentSurvey2NextQuestionAPIView(generics.GenericAPIView):
     serializer_class = Survey2NextQuestionRequestSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
 
     @extend_schema(
         operation_id='getAssessmentSurvey2NextQuestion',
