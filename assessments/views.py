@@ -20,7 +20,6 @@ from .serializers import (
     Survey2SessionStateSerializer,
 )
 from .services import (
-    AssessmentFlowError,
     apply_recommendation_feedback_from_survey2,
     build_session_state,
     create_assessment_session,
@@ -547,17 +546,14 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
         )
         serializer = self.get_serializer(data=request.data, context={'session': session})
         serializer.is_valid(raise_exception=True)
-        try:
-            submit_answer(
-                session=session,
-                question=serializer.validated_data['question'],
-                option=serializer.validated_data['option'],
-                scale_value=serializer.validated_data.get('scale_value'),
-                response_time_ms=serializer.validated_data.get('response_time_ms'),
-                confidence_indicator=serializer.validated_data.get('confidence_indicator', ''),
-            )
-        except AssessmentFlowError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        submit_answer(
+            session=session,
+            question=serializer.validated_data['question'],
+            option=serializer.validated_data['option'],
+            scale_value=serializer.validated_data.get('scale_value'),
+            response_time_ms=serializer.validated_data.get('response_time_ms'),
+            confidence_indicator=serializer.validated_data.get('confidence_indicator', ''),
+        )
 
         session.refresh_from_db()
         return Response(AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data, status=status.HTTP_200_OK)

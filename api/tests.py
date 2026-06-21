@@ -1,6 +1,5 @@
 import json
 
-import pytest
 from django.core.management import call_command
 from django.test import override_settings
 from django.urls import reverse
@@ -10,8 +9,6 @@ from rest_framework.test import APITestCase
 from assessments.models import (
     Answer,
     AssessmentSession,
-    QuestionBanditStat,
-    QuestionSelectionEvent,
     Survey2Dimension,
     Survey2Question,
     Survey2QuestionQValue,
@@ -19,7 +16,6 @@ from assessments.models import (
     TopicMastery,
 )
 from assessments.role_inference import _get_selectable_role_candidates
-from assessments.services import get_current_question
 from recommendations.models import Recommendation, RecommendationQValue
 from roadmaps.models import Question, QuestionOption, QuestionTopicSignal, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
@@ -707,74 +703,6 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(Survey2QuestionQValue.objects.filter(question_id='psp-plan-estimate').exists())
 
-    def test_role_selection_event_records_reward_for_core_sequence(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
-        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        session_id = create_response.json()['id']
-        current_question = create_response.json()['current_question']
-
-        selection_event = QuestionSelectionEvent.objects.get(session_id=session_id, chosen_question_id=current_question['id'])
-        self.assertEqual(selection_event.policy_mode, QuestionSelectionEvent.PolicyMode.CORE_SEQUENCE)
-        self.assertEqual(selection_event.heuristic_question_id, current_question['id'])
-        self.assertEqual(selection_event.candidate_question_codes[:2], ['role-core-01', 'role-core-02'])
-        self.assertEqual(len(selection_event.candidate_scores), 36)
-        self.assertIsNotNone(selection_event.selection_score)
-        self.assertIsNone(selection_event.answered_at)
-
-        answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
-            {'question_id': current_question['id'], 'scale_value': 2},
-            format='json',
-        )
-        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
-
-        selection_event.refresh_from_db()
-        self.assertIsNotNone(selection_event.answered_at)
-        self.assertIsNotNone(selection_event.reward)
-        self.assertFalse(QuestionBanditStat.objects.filter(question_id=current_question['id'], stage=Question.Stage.ROLE).exists())
-
-    def test_role_info_gain_prefers_higher_expected_information_question(self):
-        session = AssessmentSession.objects.create(profile={})
-
-        selected_question = get_current_question(session)
-
-        self.assertEqual(selected_question.code, 'role-core-01')
-        selection_event = QuestionSelectionEvent.objects.get(session=session, chosen_question=selected_question)
-        candidate_scores = {candidate['question_code']: candidate['selection_score'] for candidate in selection_event.candidate_scores}
-        self.assertGreater(candidate_scores['role-core-01'], candidate_scores['role-core-02'])
-
-    @override_settings(ASSESSMENT_BANDIT_POLICY_MODE='live_bandit')
-    def test_live_bandit_keeps_skill_selection_within_eligible_candidates(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
-        payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json())
-        session = AssessmentSession.objects.get(id=payload['id'])
-
-        QuestionBanditStat.objects.create(
-            question=Question.objects.get(code='backend-http-basics'),
-            stage=Question.Stage.SKILL,
-            pulls=5,
-            cumulative_reward=4.5,
-            mean_reward=0.9,
-        )
-        QuestionBanditStat.objects.create(
-            question=Question.objects.get(code='backend-database-basics'),
-            stage=Question.Stage.SKILL,
-            pulls=5,
-            cumulative_reward=0.5,
-            mean_reward=0.1,
-        )
-        QuestionBanditStat.objects.create(
-            question=Question.objects.get(code='qa-test-design'),
-            stage=Question.Stage.SKILL,
-            pulls=5,
-            cumulative_reward=5.0,
-            mean_reward=1.0,
-        )
-
-        selected_question = get_current_question(session)
-
-        self.assertEqual(selected_question.code, 'backend-http-basics')
-
     def test_role_question_selection_stops_after_static_core_profile(self):
         session = AssessmentSession.objects.create(profile={})
         for question in Question.objects.filter(stage=Question.Stage.ROLE, item_group=Question.ItemGroup.CORE).order_by('display_order'):
@@ -803,67 +731,3 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn(broad_question, Question.objects.filter(stage=Question.Stage.ROLE))
         self.assertEqual(candidates, [])
 
-
-class InfoGainTests(APITestCase):
-    def setUp(self):
-        self.role_backend = Role.objects.create(slug='backend-developer', name='Backend', is_active=True)
-        self.role_frontend = Role.objects.create(slug='frontend-developer', name='Frontend', is_active=True)
-
-        self.q1 = Question.objects.create(
-            code='q1',
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.CORE,
-            question_type=Question.Type.LIKERT_5,
-            prompt='Prompt 1',
-            trait_positive_dimension='design',
-            agree_dimension_signals={'design': 1.0},
-            display_order=1,
-            discrimination_score=1.0,
-        )
-        self.q2 = Question.objects.create(
-            code='q2',
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.CORE,
-            question_type=Question.Type.LIKERT_5,
-            prompt='Prompt 2',
-            trait_positive_dimension='construction',
-            agree_dimension_signals={'construction': 1.0},
-            display_order=2,
-            discrimination_score=2.0,
-        )
-        call_command('seed_survey2_catalog')
-
-    @override_settings(ASSESSMENT_BANDIT_POLICY_MODE='info_gain')
-    def test_info_gain_question_selection(self):
-        from assessments.role_inference import calculate_p_v_given_r_q
-        from assessments.services import _select_question_for_session
-
-        probs = calculate_p_v_given_r_q(self.q1, 'backend-developer')
-        self.assertEqual(len(probs), 5)
-        self.assertAlmostEqual(sum(probs.values()), 1.0)
-
-        session = AssessmentSession.objects.create(profile={})
-        candidates = [self.q1, self.q2]
-
-        decision = _select_question_for_session(session, candidates, stage=Question.Stage.ROLE)
-        self.assertEqual(decision.policy_mode, 'info_gain')
-        self.assertIsNotNone(decision.chosen_question)
-
-        for score in decision.candidate_scores:
-            self.assertIn('expected_entropy', score)
-            self.assertIn('policy_score', score)
-
-    def test_estimate_role_probabilities_command_policy_mode(self):
-        from django.core.management import call_command
-        call_command('estimate_role_probabilities', samples=2, policy_mode='core_sequence')
-        call_command('estimate_role_probabilities', samples=2, policy_mode='info_gain')
-
-    def test_select_question_for_session_empty_candidates(self):
-        from assessments.services import AssessmentFlowError, _select_question_for_session
-        session = AssessmentSession.objects.create(profile={})
-        with pytest.raises(AssessmentFlowError) as context:
-            _select_question_for_session(session, [], stage=Question.Stage.ROLE)
-        self.assertEqual(str(context.value), 'No role questions are selectable for this session.')
-        with pytest.raises(AssessmentFlowError) as context:
-            _select_question_for_session(session, [], stage=Question.Stage.SKILL)
-        self.assertEqual(str(context.value), 'No skill questions are selectable for this session.')

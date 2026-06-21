@@ -16,14 +16,6 @@ ROLE_SCORE_SOFTMAX_TEMPERATURE = 2.242
 ROLE_EVIDENCE_LOGISTIC_SCALE = 1.989
 ROLE_EVIDENCE_SCORE_SCALE = 5.229
 ROLE_SPECIALIZATION_EVIDENCE_THRESHOLD = 0.322
-SOFTMAX_OMEGA = 0.203
-BASELINE_DIST = {
-    -2: 0.10,
-    -1: 0.20,
-     0: 0.40,
-     1: 0.20,
-     2: 0.10,
-}
 ROLE_SPECIALIZATION_REQUIREMENTS = {
     'android-developer': ('android_platform',),
     'bi-analyst': ('business_intelligence',),
@@ -46,10 +38,6 @@ class RoleEvidenceSnapshot:
     uses_dimension_scoring: bool
 
 
-class RoleQuestionSelectionError(ValueError):
-    """Raised when no role-discovery question can be selected."""
-
-
 def _get_answered_core_role_question_count(session: AssessmentSession) -> int:
     return session.answers.filter(question__stage=Question.Stage.ROLE, question__item_group=Question.ItemGroup.CORE).count()
 
@@ -60,11 +48,6 @@ def _get_answered_tie_break_question_count(session: AssessmentSession) -> int:
 
 def _is_core_role_profile_complete(session: AssessmentSession) -> bool:
     return _get_answered_core_role_question_count(session) >= ROLE_DISCOVERY_CORE_QUESTION_TARGET
-
-
-def _compute_role_distribution(session: AssessmentSession) -> dict[str, float]:
-    active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
-    return _build_role_distribution(_build_role_evidence_snapshot(session).role_scores, active_role_slugs)
 
 
 def _build_role_evidence_snapshot(session: AssessmentSession) -> RoleEvidenceSnapshot:
@@ -366,39 +349,4 @@ def _get_selectable_role_candidates(
 ) -> list[Question]:
     core_candidates = [question for question in candidates if question.item_group == Question.ItemGroup.CORE]
     return sorted(core_candidates, key=lambda question: (question.display_order, question.id))
-
-
-def _score_role_question(question: Question):
-    dimension_count = len(set(question.agree_dimension_signals or {}) | set(question.disagree_dimension_signals or {}))
-    if dimension_count == 0 and question.trait_positive_dimension:
-        dimension_count = 1
-    return (
-        dimension_count,
-        question.discrimination_score,
-        -question.display_order,
-        -question.id,
-    )
-
-
-def calculate_p_v_given_r_q(question: Question, role_slug: str) -> dict[int, float]:
-    profile = ROLE_PROFILE_WEIGHTS.get(role_slug, {})
-    agree_overlap = _score_dimension_overlap(question.agree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
-    disagree_overlap = _score_dimension_overlap(question.disagree_dimension_signals or {}, profile, _ROLE_DIMENSION_IDF)
-    if not question.agree_dimension_signals and question.trait_positive_dimension:
-        agree_overlap = _score_dimension_overlap({question.trait_positive_dimension: 1.0}, profile, _ROLE_DIMENSION_IDF)
-    x = agree_overlap - disagree_overlap
-
-    log_utilities = {}
-    for v in [-2, -1, 0, 1, 2]:
-        log_utilities[v] = math.log(BASELINE_DIST[v]) + SOFTMAX_OMEGA * v * x
-
-    max_log_u = max(log_utilities.values())
-    exps = {v: math.exp(log_utilities[v] - max_log_u) for v in [-2, -1, 0, 1, 2]}
-    total_exp = sum(exps.values())
-
-    return {v: exps[v] / total_exp for v in [-2, -1, 0, 1, 2]}
-
-
-def _calculate_p_v_given_r_q(question: Question, role_slug: str) -> dict[int, float]:
-    return calculate_p_v_given_r_q(question, role_slug)
 

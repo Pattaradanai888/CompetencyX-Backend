@@ -3,6 +3,10 @@
 The top layer of the assessments service: it wires together question selection,
 role inference, mastery recomputation, phase transitions, and recommendation refresh.
 This is the only assessments module that depends on ``recommendation_builder``.
+
+Survey 1 question selection is deterministic: the next question is always the
+first eligible unanswered question ordered by ``display_order``. The adaptive
+bandit / info-gain selector and the selection-event log have been removed.
 """
 
 import logging
@@ -25,27 +29,24 @@ from .guidance import (
 from .mastery import recompute_mastery
 from .models import Answer, AssessmentSession
 from .role_inference import (
+    ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
+    ROLE_DISCOVERY_CORE_QUESTION_TARGET,
+    ROLE_DISCOVERY_MIN_MARGIN,
     _get_role_inference_snapshot,
     _get_selectable_role_candidates,
     _get_sorted_role_scores,
     _has_remaining_role_questions,
     _is_role_inference_resolved,
+    _is_role_resolution_exhausted_with_viable_winner,
+    _is_top_role_specialization_satisfied,
     get_role_resolution_status,
-)
-from .selection import (
-    _ensure_selection_event,
-    _finalize_selection_event,
-    _format_dimension_scores,
-    _format_failed_resolution_gates,
-    _format_top_roles,
-    _get_candidates_for_stage,
-    _get_pending_selection_event,
-    _get_unanswered_questions,
-    _select_question_for_session,
 )
 
 
 logger = logging.getLogger('assessments.services')
+
+
+LOG_TOP_ROLE_COUNT = 3
 
 
 def create_assessment_session(*, preferred_role=None, profile=None, language=AssessmentSession.Language.EN) -> AssessmentSession:
@@ -73,27 +74,8 @@ def get_current_question(session: AssessmentSession):
     if session.phase == AssessmentSession.Phase.ROLE_AMBIGUITY:
         return None
 
-    base_queryset = _get_unanswered_questions(session)
-    if session.phase == AssessmentSession.Phase.ROLE_DISCOVERY:
-        candidates = _get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
-        if candidates:
-            decision = _select_question_for_session(session, candidates, stage=Question.Stage.ROLE)
-            _ensure_selection_event(session, decision)
-            return decision.chosen_question
-        return None
-
-    target_role = get_skill_target_role(session)
-    if target_role is not None:
-        candidates = list(
-            base_queryset.filter(stage=Question.Stage.SKILL)
-            .filter(Q(role__isnull=True) | Q(role=target_role))
-            .filter(Q(topic__isnull=True) | Q(topic__role=target_role))
-        )
-        if candidates:
-            decision = _select_question_for_session(session, candidates, stage=Question.Stage.SKILL)
-            _ensure_selection_event(session, decision)
-            return decision.chosen_question
-    return None
+    candidates = _eligible_questions_for_session(session)
+    return candidates[0] if candidates else None
 
 
 @transaction.atomic
@@ -128,15 +110,6 @@ def submit_answer(  # noqa: PLR0913
     if question.id != expected_question.id:
         msg = f'Out-of-order answer submission. Expected question "{expected_question.code}" ({expected_question.id}).'
         raise AssessmentFlowError(msg)
-    selection_event = _get_pending_selection_event(session, expected_question)
-    if selection_event is None:
-        candidates = _get_candidates_for_stage(session, question.stage)
-        if expected_question.id not in {candidate.id for candidate in candidates}:
-            candidates = [*candidates, expected_question]
-        selection_event = _ensure_selection_event(
-            session,
-            _select_question_for_session(session, candidates, stage=question.stage),
-        )
 
     answer, created = Answer.objects.get_or_create(
         session=session,
@@ -165,7 +138,6 @@ def submit_answer(  # noqa: PLR0913
     recompute_mastery(session, target_role=get_skill_target_role(session))
     _update_phase(session)
     recommendation_builder.refresh_recommendations(session)
-    _finalize_selection_event(selection_event, session=session, question=question)
     return answer
 
 
@@ -203,7 +175,7 @@ def build_session_state(session: AssessmentSession) -> dict[str, object]:
     }
 
 
-def get_current_question_for_role(session: AssessmentSession):
+def has_remaining_skill_questions_for_role(session: AssessmentSession):
     target_role = get_skill_target_role(session)
     if target_role is None:
         return None
@@ -213,6 +185,31 @@ def get_current_question_for_role(session: AssessmentSession):
         .filter(Q(role__isnull=True) | Q(role=target_role))
         .filter(Q(topic__isnull=True) | Q(topic__role=target_role))
         .exists()
+    )
+
+
+def _eligible_questions_for_session(session: AssessmentSession) -> list[Question]:
+    base_queryset = _get_unanswered_questions(session)
+    if session.phase == AssessmentSession.Phase.ROLE_DISCOVERY:
+        return _get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
+
+    target_role = get_skill_target_role(session)
+    if target_role is None:
+        return []
+    return list(
+        base_queryset.filter(stage=Question.Stage.SKILL)
+        .filter(Q(role__isnull=True) | Q(role=target_role))
+        .filter(Q(topic__isnull=True) | Q(topic__role=target_role))
+    )
+
+
+def _get_unanswered_questions(session: AssessmentSession):
+    answered_question_ids = session.answers.values_list('question_id', flat=True)
+    return (
+        Question.objects.filter(is_active=True)
+        .exclude(id__in=answered_question_ids)
+        .select_related('role', 'topic')
+        .prefetch_related('options__topic_signals__topic', 'topic__prerequisites')
     )
 
 
@@ -256,6 +253,34 @@ def _recompute_best_fit_role(session: AssessmentSession) -> None:
     )
 
 
+def _format_top_roles(ranked_roles: list[dict[str, object]], *, limit: int = LOG_TOP_ROLE_COUNT) -> list[dict[str, object]]:
+    return [
+        {
+            'slug': role['slug'],
+            'score': round(float(role['fit_score']), 4),
+            'share': round(float(role['fit_share']), 4),
+        }
+        for role in ranked_roles[:limit]
+    ]
+
+
+def _format_dimension_scores(snapshot: dict[str, object]) -> dict[str, float]:
+    return {key: round(float(value), 2) for key, value in sorted(snapshot['dimension_scores'].items()) if float(value) > 0}
+
+
+def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[str, object]) -> list[str]:
+    if _is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
+        return []
+    gates = {
+        'top_role_exists': snapshot['top_role_slug'] is not None,
+        'answered_core_questions': int(snapshot['answered_core_questions']) >= ROLE_DISCOVERY_CORE_QUESTION_TARGET,
+        'confidence': float(snapshot['confidence']) >= ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
+        'margin': float(snapshot['margin_share']) >= ROLE_DISCOVERY_MIN_MARGIN,
+        'specialization': _is_top_role_specialization_satisfied(snapshot),
+    }
+    return [name for name, passed in gates.items() if not passed]
+
+
 def _update_phase(session: AssessmentSession) -> None:
     previous_phase = session.phase
     previous_status = session.status
@@ -287,7 +312,7 @@ def _update_phase(session: AssessmentSession) -> None:
         )
         return
 
-    has_remaining_skill_questions = get_current_question_for_role(session)
+    has_remaining_skill_questions = has_remaining_skill_questions_for_role(session)
     if has_remaining_skill_questions:
         session.phase = AssessmentSession.Phase.SKILL_ASSESSMENT
         session.status = AssessmentSession.Status.IN_PROGRESS

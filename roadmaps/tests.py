@@ -1,4 +1,3 @@
-import json
 import re
 import shutil
 from collections import Counter
@@ -327,37 +326,6 @@ class SeedMvpContentTests(TestCase):
         expected_role_count = len(load_curated_catalog()[0]['roles'])
         expected_topic_count = len(load_curated_catalog()[1]['topics'])
         assert f'Validated {expected_role_count} roles, {expected_topic_count} topics, and {expected_question_count} questions.' in out.getvalue()
-
-    def test_estimate_role_probabilities_command_returns_json_summary(self):
-        out = StringIO()
-
-        call_command(
-            'estimate_role_probabilities',
-            samples=12,
-            random_seed=7,
-            answers='2,1,0',
-            top_roles=Role.objects.filter(is_active=True).count(),
-            format='json',
-            stdout=out,
-        )
-
-        payload = json.loads(out.getvalue())
-
-        assert payload['samples'] == 12
-        assert payload['prefix_answers'] == [2, 1, 0]
-        assert payload['likert_values'] == [-2, -1, 0, 1, 2]
-        assert payload['active_role_count'] == Role.objects.filter(is_active=True).count()
-        assert len(payload['top_ranked_role_rates']) == payload['active_role_count']
-        assert len(payload['resolved_role_rates']) == payload['active_role_count']
-        assert abs(sum(item['probability'] for item in payload['top_ranked_role_rates']) - 1.0) < 1e-9
-        assert abs(sum(item['count'] for item in payload['top_ranked_role_rates']) - payload['samples']) < 1e-9
-        assert payload['questionnaire_metrics']['worst_case_95pct_margin_of_error'] > 0
-        assert 0 <= payload['questionnaire_metrics']['resolved_rate'] <= 1
-        assert 0 <= payload['questionnaire_metrics']['ambiguous_rate'] <= 1
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['hit_role_count'] > 0
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['zero_hit_role_count'] < payload['active_role_count']
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['effective_role_count'] <= payload['active_role_count']
-        assert payload['questionnaire_metrics']['resolved_role_distribution']['effective_role_count'] <= payload['active_role_count']
 
     def test_role_question_validation_rejects_unknown_signal_dimension(self):
         roles_data, topics_data, questions_data = load_curated_catalog()
