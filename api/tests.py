@@ -290,14 +290,31 @@ class AssessmentFlowTests(APITestCase):
         )
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = create_response.json()
-        self.assertEqual(payload['phase'], AssessmentSession.Phase.SKILL_ASSESSMENT)
+        self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
         self.assertEqual(payload['preferred_role']['slug'], self.backend_role.slug)
         self.assertIsNone(payload['best_fit_role'])
         self.assertNotIn('mastery_scores', payload)
         self.assertNotIn('top_role_candidates', payload)
         self.assertNotIn('discrimination_score', payload['current_question'])
-        self.assertEqual(payload['current_question']['stage'], Question.Stage.SKILL)
-        self.assertEqual(payload['current_question']['code'], 'backend-http-basics')
+
+        question = Question.objects.get(id=payload['current_question']['id'])
+        first_answer = self.client.post(
+            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            {'question_id': question.id, 'scale_value': self._scale_for_profile(question, self.qa_profile)},
+            format='json',
+        )
+        self.assertEqual(first_answer.status_code, status.HTTP_200_OK)
+        self.assertIsNone(first_answer.json()['best_fit_role'])
+        self.assertEqual(first_answer.json()['best_fit_confidence'], 0.0)
+        self.assertEqual(first_answer.json()['role_resolution_status'], 'in_progress')
+        self.assertEqual(first_answer.json()['role_alignment_status'], 'unknown')
+
+        final_payload = self._answer_remaining_core_questions(payload['id'], first_answer.json(), profile_dimensions=self.qa_profile)
+        self.assertEqual(final_payload['phase'], AssessmentSession.Phase.SKILL_ASSESSMENT)
+        self.assertEqual(final_payload['best_fit_role']['slug'], self.qa_role.slug)
+        self.assertEqual(final_payload['preferred_role']['slug'], self.backend_role.slug)
+        self.assertEqual(final_payload['role_alignment_status'], 'mismatch')
+        self.assertEqual(final_payload['current_question']['code'], 'backend-http-basics')
 
     def test_completed_results_return_dual_path_recommendations(self):
         create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')

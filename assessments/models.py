@@ -6,6 +6,28 @@ from django.db import models
 from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role
 
 
+class AssessmentSessionQuerySet(models.QuerySet):
+    """Reusable read-path optimizations shared across assessment-session views."""
+
+    def with_roles(self):
+        return self.select_related('preferred_role', 'best_fit_role')
+
+    def with_results(self):
+        return self.with_roles().prefetch_related(
+            'mastery_scores__topic',
+            'recommendations__role',
+            'recommendations__topic',
+        )
+
+    def with_history(self):
+        return self.prefetch_related(
+            'answers__question__topic',
+            'answers__selected_option',
+            'recommendations__role',
+            'recommendations__topic',
+        )
+
+
 class AssessmentSession(models.Model):
     class Language(models.TextChoices):
         EN = 'en', 'English'
@@ -64,6 +86,8 @@ class AssessmentSession(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    objects = AssessmentSessionQuerySet.as_manager()
 
     class Meta:
         ordering = ['-started_at']

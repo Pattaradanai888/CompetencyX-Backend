@@ -2,9 +2,9 @@ import random
 
 from django.conf import settings
 
+from .guidance import get_role_alignment_status, get_role_resolution_status
 from .models import AssessmentSession, Survey2QuestionQValue
 from .roadmaps import list_survey2_questions
-from .services import get_role_alignment_status, get_role_resolution_status
 
 
 def build_survey2_state_key(session: AssessmentSession, answers: dict[str, int]) -> str:

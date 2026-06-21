@@ -364,10 +364,7 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
 
 
 class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related(
-        'preferred_role',
-        'best_fit_role',
-    )
+    queryset = AssessmentSession.objects.with_roles()
     serializer_class = AssessmentSessionSerializer
 
     @extend_schema(
@@ -397,7 +394,7 @@ class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
     serializer_class = RoleInsightsSerializer
 
     @extend_schema(
@@ -428,11 +425,7 @@ class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role').prefetch_related(
-        'mastery_scores__topic',
-        'recommendations__role',
-        'recommendations__topic',
-    )
+    queryset = AssessmentSession.objects.with_results()
     serializer_class = AssessmentResultSerializer
 
     @extend_schema(
@@ -465,12 +458,7 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionHistoryAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.prefetch_related(
-        'answers__question__topic',
-        'answers__selected_option',
-        'recommendations__role',
-        'recommendations__topic',
-    )
+    queryset = AssessmentSession.objects.with_history()
     serializer_class = AssessmentHistorySerializer
 
     @extend_schema(
@@ -554,7 +542,7 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
     )
     def post(self, request, pk, *args, **kwargs):
         session = get_object_or_404(
-            AssessmentSession.objects.select_related('preferred_role', 'best_fit_role'),
+            AssessmentSession.objects.with_roles(),
             pk=pk,
         )
         serializer = self.get_serializer(data=request.data, context={'session': session})
@@ -577,7 +565,7 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
 
 class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
     serializer_class = Survey2SessionStateSerializer
-    queryset = AssessmentSession.objects.all()
+    queryset = AssessmentSession.objects.with_roles()
 
     def _get_survey2_state(self, session: AssessmentSession) -> dict:
         profile = session.profile if isinstance(session.profile, dict) else {}
@@ -663,7 +651,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
 
 class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
     serializer_class = Survey2CatalogSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
 
     @extend_schema(
         operation_id='getAssessmentSurvey2Catalog',
@@ -694,7 +682,7 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
 
 class AssessmentSurvey2NextQuestionAPIView(generics.GenericAPIView):
     serializer_class = Survey2NextQuestionRequestSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
 
     @extend_schema(
         operation_id='getAssessmentSurvey2NextQuestion',

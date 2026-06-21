@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from recommendations.models import Recommendation, RecommendationQValue
 
+from .guidance import get_role_alignment_status, get_role_resolution_status
 from .models import AssessmentSession
 
 
@@ -199,8 +200,6 @@ def _build_recommendation_state_key(
     path_kind: str,
     topic_mastery: dict[int, float],
 ) -> str:
-    from .services import get_role_alignment_status, get_role_resolution_status  # noqa: PLC0415
-
     role_alignment = get_role_alignment_status(session)
     role_resolution = get_role_resolution_status(session)
     role_topics = list(role.topics.filter(is_active=True).order_by('display_order', 'id'))
