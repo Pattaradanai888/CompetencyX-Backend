@@ -55,6 +55,7 @@ class TopicPrerequisiteSerializer(serializers.Serializer):
     topic_id = serializers.IntegerField(source='prerequisite_id')
     required_mastery_threshold = serializers.FloatField()
     dependency_weight = serializers.FloatField()
+    title = serializers.CharField(source='prerequisite.title', read_only=True, default='')
 
 
 class RoadmapTopicSerializer(serializers.ModelSerializer):
@@ -66,6 +67,7 @@ class RoadmapTopicSerializer(serializers.ModelSerializer):
             'id',
             'slug',
             'title',
+            'topic_group',
             'description',
             'difficulty',
             'display_order',

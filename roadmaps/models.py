@@ -39,6 +39,7 @@ class RoadmapTopic(models.Model):
     )
     slug = models.SlugField(max_length=96)
     title = models.CharField(max_length=160)
+    topic_group = models.CharField(max_length=160, blank=True, default='')
     description = models.TextField(blank=True)
     external_source = models.CharField(max_length=64, blank=True)
     external_id = models.CharField(max_length=128, blank=True)

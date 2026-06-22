@@ -99,6 +99,7 @@ def import_roadmap_snapshot(*, snapshot_path: Path, role_slug: str, source='road
     snapshot = json.loads(snapshot_path.read_text(encoding='utf-8'))
     role = Role.objects.get(slug=role_slug)
 
+    topic_group_map = _extract_topic_group_map(snapshot)
     nodes = _extract_snapshot_nodes(snapshot)
     edges = _extract_snapshot_edges(snapshot)
 
@@ -109,6 +110,7 @@ def import_roadmap_snapshot(*, snapshot_path: Path, role_slug: str, source='road
             slug=node['slug'],
             defaults={
                 'title': node['title'],
+                'topic_group': topic_group_map.get(node['id'], ''),
                 'description': node.get('description', ''),
                 'difficulty': RoadmapTopic.Difficulty.BEGINNER,
                 'display_order': index,
@@ -451,20 +453,59 @@ def _load_yaml(path: Path):
     return yaml.safe_load(path.read_text(encoding='utf-8'))
 
 
+def _extract_topic_group_map(snapshot: dict) -> dict[str, str]:
+    nodes = snapshot.get('nodes', [])
+    if isinstance(nodes, dict):
+        nodes = list(nodes.values())
+
+    sorted_nodes = sorted(nodes, key=lambda n: n.get('position', {}).get('y', 0))
+
+    current_section = ''
+    group_map: dict[str, str] = {}
+
+    for node in sorted_nodes:
+        node_id = str(node['id'])
+        node_type = node.get('type', '')
+        node_data = node.get('data') or {}
+
+        if node_type == 'section':
+            current_section = node_data.get('label') or node.get('label') or node.get('title') or ''
+        elif node_type == 'title':
+            if not current_section:
+                current_section = node_data.get('label') or node.get('label') or node.get('title') or ''
+        elif node_type == 'label':
+            if not current_section:
+                candidate = node_data.get('label') or ''
+                if candidate:
+                    current_section = candidate
+        elif node_type in _SNAPSHOT_CONTENT_TYPES:
+            group_map[node_id] = current_section
+
+    return group_map
+
+
+_SNAPSHOT_CONTENT_TYPES = {'topic', 'subtopic'}
+
+
 def _extract_snapshot_nodes(snapshot: dict):
     nodes = snapshot.get('nodes', [])
     if isinstance(nodes, dict):
         nodes = list(nodes.values())
     normalized = []
     for node in nodes:
+        node_type = node.get('type', '')
+        if node_type not in _SNAPSHOT_CONTENT_TYPES:
+            continue
         node_id = str(node['id'])
-        title = node.get('title') or node.get('label') or node_id
+        node_data = node.get('data') or {}
+        title = node.get('title') or node.get('label') or node_data.get('label') or node_id
         slug = node.get('slug') or _slugify(title)
         normalized.append(
             {
                 'id': node_id,
                 'title': title,
                 'slug': slug,
+                'type': node_type,
                 'description': node.get('description', ''),
             }
         )
@@ -475,13 +516,17 @@ def _extract_snapshot_edges(snapshot: dict):
     edges = snapshot.get('edges', [])
     if isinstance(edges, dict):
         edges = list(edges.values())
-    return [
-        {
-            'source': str(edge['source']),
-            'target': str(edge['target']),
-        }
-        for edge in edges
-    ]
+    result = []
+    for edge in edges:
+        source = edge.get('source')
+        target = edge.get('target')
+        if not source or not target:
+            continue
+        result.append({
+            'source': str(source),
+            'target': str(target),
+        })
+    return result
 
 
 def _slugify(value: str):
