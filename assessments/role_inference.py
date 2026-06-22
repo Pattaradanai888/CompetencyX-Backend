@@ -10,9 +10,8 @@ from .models import AssessmentSession
 
 
 # Re-exports for backward-compatible imports (flow.py, guidance.py, api/tests.py).
-ROLE_DISCOVERY_CONFIDENCE_THRESHOLD = scoring.ROLE_DISCOVERY_CONFIDENCE_THRESHOLD
 ROLE_DISCOVERY_MIN_SCORE_MARGIN = scoring.ROLE_DISCOVERY_MIN_SCORE_MARGIN
-_build_role_distribution = scoring._build_role_distribution
+_build_role_shares = scoring._build_role_shares
 _get_sorted_role_scores = scoring._get_sorted_role_scores
 _score_dimension_overlap = scoring._score_dimension_overlap
 

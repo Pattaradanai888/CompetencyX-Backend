@@ -14,7 +14,7 @@ from assessments.models import (
     Survey2QuestionQValue,
     Survey2RoleGuidance,
 )
-from assessments.role_inference import _build_role_distribution, _get_role_inference_snapshot, _get_selectable_role_candidates
+from assessments.role_inference import _build_role_shares, _get_role_inference_snapshot, _get_selectable_role_candidates
 from recommendations.models import Recommendation, RecommendationQValue
 from roadmaps.models import Question, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
@@ -191,13 +191,13 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(payload['status'], AssessmentSession.Status.COMPLETED)
         self.assertIsNone(payload['current_question'])
 
-    def test_role_distribution_uses_uniform_fallback_for_zero_evidence(self):
-        distribution = _build_role_distribution({'backend-developer': 0.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
+    def test_role_shares_uses_uniform_fallback_for_zero_evidence(self):
+        distribution = _build_role_shares({'backend-developer': 0.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
 
         self.assertEqual(distribution, {'backend-developer': 0.5, 'qa-engineer': 0.5})
 
-    def test_role_distribution_softmax_makes_strong_evidence_visible(self):
-        distribution = _build_role_distribution({'backend-developer': 2.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
+    def test_role_shares_concentrate_on_strong_evidence(self):
+        distribution = _build_role_shares({'backend-developer': 5.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
 
         self.assertGreater(distribution['backend-developer'], 0.95)
         self.assertLess(distribution['qa-engineer'], 0.05)

@@ -41,16 +41,16 @@ def test_score_dimension_overlap_ignores_zero_signal_weight():
     assert scoring._score_dimension_overlap({'construction': 0.0}, profile) == 0.0
 
 
-def test_build_role_distribution_uniform_when_no_evidence():
+def test_build_role_shares_uniform_when_no_evidence():
     slugs = ['role-a', 'role-b', 'role-c']
-    distribution = scoring._build_role_distribution({}, slugs)
+    distribution = scoring._build_role_shares({}, slugs)
     assert set(distribution) == set(slugs)
     assert all(abs(value - 1 / 3) < 1e-9 for value in distribution.values())
 
 
-def test_build_role_distribution_concentrates_on_winner():
+def test_build_role_shares_concentrates_on_winner():
     slugs = ['role-a', 'role-b']
-    distribution = scoring._build_role_distribution({'role-a': 10.0, 'role-b': 0.0}, slugs)
+    distribution = scoring._build_role_shares({'role-a': 5.0, 'role-b': 0.0}, slugs)
     assert distribution['role-a'] > distribution['role-b']
     assert distribution['role-a'] > 0.5
 
@@ -61,7 +61,6 @@ def test_compute_role_evidence_snapshot_accumulates_signals():
         {**SAMPLE_QUESTION, 'scale_value': 2},
     ]
     evidence = scoring.compute_role_evidence_snapshot(answers)
-    assert evidence.uses_dimension_scoring is True
     assert evidence.dimension_scores['construction'] == 4.0
     assert evidence.dimension_evidence_counts['construction'] == 2
     assert 'backend-developer' in evidence.role_scores
@@ -69,7 +68,6 @@ def test_compute_role_evidence_snapshot_accumulates_signals():
 
 def test_compute_role_evidence_snapshot_neutral_answer_is_no_evidence():
     evidence = scoring.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 0}])
-    assert evidence.uses_dimension_scoring is False
     assert evidence.dimension_scores == {}
 
 
@@ -84,7 +82,6 @@ def test_build_role_inference_snapshot_shape():
         answered_tie_break=0,
     )
     assert snapshot['top_role_slug'] is not None
-    assert snapshot['uses_dimension_scoring'] is True
     assert snapshot['answered_core_questions'] == 1
     assert snapshot['core_question_target'] == 36
     assert isinstance(snapshot['ranked_roles'], list)
@@ -130,14 +127,13 @@ def test_is_role_resolution_gate_requires_all_conditions():
         'top_role_slug': 'a',
         'answered_core_questions': 36,
         'core_question_target': 36,
-        'confidence': scoring.ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
         'score_margin': scoring.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     assert scoring.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=False) is True
     assert scoring.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=True) is False
 
-    low_confidence = {**base_snapshot, 'confidence': 0.01}
-    assert scoring.is_role_resolution_exhausted_with_viable_winner(low_confidence, has_remaining_tie_breaks_for_top_pair=False) is False
+    low_margin = {**base_snapshot, 'score_margin': 0.01}
+    assert scoring.is_role_resolution_exhausted_with_viable_winner(low_margin, has_remaining_tie_breaks_for_top_pair=False) is False
 
     no_top_role = {**base_snapshot, 'top_role_slug': None}
     assert scoring.is_role_resolution_exhausted_with_viable_winner(no_top_role, has_remaining_tie_breaks_for_top_pair=False) is False
@@ -244,7 +240,6 @@ class ScoringParityTests(APITestCase):
                 'margin_share': 0.3,
                 'score_margin': 4.0,
                 'winner_share': 0.6,
-                'entropy': 0.7,
             },
         ]
         summary = aggregate_results(

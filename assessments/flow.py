@@ -26,7 +26,6 @@ from .guidance import (
 )
 from .models import Answer, AssessmentSession
 from .role_inference import (
-    ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
     ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     _get_role_inference_snapshot,
     _get_selectable_role_candidates,
@@ -212,14 +211,13 @@ def _recompute_best_fit_role(session: AssessmentSession) -> None:
     logger.info(
         (
             'assessment.best_fit_recomputed session_id=%s role=%s confidence=%.4f share=%.4f '
-            'margin=%.4f entropy=%.4f pillars=%s top=%s dims=%s failed_gates=%s'
+            'margin=%.4f pillars=%s top=%s dims=%s failed_gates=%s'
         ),
         session.id,
         session.best_fit_role.slug if session.best_fit_role else None,
         session.best_fit_confidence,
         float(snapshot['winner_share']),
         float(snapshot['margin_share']),
-        float(snapshot['entropy']),
         int(snapshot['observed_pillars']),
         _format_top_roles(snapshot['ranked_roles']),
         _format_dimension_scores(snapshot),
@@ -257,7 +255,6 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
         'top_role_exists': snapshot['top_role_slug'] is not None,
         'answered_core_questions': int(snapshot['answered_core_questions']) >= int(snapshot['core_question_target']),
         'tie_breaks_exhausted': not _get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot),
-        'confidence': float(snapshot['confidence']) >= ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
         'score_margin': float(snapshot['score_margin']) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     return [name for name, passed in gates.items() if not passed]

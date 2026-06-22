@@ -28,19 +28,23 @@ class _SampleState:
     answered_core: int = 0
     answered_tie_break: int = 0
     answered_total: int = 0
-    uses_dimension_scoring: bool = False
 
     def __post_init__(self) -> None:
         if not self.role_scores:
             self.role_scores = dict.fromkeys(self.active_role_slugs, 0.0)
 
     def apply_answer(self, question: dict, scale_value: int) -> None:
-        if scale_value != 0:
-            for dimension_key, weight in scoring._get_likert_dimension_signals(question, scale_value).items():
-                if weight <= 0:
+        selected, _rejected, strength = scoring._resolve_signal_sides(question, scale_value)
+        if strength > 0:
+            multiplier = abs(float(scale_value))
+            for dimension_key, raw_weight in (selected or {}).items():
+                try:
+                    weight = float(raw_weight)
+                except (TypeError, ValueError):
                     continue
-                self.uses_dimension_scoring = True
-                self.dimension_scores[dimension_key] = self.dimension_scores.get(dimension_key, 0.0) + weight
+                if not dimension_key or weight <= 0:
+                    continue
+                self.dimension_scores[dimension_key] = self.dimension_scores.get(dimension_key, 0.0) + weight * multiplier
                 self.dimension_evidence_counts[dimension_key] = self.dimension_evidence_counts.get(dimension_key, 0) + 1
         for role_slug, delta in scoring._score_roles_for_answer(question, scale_value).items():
             self.role_scores[role_slug] = self.role_scores.get(role_slug, 0.0) + delta
@@ -54,10 +58,9 @@ class _SampleState:
 
     def evidence_snapshot(self) -> scoring.RoleEvidenceSnapshot:
         return scoring.RoleEvidenceSnapshot(
-            role_scores=dict(self.role_scores) if self.uses_dimension_scoring else {},
+            role_scores=dict(self.role_scores),
             dimension_scores=dict(self.dimension_scores),
             dimension_evidence_counts=dict(self.dimension_evidence_counts),
-            uses_dimension_scoring=self.uses_dimension_scoring,
         )
 
     def inference_snapshot(self) -> dict[str, object]:
@@ -67,7 +70,6 @@ class _SampleState:
             role_names=self.role_names,
             answered_core=self.answered_core,
             core_target=self.core_target,
-            answered_tie_break=self.answered_tie_break,
         )
 
 
@@ -132,7 +134,6 @@ def run_single_sample(  # noqa: PLR0913
         'margin_share': float(snapshot['margin_share']),
         'score_margin': float(snapshot['score_margin']),
         'winner_share': float(snapshot['winner_share']),
-        'entropy': float(snapshot['entropy']),
     }
 
 
@@ -297,10 +298,7 @@ def _distribution_shape(role_counts: Counter, role_count: int) -> dict[str, floa
 # processes can import it without Django setup. Each trial overrides scoring
 # constants, runs the same pre-generated answer stream, then restores originals.
 TUNABLE_PARAM_NAMES = (
-    'ROLE_DISCOVERY_CONFIDENCE_THRESHOLD',
     'ROLE_DISCOVERY_MIN_SCORE_MARGIN',
-    'DEFAULT_ROLE_PRIOR_WEIGHT',
-    'ROLE_SCORE_SOFTMAX_TEMPERATURE',
     'ROLE_EVIDENCE_LOGISTIC_SCALE',
     'ROLE_EVIDENCE_SCORE_SCALE',
 )

@@ -73,9 +73,9 @@ The grid file format:
 
 ```yaml
 grid:
-  ROLE_SCORE_SOFTMAX_TEMPERATURE: [1.5, 2.0, 2.242, 2.5, 3.0]
-  ROLE_DISCOVERY_CONFIDENCE_THRESHOLD: [0.25, 0.289, 0.33]
-  ROLE_EVIDENCE_SCORE_SCALE: [4.0, 5.229, 6.0]
+  ROLE_EVIDENCE_SCORE_SCALE: [4.0, 5.229, 6.0, 7.0]
+  ROLE_EVIDENCE_LOGISTIC_SCALE: [1.5, 1.989, 2.5]
+  ROLE_DISCOVERY_MIN_SCORE_MARGIN: [0.2, 0.25, 0.3, 0.35]
 ```
 
 Tunable constants are listed in `simulation/engine.py::TUNABLE_PARAM_NAMES`.

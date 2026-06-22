@@ -60,7 +60,6 @@ class Command(BaseCommand):
                     'margin_share': round(float(snapshot['margin_share']), 4),
                     'score_margin': round(float(snapshot['score_margin']), 4),
                     'winner_share': round(float(snapshot['winner_share']), 4),
-                    'entropy': round(float(snapshot['entropy']), 4),
                     'role_qs': role_question_count,
                     'core_complete': _is_core_role_profile_complete(session),
                 })
