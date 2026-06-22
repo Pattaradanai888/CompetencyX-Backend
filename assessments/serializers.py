@@ -5,6 +5,7 @@ from recommendations.serializers import RecommendationSerializer
 from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
+from .guidance import ROLE_RESULT_AVAILABLE_STATUSES
 from .models import Answer, AssessmentSession, TopicMastery
 from .roadmaps import get_survey2_question_ids
 from .services import (
@@ -331,13 +332,13 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
-        if get_role_resolution_status(obj) != 'resolved':
+        if get_role_resolution_status(obj) not in ROLE_RESULT_AVAILABLE_STATUSES:
             return None
         return RoleSerializer(obj.best_fit_role).data if obj.best_fit_role else None
 
     @extend_schema_field(serializers.FloatField())
     def get_best_fit_confidence(self, obj):
-        return obj.best_fit_confidence if get_role_resolution_status(obj) == 'resolved' else 0.0
+        return obj.best_fit_confidence if get_role_resolution_status(obj) in ROLE_RESULT_AVAILABLE_STATUSES else 0.0
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):

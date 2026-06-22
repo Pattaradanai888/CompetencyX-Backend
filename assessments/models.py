@@ -40,7 +40,6 @@ class AssessmentSession(models.Model):
     class Phase(models.TextChoices):
         ROLE_DISCOVERY = 'role_discovery', 'Role Discovery'
         ROLE_AMBIGUITY = 'role_ambiguity', 'Role Ambiguity'
-        SKILL_ASSESSMENT = 'skill_assessment', 'Skill Assessment'
         RECOMMENDATION_READY = 'recommendation_ready', 'Recommendation Ready'
         COMPLETED = 'completed', 'Completed'
 

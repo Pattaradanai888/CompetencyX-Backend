@@ -1,0 +1,12 @@
+# Scoring hyperparameter grid for `python manage.py tune_scoring`.
+#
+# Each key must be one of the tunable constants in assessments/scoring.py
+# (TUNABLE_PARAM_NAMES). The tuner runs the full cartesian product of all
+# listed values, so keep the grid small enough to stay within your time budget
+# (trials x samples). Defaults mirror the current production values so the
+# baseline always appears in the ranking.
+
+grid:
+  ROLE_SCORE_SOFTMAX_TEMPERATURE: [1.5, 2.0, 2.242, 2.5, 3.0]
+  ROLE_DISCOVERY_CONFIDENCE_THRESHOLD: [0.25, 0.289, 0.33]
+  ROLE_EVIDENCE_SCORE_SCALE: [4.0, 5.229, 6.0]

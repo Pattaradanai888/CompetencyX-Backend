@@ -12,7 +12,6 @@ bandit / info-gain selector and the selection-event log have been removed.
 import logging
 
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from roadmaps.models import Question, Role
@@ -23,22 +22,18 @@ from .exceptions import AssessmentFlowError
 from .guidance import (
     build_guidance_summary,
     get_role_alignment_status,
-    get_skill_target_role,
     serialize_milestones,
 )
-from .mastery import recompute_mastery
 from .models import Answer, AssessmentSession
 from .role_inference import (
     ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
-    ROLE_DISCOVERY_CORE_QUESTION_TARGET,
-    ROLE_DISCOVERY_MIN_MARGIN,
+    ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     _get_role_inference_snapshot,
     _get_selectable_role_candidates,
     _get_sorted_role_scores,
     _has_remaining_role_questions,
     _is_role_inference_resolved,
     _is_role_resolution_exhausted_with_viable_winner,
-    _is_top_role_specialization_satisfied,
     get_role_resolution_status,
 )
 
@@ -135,7 +130,6 @@ def submit_answer(  # noqa: PLR0913
         scale_value,
     )
     _recompute_best_fit_role(session)
-    recompute_mastery(session, target_role=get_skill_target_role(session))
     _update_phase(session)
     recommendation_builder.refresh_recommendations(session)
     return answer
@@ -154,53 +148,33 @@ def get_current_question_data(session: AssessmentSession):
 
 
 def build_session_state(session: AssessmentSession) -> dict[str, object]:
-    role_resolved = _is_role_inference_resolved(session)
+    role_resolution_status = get_role_resolution_status(session)
+    role_result_available = role_resolution_status in {'resolved', 'low_confidence'}
     return {
         'id': session.id,
         'status': session.status,
         'phase': session.phase,
         'language': session.language,
-        'best_fit_confidence': session.best_fit_confidence if role_resolved else 0.0,
+        'best_fit_confidence': session.best_fit_confidence if role_result_available else 0.0,
         'preferred_role': session.preferred_role,
-        'best_fit_role': session.best_fit_role if role_resolved else None,
+        'best_fit_role': session.best_fit_role if role_result_available else None,
         'profile': session.profile,
         'started_at': session.started_at,
         'updated_at': session.updated_at,
         'completed_at': session.completed_at,
         'milestones': serialize_milestones(session),
         'role_alignment_status': get_role_alignment_status(session),
-        'role_resolution_status': get_role_resolution_status(session),
+        'role_resolution_status': role_resolution_status,
         'guidance_summary': build_guidance_summary(session),
         'current_question': get_current_question_data(session),
     }
-
-
-def has_remaining_skill_questions_for_role(session: AssessmentSession):
-    target_role = get_skill_target_role(session)
-    if target_role is None:
-        return None
-    return (
-        _get_unanswered_questions(session)
-        .filter(stage=Question.Stage.SKILL)
-        .filter(Q(role__isnull=True) | Q(role=target_role))
-        .filter(Q(topic__isnull=True) | Q(topic__role=target_role))
-        .exists()
-    )
 
 
 def _eligible_questions_for_session(session: AssessmentSession) -> list[Question]:
     base_queryset = _get_unanswered_questions(session)
     if session.phase == AssessmentSession.Phase.ROLE_DISCOVERY:
         return _get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
-
-    target_role = get_skill_target_role(session)
-    if target_role is None:
-        return []
-    return list(
-        base_queryset.filter(stage=Question.Stage.SKILL)
-        .filter(Q(role__isnull=True) | Q(role=target_role))
-        .filter(Q(topic__isnull=True) | Q(topic__role=target_role))
-    )
+    return []
 
 
 def _get_unanswered_questions(session: AssessmentSession):
@@ -271,12 +245,20 @@ def _format_dimension_scores(snapshot: dict[str, object]) -> dict[str, float]:
 def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[str, object]) -> list[str]:
     if _is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
         return []
+    answered_question_ids = session.answers.values_list('question_id', flat=True)
+    remaining_tie_breaks = list(
+        Question.objects.filter(
+            stage=Question.Stage.ROLE,
+            item_group=Question.ItemGroup.TIE_BREAK,
+            is_active=True,
+        ).exclude(id__in=answered_question_ids)
+    )
     gates = {
         'top_role_exists': snapshot['top_role_slug'] is not None,
-        'answered_core_questions': int(snapshot['answered_core_questions']) >= ROLE_DISCOVERY_CORE_QUESTION_TARGET,
+        'answered_core_questions': int(snapshot['answered_core_questions']) >= int(snapshot['core_question_target']),
+        'tie_breaks_exhausted': not _get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot),
         'confidence': float(snapshot['confidence']) >= ROLE_DISCOVERY_CONFIDENCE_THRESHOLD,
-        'margin': float(snapshot['margin_share']) >= ROLE_DISCOVERY_MIN_MARGIN,
-        'specialization': _is_top_role_specialization_satisfied(snapshot),
+        'score_margin': float(snapshot['score_margin']) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     return [name for name, passed in gates.items() if not passed]
 
@@ -284,17 +266,16 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
 def _update_phase(session: AssessmentSession) -> None:
     previous_phase = session.phase
     previous_status = session.status
-    role_answers_count = session.answers.filter(question__stage=Question.Stage.ROLE).count()
-    skip_role_discovery = session.preferred_role_id is not None and role_answers_count == 0
     has_remaining_role_questions = _has_remaining_role_questions(session)
-    if not skip_role_discovery and not _is_role_inference_resolved(session):
-        session.phase = (
-            AssessmentSession.Phase.ROLE_DISCOVERY
-            if has_remaining_role_questions
-            else AssessmentSession.Phase.ROLE_AMBIGUITY
-        )
-        session.status = AssessmentSession.Status.IN_PROGRESS
-        session.completed_at = None
+    if not _is_role_inference_resolved(session):
+        if has_remaining_role_questions:
+            session.phase = AssessmentSession.Phase.ROLE_DISCOVERY
+            session.status = AssessmentSession.Status.IN_PROGRESS
+            session.completed_at = None
+        else:
+            session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
+            session.status = AssessmentSession.Status.COMPLETED
+            session.completed_at = timezone.now()
         session.save(update_fields=['phase', 'status', 'completed_at', 'updated_at'])
         logger.info(
             (
@@ -312,22 +293,15 @@ def _update_phase(session: AssessmentSession) -> None:
         )
         return
 
-    has_remaining_skill_questions = has_remaining_skill_questions_for_role(session)
-    if has_remaining_skill_questions:
-        session.phase = AssessmentSession.Phase.SKILL_ASSESSMENT
-        session.status = AssessmentSession.Status.IN_PROGRESS
-        session.completed_at = None
-    else:
-        session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
-        session.status = AssessmentSession.Status.COMPLETED
-        session.completed_at = timezone.now()
+    session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
+    session.status = AssessmentSession.Status.COMPLETED
+    session.completed_at = timezone.now()
 
     session.save(update_fields=['phase', 'status', 'completed_at', 'updated_at'])
     logger.info(
         (
             'assessment.phase_updated session_id=%s previous_phase=%s new_phase=%s '
-            'previous_status=%s new_status=%s role_confidence=%.4f '
-            'has_skill_questions=%s completed_at=%s'
+            'previous_status=%s new_status=%s role_confidence=%.4f completed_at=%s'
         ),
         session.id,
         previous_phase,
@@ -335,6 +309,5 @@ def _update_phase(session: AssessmentSession) -> None:
         previous_status,
         session.status,
         session.best_fit_confidence,
-        bool(has_remaining_skill_questions),
         session.completed_at.isoformat() if session.completed_at else None,
     )

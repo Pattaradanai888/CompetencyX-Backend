@@ -60,7 +60,8 @@ SESSION_RESPONSE_EXAMPLE = {
     'completed_at': None,
     'milestones': {
         'answered_role_questions': 0,
-        'answered_skill_questions': 0,
+        'answered_core_role_questions': 0,
+        'answered_tie_break_questions': 0,
     },
     'role_alignment_status': 'unknown',
     'role_resolution_status': 'in_progress',
@@ -189,7 +190,8 @@ RESULT_RESPONSE_EXAMPLE = {
     'completed_at': '2026-04-17T04:05:00Z',
     'milestones': {
         'answered_role_questions': 2,
-        'answered_skill_questions': 2,
+        'answered_core_role_questions': 2,
+        'answered_tie_break_questions': 0,
     },
     'role_alignment_status': 'aligned',
     'role_resolution_status': 'resolved',

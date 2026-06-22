@@ -13,24 +13,31 @@ from .models import AssessmentSession
 from .role_inference import (
     _get_role_inference_snapshot,
     _is_core_role_profile_complete,
-    _is_role_inference_resolved,
     get_role_resolution_status,
     get_top_role_candidates,
 )
 
 
 MAX_GAP_TOPICS = 3
+ROLE_RESULT_AVAILABLE_STATUSES = {'resolved', 'low_confidence'}
 
 
 def serialize_milestones(session: AssessmentSession):
     return {
         'answered_role_questions': session.answers.filter(question__stage=Question.Stage.ROLE).count(),
-        'answered_skill_questions': session.answers.filter(question__stage=Question.Stage.SKILL).count(),
+        'answered_core_role_questions': session.answers.filter(
+            question__stage=Question.Stage.ROLE,
+            question__item_group=Question.ItemGroup.CORE,
+        ).count(),
+        'answered_tie_break_questions': session.answers.filter(
+            question__stage=Question.Stage.ROLE,
+            question__item_group=Question.ItemGroup.TIE_BREAK,
+        ).count(),
     }
 
 
 def get_skill_target_role(session: AssessmentSession):
-    if not _is_role_inference_resolved(session):
+    if get_role_resolution_status(session) not in ROLE_RESULT_AVAILABLE_STATUSES:
         return session.preferred_role if session.preferred_role_id is not None else None
     return session.preferred_role or session.best_fit_role
 
@@ -85,14 +92,15 @@ def build_guidance_summary(session: AssessmentSession) -> str:
     if resolution_status == 'ambiguous':
         candidate_names = ' and '.join(candidate['name'] for candidate in role_snapshot[:2])
         return f'Your answers are not confident enough to separate {candidate_names} yet.'
-
     if preferred_role is None and best_fit_role is None:
         return 'Answer the role-discovery questions to identify the best-fit roadmap.'
 
     if preferred_role is not None and best_fit_role is None:
         return f'You want to pursue {preferred_role.name}. Answer the role-discovery questions to see how close your current fit is.'
 
-    if preferred_role is None and best_fit_role is not None:
+    if resolution_status == 'low_confidence' and best_fit_role is not None:
+        base_message = f'Your answers weakly point toward {best_fit_role.name}. Treat this as a tentative fit and validate it in Survey 2.'
+    elif preferred_role is None and best_fit_role is not None:
         base_message = f'Your current answers align best with {best_fit_role.name}.'
     elif alignment_status == 'aligned':
         base_message = f'You are tracking well toward {preferred_role.name}.'
@@ -116,11 +124,12 @@ def get_role_insights(session: AssessmentSession) -> dict[str, object]:
             'ranked_roles': [],
             'guidance_summary': build_guidance_summary(session),
         }
-    role_resolved = _is_role_inference_resolved(session)
+    role_resolution_status = get_role_resolution_status(session)
+    role_result_available = role_resolution_status in ROLE_RESULT_AVAILABLE_STATUSES
     return {
-        'role_resolution_status': get_role_resolution_status(session),
-        'best_fit_role': session.best_fit_role if role_resolved else None,
-        'best_fit_confidence': session.best_fit_confidence if role_resolved else 0.0,
+        'role_resolution_status': role_resolution_status,
+        'best_fit_role': session.best_fit_role if role_result_available else None,
+        'best_fit_confidence': session.best_fit_confidence if role_result_available else 0.0,
         'answered_role_questions': serialize_milestones(session)['answered_role_questions'],
         'pillar_profile': snapshot['pillar_profile'],
         'ranked_roles': snapshot['ranked_roles'],
