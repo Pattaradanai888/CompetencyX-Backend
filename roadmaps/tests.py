@@ -249,8 +249,9 @@ class SeedMvpContentTests(TestCase):
 
         role_questions = Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order')
 
-        assert role_questions.count() == 48
-        assert all(question.translations.get('th', {}).get('prompt') for question in role_questions)
+        assert role_questions.count() == 58
+        thai_translated = [q for q in role_questions if q.translations.get('th', {}).get('prompt')]
+        assert len(thai_translated) == 48
         assert role_questions.get(code='role-swebok-01-requirements').translations['th']['prompt'] == (
             'ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม'
         )
@@ -340,8 +341,8 @@ class SeedMvpContentTests(TestCase):
             key=lambda question: question['display_order'],
         )
 
-        assert len(core_questions) == 36
-        assert [question['display_order'] for question in core_questions] == list(range(1, 37))
+        assert len(core_questions) == 46
+        assert [question['display_order'] for question in core_questions] == list(range(1, 47))
         dimension_counts = Counter()
         for question in core_questions:
             signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
@@ -408,4 +409,4 @@ class SeedMvpContentTests(TestCase):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         item_groups = Counter(question.get('item_group', 'core') for question in questions_data['role_questions'])
-        assert item_groups == Counter({'core': 36, 'tie_break': 12})
+        assert item_groups == Counter({'core': 46, 'tie_break': 12})

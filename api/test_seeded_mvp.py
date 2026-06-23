@@ -19,7 +19,7 @@ def _score_roles_from_dimensions(dimension_scores: dict[str, float]) -> dict[str
 
 
 EXPECTED_SEEDED_ROLE_COUNT = 26
-MIN_ROLE_QUESTION_COUNT = 36
+MIN_ROLE_QUESTION_COUNT = 46
 FULL_FLOW_SMOKE_ROLE_COUNT = 1
 IDEAL_SCALE_NEUTRAL_DELTA = 0.2
 

@@ -78,12 +78,12 @@ def test_build_role_inference_snapshot_shape():
         active_role_slugs=list(ROLE_PROFILE_WEIGHTS),
         role_names={},
         answered_core=1,
-        core_target=36,
+        core_target=46,
         answered_tie_break=0,
     )
     assert snapshot['top_role_slug'] is not None
     assert snapshot['answered_core_questions'] == 1
-    assert snapshot['core_question_target'] == 36
+    assert snapshot['core_question_target'] == 46
     assert isinstance(snapshot['ranked_roles'], list)
     assert len(snapshot['ranked_roles']) == len(ROLE_PROFILE_WEIGHTS)
     assert 'fit_share' in snapshot['ranked_roles'][0]
@@ -125,8 +125,8 @@ def test_select_role_candidates_empty_when_margin_already_clear():
 def test_is_role_resolution_gate_requires_all_conditions():
     base_snapshot = {
         'top_role_slug': 'a',
-        'answered_core_questions': 36,
-        'core_question_target': 36,
+        'answered_core_questions': 46,
+        'core_question_target': 46,
         'score_margin': scoring.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     assert scoring.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=False) is True
@@ -209,7 +209,7 @@ class ScoringParityTests(APITestCase):
             }
             for question in Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).order_by('display_order', 'id')
         ]
-        fixed_answers = list((LIKERT_VALUES * 8)[:len(questions)])
+        fixed_answers = list((LIKERT_VALUES * 10)[:len(questions)])
         result = run_single_sample(
             0,
             questions,
@@ -233,9 +233,9 @@ class ScoringParityTests(APITestCase):
                 'resolution_status': 'resolved',
                 'best_fit_role': 'backend-developer',
                 'top_ranked_role': 'backend-developer',
-                'answered_core_questions': 36,
-                'answered_tie_break_questions': 0,
-                'answered_role_questions': 36,
+        'answered_core_questions': 46,
+        'answered_tie_break_questions': 0,
+        'answered_role_questions': 46,
                 'confidence': 0.5,
                 'margin_share': 0.3,
                 'score_margin': 4.0,

@@ -642,6 +642,166 @@ role_questions:
   difficulty: 1
   discrimination_score: 4.0
   display_order: 36
+- code: role-swebok-37-mobile-native
+  item_group: core
+  question_type: likert_5
+  prompt: I would rather build native mobile apps that respect platform design guidelines
+    than build responsive web dashboards, even when the web version would reach more users
+    faster.
+  agree_dimension_signals:
+    android_platform: 0.8
+    ios_platform: 0.8
+    construction: 0.6
+    design: 0.5
+  disagree_dimension_signals:
+    web_frontend: 0.8
+    application_build: 0.4
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 37
+- code: role-swebok-38-backend-platforms
+  item_group: core
+  question_type: likert_5
+  prompt: I prefer optimizing server-side data pipelines, API throughput, and concurrency
+    patterns over building user-facing screens, even when stakeholders push for visible
+    UI progress.
+  agree_dimension_signals:
+    server_backend: 1
+    architecture: 0.5
+    operations: 0.5
+  disagree_dimension_signals:
+    web_frontend: 0.5
+    design: 0.4
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 38
+- code: role-swebok-39-database-dba
+  item_group: core
+  question_type: likert_5
+  prompt: I would rather tune database query plans, indexing strategies, and replication
+    topology than write application business logic, even if it means fewer shipped features.
+  agree_dimension_signals:
+    database_postgresql: 1
+    operations: 0.5
+    configuration_management: 0.4
+  disagree_dimension_signals:
+    construction: 0.5
+    design: 0.3
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 39
+- code: role-swebok-40-blockchain
+  item_group: core
+  question_type: likert_5
+  prompt: I am drawn to building decentralized protocols and smart contract logic over
+    traditional CRUD applications, even when the business value is less immediately clear.
+  agree_dimension_signals:
+    blockchain_platform: 1
+    security: 0.5
+    architecture: 0.4
+  disagree_dimension_signals:
+    maintenance: 0.4
+    testing: 0.3
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 40
+- code: role-swebok-41-game-client
+  item_group: core
+  question_type: likert_5
+  prompt: I would rather work on real-time rendering pipelines, physics simulations, and
+    gameplay feel than build typical business web applications, even if the game industry
+    is more volatile.
+  agree_dimension_signals:
+    game_client: 1
+    game_family: 0.8
+    computing_ai: 0.5
+    construction: 0.4
+  disagree_dimension_signals:
+    management: 0.3
+    economics: 0.2
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 41
+- code: role-swebok-42-game-server
+  item_group: core
+  question_type: likert_5
+  prompt: I find the challenge of synchronizing real-time multiplayer state and scaling
+    game servers more interesting than building single-player game mechanics or client-side
+    rendering.
+  agree_dimension_signals:
+    game_server: 1
+    game_family: 0.7
+    operations: 0.6
+    architecture: 0.4
+  disagree_dimension_signals:
+    design: 0.3
+    quality: 0.2
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 42
+- code: role-swebok-43-tech-docs
+  item_group: core
+  question_type: likert_5
+  prompt: I would rather write precise API documentation and developer onboarding guides
+    than debug production incidents, even when the team is short on on-call volunteers.
+  agree_dimension_signals:
+    technical_documentation: 1
+    professional_practice: 0.5
+    maintenance: 0.4
+  disagree_dimension_signals:
+    operations: 0.4
+    testing: 0.3
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 43
+- code: role-swebok-44-bi-analytics
+  item_group: core
+  question_type: likert_5
+  prompt: I prefer building data dashboards, analytics reports, and SQL transformations
+    over writing backend API endpoints, even when API work is on the critical path.
+  agree_dimension_signals:
+    business_intelligence: 1
+    economics: 0.5
+    computing_ai: 0.4
+    math: 0.3
+  disagree_dimension_signals:
+    server_backend: 0.4
+    construction: 0.3
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 44
+- code: role-swebok-45-ml-platform
+  item_group: core
+  question_type: likert_5
+  prompt: I would rather build ML training pipelines, model registries, and deployment
+    infrastructure than write user-facing application code, even if the feedback loop
+    is slower.
+  agree_dimension_signals:
+    ml_platform: 1
+    computing_ai: 0.6
+    operations: 0.4
+    configuration_management: 0.3
+  disagree_dimension_signals:
+    design: 0.3
+    documentation_practice: 0.2
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 45
+- code: role-swebok-46-devrel
+  item_group: core
+  question_type: likert_5
+  prompt: I enjoy representing our engineering team at conferences and in developer communities
+    more than heads-down feature delivery, even if it means fewer commits on my record.
+  agree_dimension_signals:
+    developer_community: 1
+    professional_practice: 0.6
+    requirements: 0.3
+  disagree_dimension_signals:
+    construction: 0.4
+    models_methods: 0.2
+  difficulty: 1
+  discrimination_score: 4.0
+  display_order: 46
 - code: role-swebok-tie-01-frontend-backend
   item_group: tie_break
   question_type: likert_5
