@@ -6,7 +6,7 @@ from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
 from .guidance import ROLE_RESULT_AVAILABLE_STATUSES
-from .models import Answer, AssessmentSession, TopicMastery
+from .models import Answer, AssessmentSession
 from .roadmaps import get_survey2_question_ids
 from .services import (
     build_guidance_summary,
@@ -87,22 +87,6 @@ class AnswerSubmitSerializer(serializers.Serializer):
         except QuestionOption.DoesNotExist as exc:
             raise serializers.ValidationError({'option_id': 'Option does not belong to the question.'}) from exc
         return option, None
-
-
-class TopicMasterySerializer(serializers.ModelSerializer):
-    topic_slug = serializers.SlugRelatedField(source='topic', read_only=True, slug_field='slug')
-    topic_title = serializers.CharField(source='topic.title', read_only=True)
-
-    class Meta:
-        model = TopicMastery
-        fields = (
-            'topic_id',
-            'topic_slug',
-            'topic_title',
-            'mastery_score',
-            'confidence_score',
-            'updated_at',
-        )
 
 
 class PillarInsightSerializer(serializers.Serializer):
@@ -276,7 +260,6 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
     preferred_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
     best_fit_confidence = serializers.SerializerMethodField()
-    mastery_scores = TopicMasterySerializer(many=True, read_only=True)
     preferred_path_recommendation = serializers.SerializerMethodField()
     best_fit_path_recommendation = serializers.SerializerMethodField()
     milestones = serializers.SerializerMethodField()
@@ -307,7 +290,6 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             'pillar_profile',
             'ranked_roles',
             'preferred_role_gap_topics',
-            'mastery_scores',
             'preferred_path_recommendation',
             'best_fit_path_recommendation',
         )

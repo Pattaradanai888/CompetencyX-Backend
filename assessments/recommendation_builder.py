@@ -72,7 +72,7 @@ def refresh_recommendations(session: AssessmentSession):
 
 
 def build_recommendation_for_role(session: AssessmentSession, *, role, path_kind: str):
-    eligible_topics, topic_mastery = _get_eligible_recommendation_topics(session, role=role)
+    eligible_topics = _get_eligible_recommendation_topics(session, role=role)
     recommendation_policy = _get_recommendation_policy()
 
     if recommendation_policy == RECOMMENDATION_POLICY_Q_LEARNING:
@@ -81,7 +81,6 @@ def build_recommendation_for_role(session: AssessmentSession, *, role, path_kind
             role=role,
             path_kind=path_kind,
             eligible_topics=eligible_topics,
-            topic_mastery=topic_mastery,
         )
 
     return _build_rule_based_recommendation_for_role(
@@ -89,7 +88,6 @@ def build_recommendation_for_role(session: AssessmentSession, *, role, path_kind
         role=role,
         path_kind=path_kind,
         eligible_topics=eligible_topics,
-        topic_mastery=topic_mastery,
     )
 
 
@@ -100,17 +98,13 @@ def _get_recommendation_policy() -> str:
     return RECOMMENDATION_POLICY_RULE_BASED
 
 
-def _get_eligible_recommendation_topics(session: AssessmentSession, *, role) -> tuple[list, dict[int, float]]:
-    topic_mastery = {mastery.topic_id: mastery.mastery_score for mastery in session.mastery_scores.select_related('topic')}
+def _get_eligible_recommendation_topics(session: AssessmentSession, *, role) -> list:
     eligible_topics = []
     for topic in role.topics.filter(is_active=True).prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites')):
-        current_mastery = topic_mastery.get(topic.id, 0.0)
-        if current_mastery >= RECOMMENDATION_MASTERY_THRESHOLD:
-            continue
         prerequisites = getattr(topic, 'prefetched_prerequisites', [])
-        if all(topic_mastery.get(prerequisite.prerequisite_id, 0.0) >= prerequisite.required_mastery_threshold for prerequisite in prerequisites):
+        if all(prerequisite.required_mastery_threshold <= 0.0 for prerequisite in prerequisites):
             eligible_topics.append(topic)
-    return eligible_topics, topic_mastery
+    return eligible_topics
 
 
 def _build_rule_based_recommendation_for_role(
@@ -119,11 +113,9 @@ def _build_rule_based_recommendation_for_role(
     role,
     path_kind: str,
     eligible_topics: list,
-    topic_mastery: dict[int, float],
 ):
     if eligible_topics:
         topic = min(eligible_topics, key=lambda candidate: (candidate.display_order, candidate.id))
-        current_mastery = topic_mastery.get(topic.id, 0.0)
         return Recommendation.objects.create(
             session=session,
             role=role,
@@ -131,7 +123,7 @@ def _build_rule_based_recommendation_for_role(
             reason='Lowest-order topic with satisfied prerequisites and insufficient mastery.',
             path_kind=path_kind,
             policy_type=Recommendation.PolicyType.RULE_BASED,
-            score=1.0 - current_mastery,
+            score=1.0,
             state_key='',
         )
 
@@ -153,9 +145,8 @@ def _build_q_learning_recommendation_for_role(
     role,
     path_kind: str,
     eligible_topics: list,
-    topic_mastery: dict[int, float],
 ):
-    state_key = _build_recommendation_state_key(session, role=role, path_kind=path_kind, topic_mastery=topic_mastery)
+    state_key = _build_recommendation_state_key(session, role=role, path_kind=path_kind)
 
     if not eligible_topics:
         return Recommendation.objects.create(
@@ -175,9 +166,7 @@ def _build_q_learning_recommendation_for_role(
         path_kind=path_kind,
         state_key=state_key,
         eligible_topics=eligible_topics,
-        topic_mastery=topic_mastery,
     )
-    current_mastery = topic_mastery.get(chosen_topic.id, 0.0)
     return Recommendation.objects.create(
         session=session,
         role=role,
@@ -188,7 +177,7 @@ def _build_q_learning_recommendation_for_role(
         ),
         path_kind=path_kind,
         policy_type=Recommendation.PolicyType.Q_LEARNING,
-        score=max(q_value, reward, 1.0 - current_mastery),
+        score=max(q_value, reward, 1.0),
         state_key=state_key,
     )
 
@@ -198,15 +187,16 @@ def _build_recommendation_state_key(
     *,
     role,
     path_kind: str,
-    topic_mastery: dict[int, float],
+    mastery_overrides: dict[int, float] | None = None,
 ) -> str:
     role_alignment = get_role_alignment_status(session)
     role_resolution = get_role_resolution_status(session)
     role_topics = list(role.topics.filter(is_active=True).order_by('display_order', 'id'))
+    overrides = mastery_overrides or {}
     if role_topics:
-        mastery_values = [float(topic_mastery.get(topic.id, 0.0)) for topic in role_topics]
+        mastery_values = [float(overrides.get(topic.id, 0.0)) for topic in role_topics]
         average_mastery = sum(mastery_values) / len(mastery_values)
-        weak_topic_count = sum(1 for mastery in mastery_values if mastery < RECOMMENDATION_MASTERY_THRESHOLD)
+        weak_topic_count = sum(1 for value in mastery_values if value < RECOMMENDATION_MASTERY_THRESHOLD)
     else:
         average_mastery = 0.0
         weak_topic_count = 0
@@ -227,14 +217,13 @@ def _build_recommendation_state_key(
     )
 
 
-def _select_q_learning_topic(  # noqa: PLR0913
+def _select_q_learning_topic(
     session: AssessmentSession,
     *,
     role,
     path_kind: str,
     state_key: str,
     eligible_topics: list,
-    topic_mastery: dict[int, float],
 ) -> tuple[object, float, float]:
     epsilon = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON', 0.15))
     alpha = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_ALPHA', 0.35))
@@ -257,13 +246,13 @@ def _select_q_learning_topic(  # noqa: PLR0913
             eligible_topics,
             key=lambda topic: (
                 q_rows.get(topic.id).q_value if q_rows.get(topic.id) is not None else 0.0,
-                1.0 - topic_mastery.get(topic.id, 0.0),
+                1.0,
                 -topic.display_order,
                 -topic.id,
             ),
         )
 
-    reward = _calculate_recommendation_reward(chosen_topic, topic_mastery=topic_mastery)
+    reward = _calculate_recommendation_reward(chosen_topic)
     current_q_row, _created = RecommendationQValue.objects.get_or_create(
         state_key=state_key,
         path_kind=path_kind,
@@ -282,7 +271,6 @@ def _select_q_learning_topic(  # noqa: PLR0913
         role=role,
         path_kind=path_kind,
         chosen_topic=chosen_topic,
-        topic_mastery=topic_mastery,
     )
     updated_q = current_q + alpha * (reward + (gamma * projected_next_q) - current_q)
     current_q_row.q_value = updated_q
@@ -309,11 +297,10 @@ def _select_q_learning_topic(  # noqa: PLR0913
     return chosen_topic, updated_q, reward
 
 
-def _calculate_recommendation_reward(topic, *, topic_mastery: dict[int, float]) -> float:
-    mastery_gap = 1.0 - float(topic_mastery.get(topic.id, 0.0))
+def _calculate_recommendation_reward(topic) -> float:
     order_bonus = 1.0 / (1.0 + max(topic.display_order, 0))
     difficulty_bonus = 0.15 if topic.difficulty == topic.Difficulty.BEGINNER else 0.05
-    return max(0.0, min(1.0, (0.7 * mastery_gap) + (0.2 * order_bonus) + difficulty_bonus))
+    return max(0.0, min(1.0, 0.7 + (0.2 * order_bonus) + difficulty_bonus))
 
 
 def _get_projected_next_q_value(
@@ -322,19 +309,21 @@ def _get_projected_next_q_value(
     role,
     path_kind: str,
     chosen_topic,
-    topic_mastery: dict[int, float],
 ) -> float:
-    projected_mastery = dict(topic_mastery)
-    projected_mastery[chosen_topic.id] = RECOMMENDATION_MASTERY_THRESHOLD
-    projected_state_key = _build_recommendation_state_key(session, role=role, path_kind=path_kind, topic_mastery=projected_mastery)
+    mastery_overrides = {chosen_topic.id: RECOMMENDATION_MASTERY_THRESHOLD}
+    projected_state_key = _build_recommendation_state_key(
+        session,
+        role=role,
+        path_kind=path_kind,
+        mastery_overrides=mastery_overrides,
+    )
 
     projected_eligible_topics = []
     for topic in role.topics.filter(is_active=True).prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites')):
-        current_mastery = projected_mastery.get(topic.id, 0.0)
-        if current_mastery >= RECOMMENDATION_MASTERY_THRESHOLD:
+        if mastery_overrides.get(topic.id, 0.0) >= RECOMMENDATION_MASTERY_THRESHOLD:
             continue
         prerequisites = getattr(topic, 'prefetched_prerequisites', [])
-        if all(projected_mastery.get(prerequisite.prerequisite_id, 0.0) >= prerequisite.required_mastery_threshold for prerequisite in prerequisites):
+        if all(mastery_overrides.get(prerequisite.prerequisite_id, 0.0) >= prerequisite.required_mastery_threshold for prerequisite in prerequisites):
             projected_eligible_topics.append(topic)
 
     if not projected_eligible_topics:

@@ -6,7 +6,6 @@ from .models import (
     Survey2Dimension,
     Survey2Question,
     Survey2RoleGuidance,
-    TopicMastery,
 )
 
 
@@ -22,12 +21,6 @@ class AssessmentSessionAdmin(admin.ModelAdmin):
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ('session', 'question', 'selected_option', 'responded_at')
     list_select_related = ('question', 'selected_option', 'session')
-
-
-@admin.register(TopicMastery)
-class TopicMasteryAdmin(admin.ModelAdmin):
-    list_display = ('session', 'topic', 'mastery_score', 'confidence_score', 'updated_at')
-    list_select_related = ('session', 'topic')
 
 
 @admin.register(Survey2Question)

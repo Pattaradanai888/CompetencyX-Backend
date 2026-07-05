@@ -7,6 +7,8 @@ without importing the ``services``/``flow`` orchestration layer, which would cre
 import cycle.
 """
 
+from django.db.models import Count, Q
+
 from roadmaps.models import Question
 
 from .models import AssessmentSession
@@ -23,17 +25,18 @@ ROLE_RESULT_AVAILABLE_STATUSES = {'resolved', 'low_confidence'}
 
 
 def serialize_milestones(session: AssessmentSession):
-    return {
-        'answered_role_questions': session.answers.filter(question__stage=Question.Stage.ROLE).count(),
-        'answered_core_role_questions': session.answers.filter(
-            question__stage=Question.Stage.ROLE,
-            question__item_group=Question.ItemGroup.CORE,
-        ).count(),
-        'answered_tie_break_questions': session.answers.filter(
-            question__stage=Question.Stage.ROLE,
-            question__item_group=Question.ItemGroup.TIE_BREAK,
-        ).count(),
-    }
+    role_stage = Q(question__stage=Question.Stage.ROLE)
+    return session.answers.aggregate(
+        answered_role_questions=Count('pk', filter=role_stage),
+        answered_core_role_questions=Count(
+            'pk',
+            filter=role_stage & Q(question__item_group=Question.ItemGroup.CORE),
+        ),
+        answered_tie_break_questions=Count(
+            'pk',
+            filter=role_stage & Q(question__item_group=Question.ItemGroup.TIE_BREAK),
+        ),
+    )
 
 
 def get_skill_target_role(session: AssessmentSession):
@@ -60,17 +63,7 @@ def get_preferred_role_gap_topics(session: AssessmentSession, *, limit: int = MA
     role = get_skill_target_role(session)
     if role is None:
         return []
-
-    topic_mastery = {mastery.topic_id: mastery for mastery in session.mastery_scores.all()}
-    ranked_topics = sorted(
-        role.topics.filter(is_active=True),
-        key=lambda topic: (
-            topic_mastery.get(topic.id).mastery_score if topic.id in topic_mastery else 0.0,
-            topic.display_order,
-            topic.id,
-        ),
-    )
-    return ranked_topics[:limit]
+    return list(role.topics.filter(is_active=True).order_by('display_order', 'id')[:limit])
 
 
 def build_guidance_summary(session: AssessmentSession) -> str:

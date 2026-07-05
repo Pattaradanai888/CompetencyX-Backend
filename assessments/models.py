@@ -3,7 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role
+from roadmaps.models import Question, QuestionOption, Role
 
 
 class AssessmentSessionQuerySet(models.QuerySet):
@@ -14,7 +14,6 @@ class AssessmentSessionQuerySet(models.QuerySet):
 
     def with_results(self):
         return self.with_roles().prefetch_related(
-            'mastery_scores__topic',
             'recommendations__role',
             'recommendations__topic',
         )
@@ -133,29 +132,6 @@ class Answer(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.question_id}'
-
-
-class TopicMastery(models.Model):
-    session = models.ForeignKey(
-        AssessmentSession,
-        on_delete=models.CASCADE,
-        related_name='mastery_scores',
-    )
-    topic = models.ForeignKey(
-        RoadmapTopic,
-        on_delete=models.CASCADE,
-        related_name='session_mastery_scores',
-    )
-    mastery_score = models.FloatField(default=0.0)
-    confidence_score = models.FloatField(default=0.0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['topic__display_order', 'topic__id']
-        unique_together = [('session', 'topic')]
-
-    def __str__(self) -> str:
-        return f'{self.session_id}:{self.topic_id}'
 
 
 class Survey2Question(models.Model):

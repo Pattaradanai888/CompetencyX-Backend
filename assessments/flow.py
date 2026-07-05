@@ -1,7 +1,7 @@
 """Assessment session orchestration.
 
 The top layer of the assessments service: it wires together question selection,
-role inference, mastery recomputation, phase transitions, and recommendation refresh.
+role inference, phase transitions, and recommendation refresh.
 This is the only assessments module that depends on ``recommendation_builder``.
 
 Survey 1 question selection is deterministic: the next question is always the

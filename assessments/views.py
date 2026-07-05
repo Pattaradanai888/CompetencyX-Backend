@@ -232,16 +232,6 @@ RESULT_RESPONSE_EXAMPLE = {
             ],
         }
     ],
-    'mastery_scores': [
-        {
-            'topic_id': 11,
-            'topic_slug': 'http',
-            'topic_title': 'HTTP Fundamentals',
-            'mastery_score': 1.0,
-            'confidence_score': 0.5,
-            'updated_at': '2026-04-17T04:05:00Z',
-        }
-    ],
     'preferred_path_recommendation': {
         'id': 301,
         'role_slug': 'backend-engineer',
@@ -444,7 +434,7 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
         responses={
             200: OpenApiResponse(
                 response=AssessmentResultSerializer,
-                description='Final recommendations, mastery scores, and gap topics.',
+                description='Final recommendations and gap topics.',
                 examples=[OpenApiExample('Results response', value=RESULT_RESPONSE_EXAMPLE, response_only=True)],
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),

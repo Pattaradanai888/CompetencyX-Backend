@@ -117,7 +117,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SPECTACULAR_SETTINGS = {
     'TITLE': 'CompetencyX API',
     'DESCRIPTION': (
-        'Adaptive career-roadmap backend API for assessment sessions, role inference, mastery estimation, and next-topic recommendations.'
+        'Adaptive career-roadmap backend API for assessment sessions, role inference, and next-topic recommendations.'
     ),
     'VERSION': '0.1.0',
     'SERVE_INCLUDE_SCHEMA': False,
