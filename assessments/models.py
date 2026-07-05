@@ -3,7 +3,28 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from roadmaps.models import Question, QuestionOption, RoadmapTopic, Role
+from roadmaps.models import Question, QuestionOption, Role
+
+
+class AssessmentSessionQuerySet(models.QuerySet):
+    """Reusable read-path optimizations shared across assessment-session views."""
+
+    def with_roles(self):
+        return self.select_related('preferred_role', 'best_fit_role')
+
+    def with_results(self):
+        return self.with_roles().prefetch_related(
+            'recommendations__role',
+            'recommendations__topic',
+        )
+
+    def with_history(self):
+        return self.prefetch_related(
+            'answers__question__topic',
+            'answers__selected_option',
+            'recommendations__role',
+            'recommendations__topic',
+        )
 
 
 class AssessmentSession(models.Model):
@@ -18,7 +39,6 @@ class AssessmentSession(models.Model):
     class Phase(models.TextChoices):
         ROLE_DISCOVERY = 'role_discovery', 'Role Discovery'
         ROLE_AMBIGUITY = 'role_ambiguity', 'Role Ambiguity'
-        SKILL_ASSESSMENT = 'skill_assessment', 'Skill Assessment'
         RECOMMENDATION_READY = 'recommendation_ready', 'Recommendation Ready'
         COMPLETED = 'completed', 'Completed'
 
@@ -72,6 +92,8 @@ class AssessmentSession(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
+    objects = AssessmentSessionQuerySet.as_manager()
+
     class Meta:
         ordering = ['-started_at']
 
@@ -117,100 +139,6 @@ class Answer(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.question_id}'
-
-
-class TopicMastery(models.Model):
-    session = models.ForeignKey(
-        AssessmentSession,
-        on_delete=models.CASCADE,
-        related_name='mastery_scores',
-    )
-    topic = models.ForeignKey(
-        RoadmapTopic,
-        on_delete=models.CASCADE,
-        related_name='session_mastery_scores',
-    )
-    mastery_score = models.FloatField(default=0.0)
-    confidence_score = models.FloatField(default=0.0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['topic__display_order', 'topic__id']
-        unique_together = [('session', 'topic')]
-
-    def __str__(self) -> str:
-        return f'{self.session_id}:{self.topic_id}'
-
-
-class QuestionSelectionEvent(models.Model):
-    class PolicyMode(models.TextChoices):
-        HEURISTIC = 'heuristic', 'Heuristic'
-        CORE_SEQUENCE = 'core_sequence', 'Core Sequence'
-        INFO_GAIN = 'info_gain', 'Information Gain'
-        SHADOW_BANDIT = 'shadow_bandit', 'Shadow Bandit'
-        LIVE_BANDIT = 'live_bandit', 'Live Bandit'
-
-    session = models.ForeignKey(
-        AssessmentSession,
-        on_delete=models.CASCADE,
-        related_name='selection_events',
-    )
-    stage = models.CharField(max_length=16, choices=Question.Stage.choices)
-    policy_mode = models.CharField(max_length=24, choices=PolicyMode.choices)
-    chosen_question = models.ForeignKey(
-        Question,
-        on_delete=models.CASCADE,
-        related_name='selection_events',
-    )
-    heuristic_question = models.ForeignKey(
-        Question,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='heuristic_selection_events',
-    )
-    shadow_bandit_question = models.ForeignKey(
-        Question,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='shadow_bandit_selection_events',
-    )
-    candidate_question_ids = models.JSONField(default=list, blank=True)
-    candidate_question_codes = models.JSONField(default=list, blank=True)
-    candidate_scores = models.JSONField(default=list, blank=True)
-    selection_score = models.FloatField(null=True, blank=True)
-    pre_selection_uncertainty = models.FloatField(default=0.0)
-    post_answer_uncertainty = models.FloatField(null=True, blank=True)
-    reward = models.FloatField(null=True, blank=True)
-    selected_at = models.DateTimeField(auto_now_add=True)
-    answered_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['selected_at']
-
-    def __str__(self) -> str:
-        return f'{self.session_id}:{self.stage}:{self.chosen_question_id}'
-
-
-class QuestionBanditStat(models.Model):
-    question = models.ForeignKey(
-        Question,
-        on_delete=models.CASCADE,
-        related_name='bandit_stats',
-    )
-    stage = models.CharField(max_length=16, choices=Question.Stage.choices)
-    pulls = models.PositiveIntegerField(default=0)
-    cumulative_reward = models.FloatField(default=0.0)
-    mean_reward = models.FloatField(default=0.0)
-    last_selected_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['stage', 'question_id']
-        unique_together = [('question', 'stage')]
-
-    def __str__(self) -> str:
-        return f'{self.stage}:{self.question_id}:{self.mean_reward:.4f}'
 
 
 class Survey2Question(models.Model):

@@ -20,7 +20,6 @@ from .serializers import (
     Survey2SessionStateSerializer,
 )
 from .services import (
-    AssessmentFlowError,
     apply_recommendation_feedback_from_survey2,
     build_session_state,
     create_assessment_session,
@@ -32,7 +31,6 @@ from .survey2_adaptive import apply_survey2_step_feedback, select_next_survey2_q
 
 SESSION_CREATE_REQUEST_EXAMPLE = {
     'preferred_role_slug': 'backend-engineer',
-    'current_role_slug': 'frontend-engineer',
     'language': 'en',
     'profile': {
         'education_level': 'student',
@@ -52,12 +50,6 @@ SESSION_RESPONSE_EXAMPLE = {
         'name': 'Backend Engineer',
         'description': 'Builds APIs and backend services.',
     },
-    'current_role': {
-        'id': 2,
-        'slug': 'frontend-engineer',
-        'name': 'Frontend Engineer',
-        'description': 'Builds user interfaces.',
-    },
     'best_fit_role': None,
     'profile': {
         'education_level': 'student',
@@ -68,7 +60,8 @@ SESSION_RESPONSE_EXAMPLE = {
     'completed_at': None,
     'milestones': {
         'answered_role_questions': 0,
-        'answered_skill_questions': 0,
+        'answered_core_role_questions': 0,
+        'answered_tie_break_questions': 0,
     },
     'role_alignment_status': 'unknown',
     'role_resolution_status': 'in_progress',
@@ -197,7 +190,8 @@ RESULT_RESPONSE_EXAMPLE = {
     'completed_at': '2026-04-17T04:05:00Z',
     'milestones': {
         'answered_role_questions': 2,
-        'answered_skill_questions': 2,
+        'answered_core_role_questions': 2,
+        'answered_tie_break_questions': 0,
     },
     'role_alignment_status': 'aligned',
     'role_resolution_status': 'resolved',
@@ -236,16 +230,6 @@ RESULT_RESPONSE_EXAMPLE = {
                     'dependency_weight': 1.0,
                 }
             ],
-        }
-    ],
-    'mastery_scores': [
-        {
-            'topic_id': 11,
-            'topic_slug': 'http',
-            'topic_title': 'HTTP Fundamentals',
-            'mastery_score': 1.0,
-            'confidence_score': 0.5,
-            'updated_at': '2026-04-17T04:05:00Z',
         }
     ],
     'preferred_path_recommendation': {
@@ -379,11 +363,7 @@ class AssessmentSessionCreateAPIView(generics.GenericAPIView):
 
 
 class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related(
-        'preferred_role',
-        'current_role',
-        'best_fit_role',
-    )
+    queryset = AssessmentSession.objects.with_roles()
     serializer_class = AssessmentSessionSerializer
 
     @extend_schema(
@@ -413,7 +393,7 @@ class AssessmentSessionDetailAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
     serializer_class = RoleInsightsSerializer
 
     @extend_schema(
@@ -444,11 +424,7 @@ class AssessmentSessionInsightsAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role').prefetch_related(
-        'mastery_scores__topic',
-        'recommendations__role',
-        'recommendations__topic',
-    )
+    queryset = AssessmentSession.objects.with_results()
     serializer_class = AssessmentResultSerializer
 
     @extend_schema(
@@ -466,7 +442,7 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
         responses={
             200: OpenApiResponse(
                 response=AssessmentResultSerializer,
-                description='Final recommendations, mastery scores, and gap topics.',
+                description='Final recommendations and gap topics.',
                 examples=[OpenApiExample('Results response', value=RESULT_RESPONSE_EXAMPLE, response_only=True)],
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),
@@ -481,12 +457,7 @@ class AssessmentSessionResultAPIView(generics.RetrieveAPIView):
 
 
 class AssessmentSessionHistoryAPIView(generics.RetrieveAPIView):
-    queryset = AssessmentSession.objects.prefetch_related(
-        'answers__question__topic',
-        'answers__selected_option',
-        'recommendations__role',
-        'recommendations__topic',
-    )
+    queryset = AssessmentSession.objects.with_history()
     serializer_class = AssessmentHistorySerializer
 
     @extend_schema(
@@ -570,22 +541,19 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
     )
     def post(self, request, pk, *args, **kwargs):
         session = get_object_or_404(
-            AssessmentSession.objects.select_related('preferred_role', 'best_fit_role'),
+            AssessmentSession.objects.with_roles(),
             pk=pk,
         )
         serializer = self.get_serializer(data=request.data, context={'session': session})
         serializer.is_valid(raise_exception=True)
-        try:
-            submit_answer(
-                session=session,
-                question=serializer.validated_data['question'],
-                option=serializer.validated_data['option'],
-                scale_value=serializer.validated_data.get('scale_value'),
-                response_time_ms=serializer.validated_data.get('response_time_ms'),
-                confidence_indicator=serializer.validated_data.get('confidence_indicator', ''),
-            )
-        except AssessmentFlowError as exc:
-            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        submit_answer(
+            session=session,
+            question=serializer.validated_data['question'],
+            option=serializer.validated_data['option'],
+            scale_value=serializer.validated_data.get('scale_value'),
+            response_time_ms=serializer.validated_data.get('response_time_ms'),
+            confidence_indicator=serializer.validated_data.get('confidence_indicator', ''),
+        )
 
         session.refresh_from_db()
         return Response(AssessmentSessionSerializer(session, context={'session_state': build_session_state(session)}).data, status=status.HTTP_200_OK)
@@ -593,7 +561,7 @@ class AssessmentAnswerSubmitAPIView(generics.GenericAPIView):
 
 class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
     serializer_class = Survey2SessionStateSerializer
-    queryset = AssessmentSession.objects.all()
+    queryset = AssessmentSession.objects.with_roles()
 
     def _get_survey2_state(self, session: AssessmentSession) -> dict:
         profile = session.profile if isinstance(session.profile, dict) else {}
@@ -679,7 +647,7 @@ class AssessmentSurvey2SessionAPIView(generics.GenericAPIView):
 
 class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
     serializer_class = Survey2CatalogSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
 
     @extend_schema(
         operation_id='getAssessmentSurvey2Catalog',
@@ -710,7 +678,7 @@ class AssessmentSurvey2CatalogAPIView(generics.RetrieveAPIView):
 
 class AssessmentSurvey2NextQuestionAPIView(generics.GenericAPIView):
     serializer_class = Survey2NextQuestionRequestSerializer
-    queryset = AssessmentSession.objects.select_related('preferred_role', 'current_role', 'best_fit_role')
+    queryset = AssessmentSession.objects.with_roles()
 
     @extend_schema(
         operation_id='getAssessmentSurvey2NextQuestion',

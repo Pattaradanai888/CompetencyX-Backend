@@ -1,4 +1,3 @@
-import json
 import re
 import shutil
 from collections import Counter
@@ -13,7 +12,6 @@ from django.test import TestCase
 from roadmaps.models import (
     Question,
     QuestionOption,
-    QuestionTopicSignal,
     RoadmapTopic,
     Role,
     TopicPrerequisite,
@@ -30,13 +28,8 @@ class SeedMvpContentTests(TestCase):
     def test_seed_command_creates_catalog_and_is_idempotent(self):
         out = StringIO()
         _roles_data, _topics_data, questions_data = load_curated_catalog()
-        expected_question_count = len(questions_data['role_questions']) + len(questions_data['skill_questions'])
-        expected_option_count = sum(
-            len(question.get('options', [])) for question in questions_data['role_questions'] + questions_data['skill_questions']
-        )
-        expected_topic_signal_count = sum(
-            len(option.get('topic_signals', [])) for question in questions_data['skill_questions'] for option in question['options']
-        )
+        expected_question_count = len(questions_data['role_questions'])
+        expected_option_count = 0
 
         call_command('seed_mvp_content', stdout=out)
 
@@ -48,9 +41,8 @@ class SeedMvpContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
-        assert QuestionTopicSignal.objects.count() == expected_topic_signal_count
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
-        assert Question.objects.filter(code='backend-developer-api-and-service-architecture', topic__slug='api-and-service-architecture').exists()
+        assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()
 
         first_run_output = out.getvalue()
         assert (
@@ -61,18 +53,16 @@ class SeedMvpContentTests(TestCase):
     def test_each_seeded_role_has_minimal_runnable_path(self):
         for role in Role.objects.order_by('slug'):
             assert role.topics.filter(is_active=True).count() == 3
-            assert role.questions.filter(stage=Question.Stage.SKILL, is_active=True).count() == 2
             assert TopicPrerequisite.objects.filter(topic__role=role).count() == 2
+        assert Question.objects.filter(stage=Question.Stage.SKILL).count() == 0
 
     def test_role_question_bank_covers_all_seeded_roles(self):
         assert set(ROLE_PROFILE_WEIGHTS) == set(Role.objects.values_list('slug', flat=True))
 
     def test_seed_command_is_idempotent(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
-        expected_question_count = len(questions_data['role_questions']) + len(questions_data['skill_questions'])
-        expected_option_count = sum(
-            len(question.get('options', [])) for question in questions_data['role_questions'] + questions_data['skill_questions']
-        )
+        expected_question_count = len(questions_data['role_questions'])
+        expected_option_count = 0
 
         call_command('seed_mvp_content')
 
@@ -104,7 +94,7 @@ class SeedMvpContentTests(TestCase):
 
         assert not Question.objects.filter(code='stale-question').exists()
 
-    def test_load_curated_catalog_merges_split_question_fragments(self):
+    def test_load_curated_catalog_merges_role_question_fragments_only(self):
         temp_dir = Path.cwd() / '.tmp-load-curated-catalog-test'
         if temp_dir.exists():
             shutil.rmtree(temp_dir)
@@ -196,7 +186,7 @@ class SeedMvpContentTests(TestCase):
         assert len(roles_data['roles']) == 8
         assert len(topics_data['topics']) == 1
         assert len(questions_data['role_questions']) == 1
-        assert len(questions_data['skill_questions']) == 1
+        assert len(questions_data['skill_questions']) == 0
 
     def test_load_curated_content_command_populates_swebok_role_metadata(self):
         call_command('load_curated_content')
@@ -229,57 +219,43 @@ class SeedMvpContentTests(TestCase):
         assert imported_topic.external_source == 'roadmap.sh'
         assert imported_topic.source_version == 'sample-v1'
 
-    def test_load_curated_content_rejects_legacy_option_fields(self):
-        legacy_questions = {
-            'role_questions': [],
-            'skill_questions': [
-                {
-                    'code': 'backend-developer-api-and-service-architecture',
-                    'role_slug': 'backend-developer',
-                    'topic_slug': 'api-and-service-architecture',
-                    'question_type': 'yes_no_maybe',
-                    'prompt': 'Legacy fixture',
-                    'difficulty': 1,
-                    'discrimination_score': 1.0,
-                    'display_order': 1,
-                    'options': [
-                        {
-                            'key': 'yes',
-                            'label': 'Yes',
-                            'display_order': 1,
-                            'mastery_value': 1.0,
-                            'topic_signals': [{'topic_slug': 'api-and-service-architecture', 'mastery_delta': 1.0}],
-                        }
-                    ],
-                }
-            ],
-        }
+    def test_load_curated_content_removes_legacy_skill_questions(self):
+        role = Role.objects.get(slug='backend-developer')
+        topic = RoadmapTopic.objects.filter(role=role).first()
+        Question.objects.create(
+            code='legacy-skill-question',
+            stage=Question.Stage.SKILL,
+            role=role,
+            topic=topic,
+            question_type=Question.Type.YES_NO_MAYBE,
+            prompt='Legacy skill prompt',
+            difficulty=1,
+            discrimination_score=1.0,
+            display_order=999,
+        )
 
-        with self.assertRaisesMessage(
-            ValueError,
-            'Unsupported option seed field(s) for question "backend-developer-api-and-service-architecture": mastery_value',
-        ):
-            roles_by_slug = {role.slug: role for role in Role.objects.all()}
-            topics_by_key = {(topic.role.slug, topic.slug): topic for topic in RoadmapTopic.objects.select_related('role')}
-            _sync_questions(
-                role_questions=legacy_questions['role_questions'],
-                skill_questions=legacy_questions['skill_questions'],
-                roles_by_slug=roles_by_slug,
-                topics_by_key=topics_by_key,
-            )
+        roles_by_slug = {role.slug: role for role in Role.objects.all()}
+        topics_by_key = {(topic.role.slug, topic.slug): topic for topic in RoadmapTopic.objects.select_related('role')}
+        _sync_questions(
+            role_questions=load_curated_catalog()[2]['role_questions'],
+            roles_by_slug=roles_by_slug,
+            topics_by_key=topics_by_key,
+        )
+
+        assert not Question.objects.filter(code='legacy-skill-question').exists()
 
     def test_load_curated_content_syncs_role_question_thai_translations(self):
         call_command('load_curated_content')
 
         role_questions = Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order')
-        skill_question = Question.objects.get(code='backend-developer-api-and-service-architecture')
 
-        assert role_questions.count() == 48
-        assert all(question.translations.get('th', {}).get('prompt') for question in role_questions)
+        assert role_questions.count() == 58
+        thai_translated = [q for q in role_questions if q.translations.get('th', {}).get('prompt')]
+        assert len(thai_translated) == 48
         assert role_questions.get(code='role-swebok-01-requirements').translations['th']['prompt'] == (
             'ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม'
         )
-        assert skill_question.translations == {}
+        assert Question.objects.filter(stage=Question.Stage.SKILL).count() == 0
 
     def test_question_catalog_rejects_unsupported_translation_language(self):
         roles_data, topics_data, questions_data = load_curated_catalog()
@@ -303,61 +279,21 @@ class SeedMvpContentTests(TestCase):
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
-    def test_question_catalog_rejects_skill_question_translations(self):
-        roles_data, topics_data, questions_data = load_curated_catalog()
-        invalid_questions = deepcopy(questions_data)
-        skill_question = next(
-            question for question in invalid_questions['skill_questions'] if question['code'] == 'backend-developer-api-and-service-architecture'
-        )
-        skill_question['translations'] = {'th': {'prompt': 'ไม่ควรแปลในรอบนี้'}}
+    def test_question_catalog_excludes_skill_questions_from_survey1(self):
+        _roles_data, _topics_data, questions_data = load_curated_catalog()
 
-        with self.assertRaisesMessage(
-            ValueError,
-            'Unsupported skill question seed field(s) for question "backend-developer-api-and-service-architecture": translations',
-        ):
-            validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
+        assert questions_data['skill_questions'] == []
 
     def test_validate_question_catalog_command_reports_success(self):
         out = StringIO()
         _roles_data, _topics_data, questions_data = load_curated_catalog()
-        expected_question_count = len(questions_data['role_questions']) + len(questions_data['skill_questions'])
+        expected_question_count = len(questions_data['role_questions'])
 
         call_command('validate_question_catalog', stdout=out)
 
         expected_role_count = len(load_curated_catalog()[0]['roles'])
         expected_topic_count = len(load_curated_catalog()[1]['topics'])
         assert f'Validated {expected_role_count} roles, {expected_topic_count} topics, and {expected_question_count} questions.' in out.getvalue()
-
-    def test_estimate_role_probabilities_command_returns_json_summary(self):
-        out = StringIO()
-
-        call_command(
-            'estimate_role_probabilities',
-            samples=12,
-            random_seed=7,
-            answers='2,1,0',
-            top_roles=Role.objects.filter(is_active=True).count(),
-            format='json',
-            stdout=out,
-        )
-
-        payload = json.loads(out.getvalue())
-
-        assert payload['samples'] == 12
-        assert payload['prefix_answers'] == [2, 1, 0]
-        assert payload['likert_values'] == [-2, -1, 0, 1, 2]
-        assert payload['active_role_count'] == Role.objects.filter(is_active=True).count()
-        assert len(payload['top_ranked_role_rates']) == payload['active_role_count']
-        assert len(payload['resolved_role_rates']) == payload['active_role_count']
-        assert abs(sum(item['probability'] for item in payload['top_ranked_role_rates']) - 1.0) < 1e-9
-        assert abs(sum(item['count'] for item in payload['top_ranked_role_rates']) - payload['samples']) < 1e-9
-        assert payload['questionnaire_metrics']['worst_case_95pct_margin_of_error'] > 0
-        assert 0 <= payload['questionnaire_metrics']['resolved_rate'] <= 1
-        assert 0 <= payload['questionnaire_metrics']['ambiguous_rate'] <= 1
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['hit_role_count'] > 0
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['zero_hit_role_count'] < payload['active_role_count']
-        assert payload['questionnaire_metrics']['top_ranked_distribution']['effective_role_count'] <= payload['active_role_count']
-        assert payload['questionnaire_metrics']['resolved_role_distribution']['effective_role_count'] <= payload['active_role_count']
 
     def test_role_question_validation_rejects_unknown_signal_dimension(self):
         roles_data, topics_data, questions_data = load_curated_catalog()
@@ -405,8 +341,8 @@ class SeedMvpContentTests(TestCase):
             key=lambda question: question['display_order'],
         )
 
-        assert len(core_questions) == 36
-        assert [question['display_order'] for question in core_questions] == list(range(1, 37))
+        assert len(core_questions) == 46
+        assert [question['display_order'] for question in core_questions] == list(range(1, 47))
         dimension_counts = Counter()
         for question in core_questions:
             signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
@@ -473,4 +409,4 @@ class SeedMvpContentTests(TestCase):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         item_groups = Counter(question.get('item_group', 'core') for question in questions_data['role_questions'])
-        assert item_groups == Counter({'core': 36, 'tie_break': 12})
+        assert item_groups == Counter({'core': 46, 'tie_break': 12})

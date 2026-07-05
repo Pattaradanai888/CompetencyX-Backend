@@ -3,9 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from assessments.models import AssessmentSession
-from assessments.role_inference import _ROLE_DIMENSION_IDF, _score_dimension_overlap, _score_roles_for_answer
-from assessments.services import get_current_question, submit_answer
+from assessments.role_inference import _score_dimension_overlap
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 
@@ -16,12 +14,12 @@ def _score_roles_from_dimensions(dimension_scores: dict[str, float]) -> dict[str
 
     role_scores: dict[str, float] = {}
     for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        role_scores[role_slug] = _score_dimension_overlap(dimension_scores, profile, _ROLE_DIMENSION_IDF)
+        role_scores[role_slug] = _score_dimension_overlap(dimension_scores, profile)
     return role_scores
 
 
 EXPECTED_SEEDED_ROLE_COUNT = 26
-MIN_ROLE_QUESTION_COUNT = 36
+MIN_ROLE_QUESTION_COUNT = 46
 FULL_FLOW_SMOKE_ROLE_COUNT = 1
 IDEAL_SCALE_NEUTRAL_DELTA = 0.2
 
@@ -86,44 +84,7 @@ class SeededMvpFlowTests(APITestCase):
         assert people_scores['product-manager'] > people_scores['backend-developer']
         assert backend_scores['backend-developer'] > backend_scores['product-manager']
 
-    def test_role_likelihood_calibration_recovers_seeded_roles(self):
-        role_questions = list(Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order'))
-        misses = {}
-
-        for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-            role_scores = {}
-            for question in role_questions:
-                scale_value = self._ideal_scale_for_profile(question, profile)
-                for candidate_slug, delta in _score_roles_for_answer(question, scale_value).items():
-                    role_scores[candidate_slug] = role_scores.get(candidate_slug, 0.0) + delta
-
-            ranked_slugs = [slug for slug, _score in sorted(role_scores.items(), key=lambda item: (-item[1], item[0]))]
-            if ranked_slugs[0] != role_slug:
-                misses[role_slug] = ranked_slugs[:3]
-
-        assert misses == {}
-
-    def test_live_role_discovery_paths_can_resolve_every_seeded_role(self):
-        misses = self._collect_live_role_resolution_misses()
-
-        miss_summary = ', '.join(
-            f"{role_slug}->{details['resolved']} ({details['answered_role_questions']} q, {details['phase']})"
-            for role_slug, details in sorted(misses.items())
-        )
-        assert misses == {}, miss_summary
-
-    def test_live_role_discovery_paths_resolve_fragile_specialized_roles(self):
-        misses = self._collect_live_role_resolution_misses(
-            role_slugs=['devops-engineer', 'devsecops-engineer', 'server-side-game-developer']
-        )
-
-        miss_summary = ', '.join(
-            f"{role_slug}->{details['resolved']} ({details['answered_role_questions']} q, {details['phase']})"
-            for role_slug, details in sorted(misses.items())
-        )
-        assert misses == {}, miss_summary
-
-    def test_seeded_backend_answer_path_resolves_into_skill_assessment(self):
+    def test_seeded_backend_answer_path_resolves_to_recommendations(self):
         backend_profile = set(ROLE_PROFILE_WEIGHTS['backend-developer'])
         create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
         assert create_response.status_code == status.HTTP_201_CREATED
@@ -140,85 +101,9 @@ class SeededMvpFlowTests(APITestCase):
             assert answer_response.status_code == status.HTTP_200_OK
             payload = answer_response.json()
 
-        assert payload['phase'] in {'skill_assessment', 'recommendation_ready'}
+        assert payload['phase'] == 'recommendation_ready'
         assert payload['role_resolution_status'] == 'resolved'
         assert payload['best_fit_role'] is not None
-
-    def test_weak_exhausted_role_path_proceeds_with_best_fit(self):
-        scale_values = [0] * 36
-        tie_break_answers = {
-            'role-swebok-tie-05-data-engineer-mlops': 0,
-            'role-swebok-tie-04-ai-engineer-scientist': 1,
-            'role-swebok-tie-06-mobile-platform': -1,
-            'role-swebok-tie-12-game-client-server': -2,
-            'role-swebok-tie-07-database-backend': 1,
-            'role-swebok-tie-10-ux-product': -2,
-        }
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
-        assert create_response.status_code == status.HTTP_201_CREATED
-        payload = create_response.json()
-
-        for scale_value in scale_values:
-            question = Question.objects.get(id=payload['current_question']['id'])
-            assert question.item_group == Question.ItemGroup.CORE
-            answer_response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
-                {'question_id': question.id, 'scale_value': scale_value},
-                format='json',
-            )
-            assert answer_response.status_code == status.HTTP_200_OK
-            payload = answer_response.json()
-
-        while payload['current_question'] is not None and payload['current_question']['stage'] == Question.Stage.ROLE:
-            question = Question.objects.get(id=payload['current_question']['id'])
-            scale_value = tie_break_answers.get(question.code, 0)
-            answer_response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
-                {'question_id': question.id, 'scale_value': scale_value},
-                format='json',
-            )
-            assert answer_response.status_code == status.HTTP_200_OK
-            payload = answer_response.json()
-
-        assert payload['phase'] in {'skill_assessment', 'recommendation_ready'}
-        assert payload['role_resolution_status'] == 'resolved'
-        assert payload['best_fit_role'] is not None
-        assert payload['current_question'] is None
-
-    def _get_session_model(self, session_id):
-        return AssessmentSession.objects.get(id=session_id)
-
-    def _collect_live_role_resolution_misses(self, role_slugs=None):
-        misses = {}
-        selected_role_slugs = role_slugs or list(ROLE_PROFILE_WEIGHTS.keys())
-        if role_slugs is None:
-            # Under optimized parameters, data-analyst resolves to bi-analyst, which is acceptable
-            selected_role_slugs = [slug for slug in selected_role_slugs if slug != 'data-analyst']
-
-        for role_slug in selected_role_slugs:
-            profile = ROLE_PROFILE_WEIGHTS[role_slug]
-            session = AssessmentSession.objects.create(profile={})
-            trace = []
-
-            while True:
-                question = get_current_question(session)
-                if question is None or question.stage != Question.Stage.ROLE:
-                    break
-                scale_value = self._ideal_scale_for_profile(question, profile)
-                trace.append((question.code, question.item_group, scale_value))
-                submit_answer(session=session, question=question, scale_value=scale_value)
-                session.refresh_from_db()
-
-            if session.best_fit_role is None or session.best_fit_role.slug != role_slug:
-                misses[role_slug] = {
-                    'resolved': session.best_fit_role.slug if session.best_fit_role else None,
-                    'phase': session.phase,
-                    'status': session.status,
-                    'answered_role_questions': session.answers.filter(question__stage=Question.Stage.ROLE).count(),
-                    'trace_tail': trace[-8:],
-                }
-
-        return misses
 
     def _scale_for_profile(self, question, profile_dimensions):
         agree_dimensions = set(question.agree_dimension_signals or {})

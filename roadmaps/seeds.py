@@ -36,7 +36,6 @@ def load_curated_content(*, stdout=None):
     topics_by_key = _sync_topics(topics_data['topics'], roles_by_slug)
     _sync_questions(
         role_questions=questions_data['role_questions'],
-        skill_questions=questions_data['skill_questions'],
         roles_by_slug=roles_by_slug,
         topics_by_key=topics_by_key,
     )
@@ -60,7 +59,7 @@ def load_curated_catalog():
 
 def _load_question_bank():
     if QUESTION_BANK_DIR.exists():
-        question_fragments = sorted(QUESTION_BANK_DIR.rglob('*.yaml'))
+        question_fragments = sorted((QUESTION_BANK_DIR / 'role').rglob('*.yaml'))
         if not question_fragments:
             msg = f'No question fragments were found in "{QUESTION_BANK_DIR}".'
             raise FileNotFoundError(msg)
@@ -71,27 +70,19 @@ def _load_question_bank():
             if fragment is None:
                 continue
             questions_data['role_questions'].extend(fragment.get('role_questions', []))
-            questions_data['skill_questions'].extend(fragment.get('skill_questions', []))
         return questions_data
 
-    return _load_yaml(LEGACY_QUESTION_FILE)
+    questions_data = _load_yaml(LEGACY_QUESTION_FILE)
+    return {'role_questions': questions_data.get('role_questions', []), 'skill_questions': []}
 
 
 def validate_curated_catalog(*, roles_data: dict, topics_data: dict, questions_data: dict):
     role_slugs = {role_seed['slug'] for role_seed in roles_data['roles']}
-    topic_keys = {(topic_seed['role_slug'], topic_seed['slug']) for topic_seed in topics_data['topics']}
     question_codes: set[str] = set()
 
     for role_question in questions_data['role_questions']:
         _validate_role_question_seed(role_question, role_slugs=role_slugs, existing_codes=question_codes)
 
-    for skill_question in questions_data['skill_questions']:
-        _validate_skill_question_seed(
-            skill_question,
-            role_slugs=role_slugs,
-            topic_keys=topic_keys,
-            existing_codes=question_codes,
-        )
     _validate_role_question_bank(questions_data['role_questions'])
 
 
@@ -196,8 +187,8 @@ def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
     return topics_by_key
 
 
-def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], roles_by_slug, topics_by_key):
-    seed_codes = {question_seed['code'] for question_seed in [*role_questions, *skill_questions]}
+def _sync_questions(*, role_questions: list[dict], roles_by_slug, topics_by_key):
+    seed_codes = {question_seed['code'] for question_seed in role_questions}
     for question_seed in role_questions:
         agree_dimension_signals = question_seed.get('agree_dimension_signals', {})
         disagree_dimension_signals = question_seed.get('disagree_dimension_signals', {})
@@ -226,32 +217,6 @@ def _sync_questions(*, role_questions: list[dict], skill_questions: list[dict], 
         question.options.all().delete()
 
     Question.objects.exclude(code__in=seed_codes).delete()
-
-    for question_seed in skill_questions:
-        role = roles_by_slug[question_seed['role_slug']]
-        topic = topics_by_key[(question_seed['role_slug'], question_seed['topic_slug'])]
-        question, _created = Question.objects.update_or_create(
-            code=question_seed['code'],
-            defaults={
-                'stage': Question.Stage.SKILL,
-                'question_type': question_seed['question_type'],
-                'prompt': question_seed['prompt'],
-                'help_text': question_seed.get('help_text', ''),
-                'translations': {},
-                'role': role,
-                'topic': topic,
-                'difficulty': question_seed['difficulty'],
-                'discrimination_score': question_seed['discrimination_score'],
-                'item_group': Question.ItemGroup.STANDARD,
-                'discriminates_between': [],
-                'agree_dimension_signals': {},
-                'disagree_dimension_signals': {},
-                'trait_positive_dimension': '',
-                'display_order': question_seed['display_order'],
-                'is_active': True,
-            },
-        )
-        _sync_question_options(question, question_seed['options'], topics_by_key=topics_by_key)
 
 
 def _sync_question_options(question: Question, option_seeds: list[dict], *, topics_by_key):

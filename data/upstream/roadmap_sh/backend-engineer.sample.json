@@ -1,8 +1,8 @@
 {
   "nodes": [
-    {"id": "backend-http", "label": "HTTP", "slug": "http"},
-    {"id": "backend-databases", "label": "Databases", "slug": "databases"},
-    {"id": "backend-apis", "label": "API Design", "slug": "apis"}
+    {"id": "backend-http", "label": "HTTP", "slug": "http", "type": "topic"},
+    {"id": "backend-databases", "label": "Databases", "slug": "databases", "type": "topic"},
+    {"id": "backend-apis", "label": "API Design", "slug": "apis", "type": "topic"}
   ],
   "edges": [
     {"source": "backend-http", "target": "backend-databases"},

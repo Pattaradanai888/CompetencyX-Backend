@@ -117,13 +117,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SPECTACULAR_SETTINGS = {
     'TITLE': 'CompetencyX API',
     'DESCRIPTION': (
-        'Adaptive career-roadmap backend API for assessment sessions, role inference, mastery estimation, and next-topic recommendations.'
+        'Adaptive career-roadmap backend API for assessment sessions, role inference, and next-topic recommendations.'
     ),
     'VERSION': '0.1.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-ASSESSMENT_BANDIT_POLICY_MODE = 'live_bandit'
 ASSESSMENT_RECOMMENDATION_POLICY = 'q_learning'
 ASSESSMENT_RECOMMENDATION_Q_ALPHA = 0.35
 ASSESSMENT_RECOMMENDATION_Q_GAMMA = 0.8
