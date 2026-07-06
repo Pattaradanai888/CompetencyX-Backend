@@ -144,6 +144,7 @@ class Answer(models.Model):
 class Survey2Question(models.Model):
     question_id = models.SlugField(max_length=64, unique=True)
     prompt = models.TextField()
+    translations = models.JSONField(default=dict, blank=True)
     dimension_key = models.SlugField(max_length=64)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)

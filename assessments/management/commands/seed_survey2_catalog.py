@@ -31,6 +31,7 @@ class Command(BaseCommand):
                 question_id=question['question_id'],
                 defaults={
                     'prompt': question['prompt'],
+                    'translations': question.get('translations', {}),
                     'dimension_key': question['dimension_key'],
                     'display_order': question['display_order'],
                     'is_active': True,

@@ -5,11 +5,11 @@ def get_survey2_catalog(role_slug: str | None = None) -> dict[str, object]:
     return {
         'version': '2026-05-11.psp-sdlc-v1',
         'scale': [
-            {'label': 'Strongly disagree', 'value': 1},
-            {'label': 'Disagree', 'value': 2},
-            {'label': 'Neutral', 'value': 3},
-            {'label': 'Agree', 'value': 4},
-            {'label': 'Strongly agree', 'value': 5},
+            {'label': 'Strongly disagree', 'label_th': 'ไม่เห็นด้วยอย่างยิ่ง', 'value': 1},
+            {'label': 'Disagree', 'label_th': 'ไม่เห็นด้วย', 'value': 2},
+            {'label': 'Neutral', 'label_th': 'เป็นกลาง', 'value': 3},
+            {'label': 'Agree', 'label_th': 'เห็นด้วย', 'value': 4},
+            {'label': 'Strongly agree', 'label_th': 'เห็นด้วยอย่างยิ่ง', 'value': 5},
         ],
         'dimensions': list_survey2_dimensions(),
         'questions': list_survey2_questions(),
@@ -26,12 +26,16 @@ def list_survey2_questions() -> list[dict[str, object]]:
         {
             'id': question['question_id'],
             'prompt': question['prompt'],
+            'translations': {
+                'en': {'prompt': question['prompt']},
+                **(question['translations'] or {}),
+            },
             'dimension_key': question['dimension_key'],
             'display_order': question['display_order'],
         }
         for question in Survey2Question.objects.filter(is_active=True)
         .order_by('display_order', 'question_id')
-        .values('question_id', 'prompt', 'dimension_key', 'display_order')
+        .values('question_id', 'prompt', 'translations', 'dimension_key', 'display_order')
     ]
 
 

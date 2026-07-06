@@ -24,12 +24,21 @@ def get_translated_field(obj, language, field_name, fallback):
     language = normalize_content_language(language)
     if language == DEFAULT_LANGUAGE:
         return fallback
-    if obj.stage != Question.Stage.ROLE:
-        return fallback
 
     translations = obj.translations or {}
     translated_value = translations.get(language, {}).get(field_name)
     return translated_value or fallback
+
+
+def get_question_translations(obj):
+    english = {
+        'prompt': obj.prompt,
+        'help_text': obj.help_text,
+    }
+    return {
+        DEFAULT_LANGUAGE: english,
+        **(obj.translations or {}),
+    }
 
 
 def get_likert_response_scale(language):
@@ -86,6 +95,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     options = QuestionOptionSerializer(many=True, read_only=True)
     prompt = serializers.SerializerMethodField()
     help_text = serializers.SerializerMethodField()
+    translations = serializers.SerializerMethodField()
     response_scale = serializers.SerializerMethodField()
     role = serializers.SlugRelatedField(read_only=True, slug_field='slug')
     topic = serializers.SlugRelatedField(read_only=True, slug_field='slug')
@@ -99,6 +109,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'question_type',
             'prompt',
             'help_text',
+            'translations',
             'role',
             'topic',
             'difficulty',
@@ -113,6 +124,10 @@ class QuestionSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.CharField())
     def get_help_text(self, obj):
         return get_translated_field(obj, self.context.get('language'), 'help_text', obj.help_text)
+
+    @extend_schema_field(serializers.JSONField())
+    def get_translations(self, obj):
+        return get_question_translations(obj)
 
     def get_response_scale(self, obj):
         if obj.question_type != Question.Type.LIKERT_5:

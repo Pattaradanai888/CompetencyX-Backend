@@ -406,6 +406,7 @@ class Survey2SessionStateSerializer(serializers.Serializer):
 
 class Survey2ScaleOptionSerializer(serializers.Serializer):
     label = serializers.CharField()
+    label_th = serializers.CharField(required=False)
     value = serializers.IntegerField(min_value=1, max_value=5)
 
 
@@ -419,6 +420,7 @@ class Survey2DimensionSerializer(serializers.Serializer):
 class Survey2QuestionSerializer(serializers.Serializer):
     id = serializers.CharField()
     prompt = serializers.CharField()
+    translations = serializers.DictField(required=False)
     dimension_key = serializers.CharField()
 
 

@@ -61,66 +61,121 @@ SURVEY2_QUESTIONS = [
     {
         'question_id': 'psp-plan-estimate',
         'prompt': 'Before building a web feature, I estimate effort, complexity, and delivery time using a repeatable method.',
+        'translations': {
+            'th': {
+                'prompt': 'ก่อนสร้างฟีเจอร์เว็บ ฉันประเมินแรงงาน ความซับซ้อน และเวลาส่งมอบด้วยวิธีที่ทำซ้ำได้',
+            },
+        },
         'dimension_key': 'psp-planning',
         'display_order': 1,
     },
     {
         'question_id': 'psp-plan-compare',
         'prompt': 'After implementation, I compare actual vs estimated time and document why variances happened.',
+        'translations': {
+            'th': {
+                'prompt': 'หลังพัฒนาเสร็จ ฉันเปรียบเทียบเวลาจริงกับเวลาที่ประเมินไว้ และบันทึกสาเหตุของความคลาดเคลื่อน',
+            },
+        },
         'dimension_key': 'psp-planning',
         'display_order': 2,
     },
     {
         'question_id': 'psp-quality-defects',
         'prompt': 'I track defects by type (logic, integration, validation, UI) and use that data to prevent repeat issues.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันติดตามข้อบกพร่องตามประเภท เช่น ตรรกะ การเชื่อมต่อ การตรวจสอบข้อมูล และ UI แล้วใช้ข้อมูลนั้นป้องกันปัญหาซ้ำ',
+            },
+        },
         'dimension_key': 'psp-quality',
         'display_order': 3,
     },
     {
         'question_id': 'psp-quality-review',
         'prompt': 'Before merge or release, I run a personal quality checklist (tests, edge cases, readability, security basics).',
+        'translations': {
+            'th': {
+                'prompt': 'ก่อน merge หรือ release ฉันใช้ checklist คุณภาพส่วนตัว เช่น test, edge case, ความอ่านง่าย และพื้นฐานความปลอดภัย',
+            },
+        },
         'dimension_key': 'psp-quality',
         'display_order': 4,
     },
     {
         'question_id': 'sdlc-req-criteria',
         'prompt': 'I can turn a product request into clear web-ready acceptance criteria, constraints, and unresolved questions.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันสามารถเปลี่ยนคำขอของผลิตภัณฑ์ให้เป็น acceptance criteria ข้อจำกัด และคำถามค้างคาที่พร้อมใช้กับงานเว็บได้อย่างชัดเจน',
+            },
+        },
         'dimension_key': 'sdlc-requirements',
         'display_order': 5,
     },
     {
         'question_id': 'sdlc-design-tradeoffs',
         'prompt': 'Before coding, I can map UI/API/data flow and explain tradeoffs (speed, maintainability, scalability).',
+        'translations': {
+            'th': {
+                'prompt': 'ก่อนเขียนโค้ด ฉันสามารถวางผัง UI, API, data flow และอธิบาย tradeoff ด้านความเร็ว การดูแลรักษา และการขยายระบบได้',
+            },
+        },
         'dimension_key': 'sdlc-design',
         'display_order': 6,
     },
     {
         'question_id': 'sdlc-dev-conventions',
         'prompt': 'I can implement maintainable web code that follows project architecture, naming, and review standards.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันสามารถพัฒนาโค้ดเว็บที่ดูแลรักษาง่าย และทำตามสถาปัตยกรรม การตั้งชื่อ และมาตรฐานการ review ของโปรเจกต์',
+            },
+        },
         'dimension_key': 'sdlc-development',
         'display_order': 7,
     },
     {
         'question_id': 'sdlc-test-strategy',
         'prompt': 'I define tests for happy path, edge cases, and regression risk before shipping a feature.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันกำหนด test สำหรับ happy path, edge case และความเสี่ยง regression ก่อนส่งมอบฟีเจอร์',
+            },
+        },
         'dimension_key': 'sdlc-testing',
         'display_order': 8,
     },
     {
         'question_id': 'sdlc-release-checklist',
         'prompt': 'I can execute a safe web release plan including environment checks, migrations, smoke tests, and rollback.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันสามารถดำเนินแผน release เว็บอย่างปลอดภัย รวมถึงตรวจ environment, migration, smoke test และ rollback',
+            },
+        },
         'dimension_key': 'sdlc-deployment',
         'display_order': 9,
     },
     {
         'question_id': 'sdlc-maintain-debug',
         'prompt': 'I can debug production-like web issues, ship fixes safely, and avoid unrelated regressions.',
+        'translations': {
+            'th': {
+                'prompt': 'ฉันสามารถ debug ปัญหาเว็บที่คล้าย production, ส่ง fix อย่างปลอดภัย และหลีกเลี่ยง regression ที่ไม่เกี่ยวข้อง',
+            },
+        },
         'dimension_key': 'sdlc-maintenance',
         'display_order': 10,
     },
     {
         'question_id': 'sdlc-collab-blockers',
         'prompt': 'During delivery, I communicate blockers, assumptions, and decision changes early enough for team action.',
+        'translations': {
+            'th': {
+                'prompt': 'ระหว่างการส่งมอบงาน ฉันสื่อสาร blocker, assumption และการเปลี่ยนแปลงการตัดสินใจเร็วพอให้ทีมลงมือได้ทัน',
+            },
+        },
         'dimension_key': 'sdlc-maintenance',
         'display_order': 11,
     },
