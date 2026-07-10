@@ -13,14 +13,13 @@ from .services.assessment_service import (
     submit_answer,
 )
 from .services.guidance_service import (
-    ROLE_RESULT_AVAILABLE_STATUSES,
     build_guidance_summary,
     get_preferred_role_gap_topics,
     get_role_alignment_status,
     get_role_insights,
+    get_visible_role_result,
     serialize_milestones,
 )
-from .services.role_inference_service import get_role_resolution_status
 from .services.survey2_service import SURVEY2_FEEDBACK_PROFILE_KEY, get_survey2_question_ids, save_survey2_state
 
 
@@ -378,17 +377,16 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
-        return get_role_resolution_status(obj)
+        return get_visible_role_result(obj)['role_resolution_status']
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
-        if get_role_resolution_status(obj) not in ROLE_RESULT_AVAILABLE_STATUSES:
-            return None
-        return RoleSerializer(obj.best_fit_role).data if obj.best_fit_role else None
+        best_fit_role = get_visible_role_result(obj)['best_fit_role']
+        return RoleSerializer(best_fit_role).data if best_fit_role else None
 
     @extend_schema_field(serializers.FloatField())
     def get_best_fit_confidence(self, obj):
-        return obj.best_fit_confidence if get_role_resolution_status(obj) in ROLE_RESULT_AVAILABLE_STATUSES else 0.0
+        return get_visible_role_result(obj)['best_fit_confidence']
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):

@@ -122,26 +122,23 @@ def build_guidance_summary(session: AssessmentSession) -> str:  # noqa: C901, PL
     return base_message
 
 
-def get_role_insights(session: AssessmentSession) -> dict[str, object]:
-    snapshot = get_role_inference_snapshot(session)
-    if not is_core_role_profile_complete(session):
-        return {
-            'role_resolution_status': 'in_progress',
-            'best_fit_role': None,
-            'best_fit_confidence': 0.0,
-            'answered_role_questions': serialize_milestones(session)['answered_role_questions'],
-            'pillar_profile': snapshot['pillar_profile'],
-            'ranked_roles': [],
-            'guidance_summary': build_guidance_summary(session),
-        }
+def get_visible_role_result(session: AssessmentSession) -> dict[str, object]:
+    """Role resolution status plus the best-fit fields masked until a result is available."""
     role_resolution_status = get_role_resolution_status(session)
     role_result_available = role_resolution_status in ROLE_RESULT_AVAILABLE_STATUSES
     return {
         'role_resolution_status': role_resolution_status,
         'best_fit_role': session.best_fit_role if role_result_available else None,
         'best_fit_confidence': session.best_fit_confidence if role_result_available else 0.0,
+    }
+
+
+def get_role_insights(session: AssessmentSession) -> dict[str, object]:
+    snapshot = get_role_inference_snapshot(session)
+    return {
+        **get_visible_role_result(session),
         'answered_role_questions': serialize_milestones(session)['answered_role_questions'],
         'pillar_profile': snapshot['pillar_profile'],
-        'ranked_roles': snapshot['ranked_roles'],
+        'ranked_roles': snapshot['ranked_roles'] if is_core_role_profile_complete(session) else [],
         'guidance_summary': build_guidance_summary(session),
     }

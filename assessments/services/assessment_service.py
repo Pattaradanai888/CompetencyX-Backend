@@ -23,11 +23,11 @@ from . import recommendation_service
 from .guidance_service import (
     build_guidance_summary,
     get_role_alignment_status,
+    get_visible_role_result,
     serialize_milestones,
 )
 from .role_inference_service import (
     get_role_inference_snapshot,
-    get_role_resolution_status,
     get_selectable_role_candidates,
     has_remaining_role_questions,
     is_role_inference_resolved,
@@ -150,23 +150,22 @@ def get_current_question_data(session: AssessmentSession):
 
 
 def build_session_state(session: AssessmentSession) -> dict[str, object]:
-    role_resolution_status = get_role_resolution_status(session)
-    role_result_available = role_resolution_status in {'resolved', 'low_confidence'}
+    visible_role_result = get_visible_role_result(session)
     return {
         'id': session.id,
         'status': session.status,
         'phase': session.phase,
         'language': session.language,
-        'best_fit_confidence': session.best_fit_confidence if role_result_available else 0.0,
+        'best_fit_confidence': visible_role_result['best_fit_confidence'],
         'preferred_role': session.preferred_role,
-        'best_fit_role': session.best_fit_role if role_result_available else None,
+        'best_fit_role': visible_role_result['best_fit_role'],
         'profile': session.profile,
         'started_at': session.started_at,
         'updated_at': session.updated_at,
         'completed_at': session.completed_at,
         'milestones': serialize_milestones(session),
         'role_alignment_status': get_role_alignment_status(session),
-        'role_resolution_status': role_resolution_status,
+        'role_resolution_status': visible_role_result['role_resolution_status'],
         'guidance_summary': build_guidance_summary(session),
         'current_question': get_current_question_data(session),
     }
