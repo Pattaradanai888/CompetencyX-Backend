@@ -14,7 +14,8 @@ from assessments.models import (
     Survey2QuestionQValue,
     Survey2RoleGuidance,
 )
-from assessments.role_inference import _build_role_shares, _get_role_inference_snapshot, _get_selectable_role_candidates
+from assessments.services.role_inference_service import get_role_inference_snapshot, get_selectable_role_candidates
+from assessments.services.scoring_service import build_role_shares
 from recommendations.models import Recommendation, RecommendationQValue
 from roadmaps.models import Question, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
@@ -92,7 +93,7 @@ class AssessmentFlowTests(APITestCase):
             if question.item_group != Question.ItemGroup.CORE:
                 break
             response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                reverse('assessment-session-answers', kwargs={'pk': session_id}),
                 {'question_id': question.id, 'scale_value': self._scale_for_profile(question, profile_dimensions)},
                 format='json',
             )
@@ -125,13 +126,13 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(roles_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(roles_response.json()), 3)
 
-        topics_response = self.client.get(reverse('role-topic-list', kwargs={'role_slug': self.backend_role.slug}))
+        topics_response = self.client.get(reverse('role-topic-list', kwargs={'slug': self.backend_role.slug}))
         self.assertEqual(topics_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(topics_response.json()), 3)
         self.assertEqual(topics_response.json()[1]['prerequisites'][0]['topic_id'], self.backend_http.id)
 
     def test_role_likert_question_shape_and_submission_contract(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         question_payload = create_response.json()['current_question']
         self.assertEqual(question_payload['question_type'], Question.Type.LIKERT_5)
@@ -139,7 +140,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual([choice['value'] for choice in question_payload['response_scale']], [2, 1, 0, -1, -2])
 
         option_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': create_response.json()['id']}),
+            reverse('assessment-session-answers', kwargs={'pk': create_response.json()['id']}),
             {'question_id': question_payload['id'], 'option_id': 999},
             format='json',
         )
@@ -147,7 +148,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('scale_value', option_response.json()['option_id'][0])
 
         bad_scale_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': create_response.json()['id']}),
+            reverse('assessment-session-answers', kwargs={'pk': create_response.json()['id']}),
             {'question_id': question_payload['id'], 'scale_value': 3},
             format='json',
         )
@@ -155,17 +156,17 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('Use one of', bad_scale_response.json()['scale_value'][0])
 
     def test_session_language_defaults_to_english_and_rejects_unknown_language(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(create_response.json()['language'], AssessmentSession.Language.EN)
 
-        invalid_response = self.client.post(reverse('assessment-session-create'), {'language': 'jp'}, format='json')
+        invalid_response = self.client.post(reverse('assessment-session-list'), {'language': 'jp'}, format='json')
 
         self.assertEqual(invalid_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('language', invalid_response.json())
 
     def test_thai_session_localizes_role_question_ui_without_changing_answer_contract(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'language': AssessmentSession.Language.TH}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'language': AssessmentSession.Language.TH}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = create_response.json()
         self.assertEqual(payload['language'], AssessmentSession.Language.TH)
@@ -176,7 +177,7 @@ class AssessmentFlowTests(APITestCase):
         )
 
         answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
             {'question_id': payload['current_question']['id'], 'scale_value': 2},
             format='json',
         )
@@ -184,7 +185,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
 
     def test_survey1_finishes_without_serving_skill_questions(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json())
 
         self.assertEqual(payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
@@ -192,19 +193,19 @@ class AssessmentFlowTests(APITestCase):
         self.assertIsNone(payload['current_question'])
 
     def test_role_shares_uses_uniform_fallback_for_zero_evidence(self):
-        distribution = _build_role_shares({'backend-developer': 0.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
+        distribution = build_role_shares({'backend-developer': 0.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
 
         self.assertEqual(distribution, {'backend-developer': 0.5, 'qa-engineer': 0.5})
 
     def test_role_shares_concentrate_on_strong_evidence(self):
-        distribution = _build_role_shares({'backend-developer': 5.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
+        distribution = build_role_shares({'backend-developer': 5.0, 'qa-engineer': 0.0}, ['backend-developer', 'qa-engineer'])
 
         self.assertGreater(distribution['backend-developer'], 0.95)
         self.assertLess(distribution['qa-engineer'], 0.05)
 
     def test_preferred_role_is_preserved_while_best_fit_can_differ(self):
         create_response = self.client.post(
-            reverse('assessment-session-create'),
+            reverse('assessment-session-list'),
             {'preferred_role_slug': self.backend_role.slug, 'profile': {'education_level': 'student'}},
             format='json',
         )
@@ -221,7 +222,7 @@ class AssessmentFlowTests(APITestCase):
 
         question = Question.objects.get(id=payload['current_question']['id'])
         first_answer = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
             {'question_id': question.id, 'scale_value': self._scale_for_profile(question, self.qa_profile)},
             format='json',
         )
@@ -241,7 +242,7 @@ class AssessmentFlowTests(APITestCase):
 
     def test_current_role_is_saved_separately_from_target_role(self):
         create_response = self.client.post(
-            reverse('assessment-session-create'),
+            reverse('assessment-session-list'),
             {
                 'current_role_slug': self.frontend_role.slug,
                 'preferred_role_slug': self.backend_role.slug,
@@ -258,7 +259,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('currently a', payload['guidance_summary'].lower())
 
     def test_completed_results_return_dual_path_recommendations(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         payload = self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
 
@@ -282,7 +283,7 @@ class AssessmentFlowTests(APITestCase):
         ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
     )
     def test_completed_results_can_use_q_learning_recommendations(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
 
@@ -309,7 +310,7 @@ class AssessmentFlowTests(APITestCase):
         ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
     )
     def test_completed_survey2_applies_delayed_feedback_to_q_learning_recommendations(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
 
@@ -335,7 +336,7 @@ class AssessmentFlowTests(APITestCase):
         }
 
         save_response = self.client.post(
-            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
             feedback_payload,
             format='json',
         )
@@ -365,7 +366,7 @@ class AssessmentFlowTests(APITestCase):
         )
 
         repeat_response = self.client.post(
-            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
+            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
             feedback_payload,
             format='json',
         )
@@ -384,14 +385,14 @@ class AssessmentFlowTests(APITestCase):
         )
 
     def test_role_inference_without_preferred_role_does_not_resolve_before_core_traits_complete(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = create_response.json()
 
         for _index in range(4):
             question = Question.objects.get(id=payload['current_question']['id'])
             response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
                 {'question_id': question.id, 'scale_value': self._scale_for_profile(question, self.backend_profile)},
                 format='json',
             )
@@ -404,7 +405,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
 
     def test_low_confidence_role_session_can_fall_back_to_best_fit_when_questions_are_exhausted(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
         final_payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json())
@@ -415,12 +416,12 @@ class AssessmentFlowTests(APITestCase):
         self.assertIsNone(final_payload['current_question'])
 
     def test_zero_margin_session_completes_as_low_confidence(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
         final_payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json(), profile_dimensions=set())
         session = AssessmentSession.objects.get(id=final_payload['id'])
-        snapshot = _get_role_inference_snapshot(session)
+        snapshot = get_role_inference_snapshot(session)
 
         self.assertEqual(final_payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
         self.assertEqual(final_payload['status'], AssessmentSession.Status.COMPLETED)
@@ -443,7 +444,7 @@ class AssessmentFlowTests(APITestCase):
             display_order=101,
             discrimination_score=4.5,
         )
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json(), profile_dimensions=set())
 
@@ -452,7 +453,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(payload['current_question']['id'], tie_break_question.id)
 
         answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+            reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
             {'question_id': tie_break_question.id, 'scale_value': 0},
             format='json',
         )
@@ -464,11 +465,11 @@ class AssessmentFlowTests(APITestCase):
         self.assertIsNone(final_payload['current_question'])
 
     def test_role_insights_hide_ranked_candidates_until_core_profile_is_complete(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'profile': {'current_stage': 'beginner'}}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         session_id = create_response.json()['id']
         current_question = create_response.json()['current_question']
         answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+            reverse('assessment-session-answers', kwargs={'pk': session_id}),
             {'question_id': current_question['id'], 'scale_value': 2},
             format='json',
         )
@@ -482,7 +483,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(insights.json()['ranked_roles'], [])
 
     def test_answer_submission_rejects_out_of_order_question(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         current_question_id = create_response.json()['current_question']['id']
         later_question = (
@@ -490,7 +491,7 @@ class AssessmentFlowTests(APITestCase):
         )
 
         answer_response = self.client.post(
-            reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+            reverse('assessment-session-answers', kwargs={'pk': session_id}),
             {'question_id': later_question.id, 'scale_value': 2},
             format='json',
         )
@@ -499,7 +500,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('Out-of-order submission', answer_response.json()['question_id'][0])
 
     def test_history_returns_answers_and_recommendations_after_completion(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         self._answer_remaining_core_questions(session_id, create_response.json())
 
@@ -510,10 +511,22 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(history_response.json()['answers'][0]['scale_value'], 0)
         self.assertEqual(len(history_response.json()['recommendations']), 1)
 
+    def test_results_and_history_require_completed_session(self):
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
+        session_id = create_response.json()['id']
+
+        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
+        history_response = self.client.get(reverse('assessment-session-history', kwargs={'pk': session_id}))
+
+        self.assertEqual(results_response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(history_response.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn('completion', results_response.json()['detail'])
+        self.assertIn('completion', history_response.json()['detail'])
+
     def test_assessment_flow_emits_info_logs_for_survey_and_calculation(self):
         with self.assertLogs('assessments.services', level='INFO') as captured_logs:
             create_response = self.client.post(
-                reverse('assessment-session-create'),
+                reverse('assessment-session-list'),
                 {'preferred_role_slug': self.backend_role.slug, 'profile': {'current_stage': 'beginner'}},
                 format='json',
             )
@@ -521,7 +534,7 @@ class AssessmentFlowTests(APITestCase):
             session_id = create_response.json()['id']
             current_question = create_response.json()['current_question']
             answer_response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': session_id}),
+                reverse('assessment-session-answers', kwargs={'pk': session_id}),
                 {
                     'question_id': current_question['id'],
                     'scale_value': 2,
@@ -540,17 +553,16 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('assessment.phase_updated', joined_logs)
 
     def test_survey2_state_can_be_saved_and_loaded_per_session(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
-        initial_state_response = self.client.get(reverse('assessment-survey2-session', kwargs={'pk': session_id}))
+        initial_state_response = self.client.get(reverse('assessment-session-survey2', kwargs={'pk': session_id}))
         self.assertEqual(initial_state_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             initial_state_response.json(),
             {'completed': False, 'answers': {}, 'completed_at': None},
         )
-
         payload = {
             'completed': True,
             'answers': {
@@ -568,36 +580,37 @@ class AssessmentFlowTests(APITestCase):
             },
             'completed_at': '2026-05-08T20:00:00Z',
         }
-        save_response = self.client.post(reverse('assessment-survey2-session', kwargs={'pk': session_id}), payload, format='json')
+        save_response = self.client.post(reverse('assessment-session-survey2', kwargs={'pk': session_id}), payload, format='json')
         self.assertEqual(save_response.status_code, status.HTTP_200_OK)
         self.assertEqual(save_response.json()['completed'], True)
+        self.assertEqual(save_response.json()['completed_at'], payload['completed_at'])
         self.assertEqual(save_response.json()['answers']['sdlc-design-tradeoffs'], 5)
 
-        loaded_response = self.client.get(reverse('assessment-survey2-session', kwargs={'pk': session_id}))
+        loaded_response = self.client.get(reverse('assessment-session-survey2', kwargs={'pk': session_id}))
         self.assertEqual(loaded_response.status_code, status.HTTP_200_OK)
         self.assertEqual(loaded_response.json()['completed'], True)
         self.assertEqual(loaded_response.json()['answers'], payload['answers'])
         self.assertIsNotNone(loaded_response.json()['completed_at'])
 
     def test_survey2_state_rejects_invalid_answer_scale(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
         save_response = self.client.post(
-            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
-            {'completed': False, 'answers': {'sdlc-req-criteria': 7}, 'completed_at': None},
+            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
+            {'answers': {'sdlc-req-criteria': 7}},
             format='json',
         )
         self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('answers', save_response.json())
 
     def test_survey2_catalog_returns_role_aware_psp_sdlc_questions(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
-        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+        response = self.client.get(reverse('assessment-session-survey2-catalog', kwargs={'pk': session_id}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = response.json()
@@ -608,7 +621,7 @@ class AssessmentFlowTests(APITestCase):
         self.assertTrue(any('API contracts' in guidance for guidance in payload['role_guidance']))
 
     def test_survey2_catalog_questions_are_loaded_from_database(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
@@ -616,14 +629,14 @@ class AssessmentFlowTests(APITestCase):
         survey2_question.prompt = 'Database-backed Survey 2 prompt'
         survey2_question.save(update_fields=['prompt', 'updated_at'])
 
-        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+        response = self.client.get(reverse('assessment-session-survey2-catalog', kwargs={'pk': session_id}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = response.json()
         self.assertEqual(payload['questions'][0]['id'], 'psp-plan-estimate')
         self.assertEqual(payload['questions'][0]['prompt'], 'Database-backed Survey 2 prompt')
 
     def test_survey2_catalog_dimensions_and_role_guidance_are_loaded_from_database(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
@@ -636,7 +649,7 @@ class AssessmentFlowTests(APITestCase):
         guidance.guidance = 'Database-backed backend guidance'
         guidance.save(update_fields=['guidance', 'updated_at'])
 
-        response = self.client.get(reverse('assessment-survey2-catalog', kwargs={'pk': session_id}))
+        response = self.client.get(reverse('assessment-session-survey2-catalog', kwargs={'pk': session_id}))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = response.json()
         self.assertEqual(payload['dimensions'][0]['key'], 'psp-planning')
@@ -645,13 +658,13 @@ class AssessmentFlowTests(APITestCase):
         self.assertEqual(payload['role_guidance'][0], 'Database-backed backend guidance')
 
     def test_completed_survey2_requires_all_catalog_questions(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
         save_response = self.client.post(
-            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
-            {'completed': True, 'answers': {'sdlc-req-criteria': 4}, 'completed_at': '2026-05-08T20:00:00Z'},
+            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
+            {'completed': True, 'answers': {'sdlc-req-criteria': 4}},
             format='json',
         )
 
@@ -659,12 +672,12 @@ class AssessmentFlowTests(APITestCase):
         self.assertIn('answers', save_response.json())
 
     def test_survey2_next_question_returns_unanswered_question(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
         response = self.client.post(
-            reverse('assessment-survey2-next-question', kwargs={'pk': session_id}),
+            reverse('assessment-session-survey2-next-question', kwargs={'pk': session_id}),
             {'answers': {'psp-plan-estimate': 4}},
             format='json',
         )
@@ -676,17 +689,36 @@ class AssessmentFlowTests(APITestCase):
         self.assertNotEqual(payload['next_question']['id'], 'psp-plan-estimate')
 
     def test_survey2_state_save_updates_q_value_for_new_answers(self):
-        create_response = self.client.post(reverse('assessment-session-create'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
 
         response = self.client.post(
-            reverse('assessment-survey2-session', kwargs={'pk': session_id}),
-            {'completed': False, 'answers': {'psp-plan-estimate': 5}, 'completed_at': None},
+            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
+            {'answers': {'psp-plan-estimate': 5}},
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(Survey2QuestionQValue.objects.filter(question_id='psp-plan-estimate').exists())
+
+    def test_survey2_state_save_applies_feedback_once_after_remove_and_readd(self):
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        session_id = create_response.json()['id']
+        url = reverse('assessment-session-survey2', kwargs={'pk': session_id})
+
+        self.client.post(url, {'answers': {'psp-plan-estimate': 5}}, format='json')
+        q_value = Survey2QuestionQValue.objects.get(question_id='psp-plan-estimate')
+        self.assertEqual(q_value.update_count, 1)
+
+        self.client.post(url, {'answers': {}}, format='json')
+        response = self.client.post(url, {'answers': {'psp-plan-estimate': 5}}, format='json')
+
+        q_value.refresh_from_db()
+        self.assertEqual(q_value.update_count, 1)
+        self.assertNotIn('_survey2_feedback_applied_question_ids', response.json())
+
+        session_response = self.client.get(reverse('assessment-session-detail', kwargs={'pk': session_id}))
+        self.assertNotIn('_survey2_feedback_applied_question_ids', session_response.json()['profile'])
 
     def test_role_question_selection_stops_after_static_core_profile(self):
         session = AssessmentSession.objects.create(profile={})
@@ -705,7 +737,7 @@ class AssessmentFlowTests(APITestCase):
             discrimination_score=4.0,
         )
 
-        candidates = _get_selectable_role_candidates(
+        candidates = get_selectable_role_candidates(
             session,
             list(
                 Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).exclude(
@@ -738,7 +770,7 @@ class AssessmentFlowTests(APITestCase):
             'margin_share': 0.08,
             'score_margin': 0.08,
         }
-        candidates = _get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
+        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0].code, 'role-tie-backend-qa')
 
@@ -764,7 +796,7 @@ class AssessmentFlowTests(APITestCase):
             'margin_share': 0.35,
             'score_margin': 0.35,
         }
-        candidates = _get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
+        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
         self.assertEqual(candidates, [])
 
     def test_no_tie_break_when_question_does_not_match_top_pair(self):
@@ -789,6 +821,6 @@ class AssessmentFlowTests(APITestCase):
             'margin_share': 0.08,
             'score_margin': 0.08,
         }
-        candidates = _get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
+        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
         self.assertEqual(candidates, [])
 

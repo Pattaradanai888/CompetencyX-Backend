@@ -1,9 +1,9 @@
-from django.urls import path
+from rest_framework.routers import SimpleRouter
 
-from .views import RoleListAPIView, RoleTopicListAPIView
+from .views import RoleViewSet
 
 
-urlpatterns = [
-    path('roles/', RoleListAPIView.as_view(), name='role-list'),
-    path('roles/<slug:role_slug>/topics/', RoleTopicListAPIView.as_view(), name='role-topic-list'),
-]
+router = SimpleRouter()
+router.register('roles', RoleViewSet, basename='role')
+
+urlpatterns = router.urls

@@ -10,7 +10,7 @@ class AssessmentSessionQuerySet(models.QuerySet):
     """Reusable read-path optimizations shared across assessment-session views."""
 
     def with_roles(self):
-        return self.select_related('preferred_role', 'best_fit_role')
+        return self.select_related('preferred_role', 'current_role', 'best_fit_role')
 
     def with_results(self):
         return self.with_roles().prefetch_related(

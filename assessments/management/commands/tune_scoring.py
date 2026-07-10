@@ -1,6 +1,6 @@
 """Grid-search scoring hyperparameters against the in-memory simulator.
 
-Each trial overrides one combination of ``assessments.scoring`` constants and
+Each trial overrides one combination of scoring-service constants and
 runs the SAME pre-generated answer stream so the only variable is the params.
 
 Grid file format (YAML):

@@ -36,6 +36,7 @@ Thumbs.db
 .claude/
 .serena/
 .codex
+.tokensave/
 
 
 .uv-cache/

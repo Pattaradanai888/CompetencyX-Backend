@@ -2,7 +2,7 @@
 
 The top layer of the assessments service: it wires together question selection,
 role inference, phase transitions, and recommendation refresh.
-This is the only assessments module that depends on ``recommendation_builder``.
+This is the only assessments service that refreshes recommendations during Survey 1.
 
 Survey 1 question selection is deterministic: the next question is always the
 first eligible unanswered question ordered by ``display_order``. The adaptive
@@ -14,27 +14,26 @@ import logging
 from django.db import transaction
 from django.utils import timezone
 
+from assessments.exceptions import AssessmentFlowError
+from assessments.models import Answer, AssessmentSession
 from roadmaps.models import Question, Role
 from roadmaps.serializers import QuestionSerializer
 
-from . import recommendation_builder
-from .exceptions import AssessmentFlowError
-from .guidance import (
+from . import recommendation_service
+from .guidance_service import (
     build_guidance_summary,
     get_role_alignment_status,
     serialize_milestones,
 )
-from .models import Answer, AssessmentSession
-from .role_inference import (
-    ROLE_DISCOVERY_MIN_SCORE_MARGIN,
-    _get_role_inference_snapshot,
-    _get_selectable_role_candidates,
-    _get_sorted_role_scores,
-    _has_remaining_role_questions,
-    _is_role_inference_resolved,
-    _is_role_resolution_exhausted_with_viable_winner,
+from .role_inference_service import (
+    get_role_inference_snapshot,
     get_role_resolution_status,
+    get_selectable_role_candidates,
+    has_remaining_role_questions,
+    is_role_inference_resolved,
+    is_role_resolution_exhausted_with_viable_winner,
 )
+from .scoring_service import ROLE_DISCOVERY_MIN_SCORE_MARGIN, get_sorted_role_scores
 
 
 logger = logging.getLogger('assessments.services')
@@ -138,12 +137,8 @@ def submit_answer(  # noqa: PLR0913
     )
     _recompute_best_fit_role(session)
     _update_phase(session)
-    recommendation_builder.refresh_recommendations(session)
+    recommendation_service.refresh_recommendations(session)
     return answer
-
-
-def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> int:
-    return recommendation_builder.apply_recommendation_feedback_from_survey2(session)
 
 
 def get_current_question_data(session: AssessmentSession):
@@ -180,7 +175,7 @@ def build_session_state(session: AssessmentSession) -> dict[str, object]:
 def _eligible_questions_for_session(session: AssessmentSession) -> list[Question]:
     base_queryset = _get_unanswered_questions(session)
     if session.phase == AssessmentSession.Phase.ROLE_DISCOVERY:
-        return _get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
+        return get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
     return []
 
 
@@ -195,7 +190,7 @@ def _get_unanswered_questions(session: AssessmentSession):
 
 
 def _recompute_best_fit_role(session: AssessmentSession) -> None:
-    snapshot = _get_role_inference_snapshot(session)
+    snapshot = get_role_inference_snapshot(session)
     role_scores = {candidate['slug']: candidate['fit_score'] for candidate in snapshot['ranked_roles']}
 
     if not role_scores:
@@ -211,7 +206,7 @@ def _recompute_best_fit_role(session: AssessmentSession) -> None:
         )
         return
 
-    sorted_scores = _get_sorted_role_scores(role_scores)
+    sorted_scores = get_sorted_role_scores(role_scores)
     top_slug, _top_score = sorted_scores[0]
     session.best_fit_role = Role.objects.filter(slug=top_slug, is_active=True).first()
     session.best_fit_confidence = float(snapshot['confidence'])
@@ -249,7 +244,7 @@ def _format_dimension_scores(snapshot: dict[str, object]) -> dict[str, float]:
 
 
 def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[str, object]) -> list[str]:
-    if _is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
+    if is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
         return []
     answered_question_ids = session.answers.values_list('question_id', flat=True)
     remaining_tie_breaks = list(
@@ -262,7 +257,7 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
     gates = {
         'top_role_exists': snapshot['top_role_slug'] is not None,
         'answered_core_questions': int(snapshot['answered_core_questions']) >= int(snapshot['core_question_target']),
-        'tie_breaks_exhausted': not _get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot),
+        'tie_breaks_exhausted': not get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot),
         'score_margin': float(snapshot['score_margin']) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     return [name for name, passed in gates.items() if not passed]
@@ -271,9 +266,9 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
 def _update_phase(session: AssessmentSession) -> None:
     previous_phase = session.phase
     previous_status = session.status
-    has_remaining_role_questions = _has_remaining_role_questions(session)
-    if not _is_role_inference_resolved(session):
-        if has_remaining_role_questions:
+    has_remaining_questions = has_remaining_role_questions(session)
+    if not is_role_inference_resolved(session):
+        if has_remaining_questions:
             session.phase = AssessmentSession.Phase.ROLE_DISCOVERY
             session.status = AssessmentSession.Status.IN_PROGRESS
             session.completed_at = None
@@ -293,7 +288,7 @@ def _update_phase(session: AssessmentSession) -> None:
             previous_status,
             session.status,
             session.best_fit_confidence,
-            has_remaining_role_questions,
+            has_remaining_questions,
             session.completed_at.isoformat() if session.completed_at else None,
         )
         return

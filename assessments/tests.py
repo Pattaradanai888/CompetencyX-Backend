@@ -1,19 +1,19 @@
 """Tests for the pure scoring module and the in-memory simulator.
 
 Two concerns:
-- Pure unit tests verify :mod:`assessments.scoring` math in isolation (no DB).
+- Pure unit tests verify the scoring service math in isolation (no DB).
 - Parity tests seed the full MVP catalog and assert that the pure scoring
-  path produces snapshots identical to the DB-backed ``role_inference``
-  path. This is the drift detector: if ``scoring`` and ``role_inference``
+  path produces snapshots identical to the DB-backed role-inference service
+  path. This is the drift detector: if scoring and role inference
   ever disagree, these tests fail.
 """
 
 from django.core.management import call_command
 from rest_framework.test import APITestCase
 
-from assessments import scoring
-from assessments.flow import create_assessment_session, submit_answer
-from assessments.role_inference import _get_role_inference_snapshot
+from assessments.services import scoring_service
+from assessments.services.assessment_service import create_assessment_session, submit_answer
+from assessments.services.role_inference_service import get_role_inference_snapshot
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 from simulation.engine import LIKERT_VALUES, aggregate_results, run_single_sample
@@ -30,27 +30,27 @@ SAMPLE_QUESTION = {
 }
 
 
-def test_score_dimension_overlap_rewards_aligned_profile():
+def testscore_dimension_overlap_rewards_aligned_profile():
     backend_profile = ROLE_PROFILE_WEIGHTS['backend-developer']
-    score = scoring._score_dimension_overlap({'construction': 1.0}, backend_profile)
+    score = scoring_service.score_dimension_overlap({'construction': 1.0}, backend_profile)
     assert score > 0
 
 
-def test_score_dimension_overlap_ignores_zero_signal_weight():
+def testscore_dimension_overlap_ignores_zero_signal_weight():
     profile = {'construction': 1.0}
-    assert scoring._score_dimension_overlap({'construction': 0.0}, profile) == 0.0
+    assert scoring_service.score_dimension_overlap({'construction': 0.0}, profile) == 0.0
 
 
-def test_build_role_shares_uniform_when_no_evidence():
+def testbuild_role_shares_uniform_when_no_evidence():
     slugs = ['role-a', 'role-b', 'role-c']
-    distribution = scoring._build_role_shares({}, slugs)
+    distribution = scoring_service.build_role_shares({}, slugs)
     assert set(distribution) == set(slugs)
     assert all(abs(value - 1 / 3) < 1e-9 for value in distribution.values())
 
 
-def test_build_role_shares_concentrates_on_winner():
+def testbuild_role_shares_concentrates_on_winner():
     slugs = ['role-a', 'role-b']
-    distribution = scoring._build_role_shares({'role-a': 5.0, 'role-b': 0.0}, slugs)
+    distribution = scoring_service.build_role_shares({'role-a': 5.0, 'role-b': 0.0}, slugs)
     assert distribution['role-a'] > distribution['role-b']
     assert distribution['role-a'] > 0.5
 
@@ -60,20 +60,20 @@ def test_compute_role_evidence_snapshot_accumulates_signals():
         {**SAMPLE_QUESTION, 'scale_value': 2},
         {**SAMPLE_QUESTION, 'scale_value': 2},
     ]
-    evidence = scoring.compute_role_evidence_snapshot(answers)
+    evidence = scoring_service.compute_role_evidence_snapshot(answers)
     assert evidence.dimension_scores['construction'] == 4.0
     assert evidence.dimension_evidence_counts['construction'] == 2
     assert 'backend-developer' in evidence.role_scores
 
 
 def test_compute_role_evidence_snapshot_neutral_answer_is_no_evidence():
-    evidence = scoring.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 0}])
+    evidence = scoring_service.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 0}])
     assert evidence.dimension_scores == {}
 
 
 def test_build_role_inference_snapshot_shape():
-    evidence = scoring.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 2}])
-    snapshot = scoring.build_role_inference_snapshot(
+    evidence = scoring_service.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 2}])
+    snapshot = scoring_service.build_role_inference_snapshot(
         evidence,
         active_role_slugs=list(ROLE_PROFILE_WEIGHTS),
         role_names={},
@@ -95,7 +95,7 @@ def test_select_role_candidates_returns_core_first():
         {'id': 5, 'item_group': 'core', 'display_order': 3, 'discriminates_between': []},
         {'id': 6, 'item_group': 'core', 'display_order': 1, 'discriminates_between': []},
     ]
-    selected = scoring.select_role_candidates(questions, snapshot=None)
+    selected = scoring_service.select_role_candidates(questions, snapshot=None)
     assert [q['id'] for q in selected] == [6, 5]
 
 
@@ -109,17 +109,17 @@ def test_select_role_candidates_tie_break_filters_top_pair():
         {'id': 2, 'item_group': 'tie_break', 'display_order': 1, 'discriminates_between': ['a', 'c']},
         {'id': 3, 'item_group': 'tie_break', 'display_order': 3, 'discriminates_between': ['a', 'b']},
     ]
-    selected = scoring.select_role_candidates(questions, snapshot=snapshot)
+    selected = scoring_service.select_role_candidates(questions, snapshot=snapshot)
     assert [q['id'] for q in selected] == [1, 3]
 
 
 def test_select_role_candidates_empty_when_margin_already_clear():
     snapshot = {
         'ranked_roles': [{'slug': 'a'}, {'slug': 'b'}],
-        'score_margin': scoring.ROLE_DISCOVERY_MIN_SCORE_MARGIN + 0.01,
+        'score_margin': scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN + 0.01,
     }
     questions = [{'id': 1, 'item_group': 'tie_break', 'display_order': 1, 'discriminates_between': ['a', 'b']}]
-    assert scoring.select_role_candidates(questions, snapshot=snapshot) == []
+    assert scoring_service.select_role_candidates(questions, snapshot=snapshot) == []
 
 
 def test_is_role_resolution_gate_requires_all_conditions():
@@ -127,16 +127,16 @@ def test_is_role_resolution_gate_requires_all_conditions():
         'top_role_slug': 'a',
         'answered_core_questions': 46,
         'core_question_target': 46,
-        'score_margin': scoring.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
+        'score_margin': scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
-    assert scoring.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=False) is True
-    assert scoring.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=True) is False
+    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=False) is True
+    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=True) is False
 
     low_margin = {**base_snapshot, 'score_margin': 0.01}
-    assert scoring.is_role_resolution_exhausted_with_viable_winner(low_margin, has_remaining_tie_breaks_for_top_pair=False) is False
+    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(low_margin, has_remaining_tie_breaks_for_top_pair=False) is False
 
     no_top_role = {**base_snapshot, 'top_role_slug': None}
-    assert scoring.is_role_resolution_exhausted_with_viable_winner(no_top_role, has_remaining_tie_breaks_for_top_pair=False) is False
+    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(no_top_role, has_remaining_tie_breaks_for_top_pair=False) is False
 
 
 class ScoringParityTests(APITestCase):
@@ -175,11 +175,11 @@ class ScoringParityTests(APITestCase):
             submit_answer(session=session, question=question, scale_value=scale_value)
             session.refresh_from_db()
 
-        db_snapshot = _get_role_inference_snapshot(session)
+        db_snapshot = get_role_inference_snapshot(session)
 
         answer_dicts = self._build_session_answer_dicts(session)
-        evidence = scoring.compute_role_evidence_snapshot(answer_dicts)
-        pure_snapshot = scoring.build_role_inference_snapshot(
+        evidence = scoring_service.compute_role_evidence_snapshot(answer_dicts)
+        pure_snapshot = scoring_service.build_role_inference_snapshot(
             evidence,
             active_role_slugs=self.active_role_slugs,
             role_names=self.role_names,

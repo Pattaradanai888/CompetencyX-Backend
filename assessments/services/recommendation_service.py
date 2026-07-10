@@ -5,10 +5,10 @@ from django.conf import settings
 from django.db.models import Prefetch
 from django.utils import timezone
 
+from assessments.models import AssessmentSession
 from recommendations.models import Recommendation, RecommendationQValue
 
-from .guidance import get_role_alignment_status, get_role_resolution_status
-from .models import AssessmentSession
+from .guidance_service import get_role_alignment_status, get_role_resolution_status
 
 
 logger = logging.getLogger('assessments.services')

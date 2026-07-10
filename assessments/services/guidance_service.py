@@ -1,22 +1,20 @@
 """Role-status and learner-guidance helpers.
 
-This module is intentionally a leaf in the assessments dependency graph: it imports
-only from ``role_inference`` and the ORM models. Keeping ``get_role_alignment_status``
-and friends here lets ``recommendation_builder`` and ``survey2_adaptive`` consume them
-without importing the ``services``/``flow`` orchestration layer, which would create an
-import cycle.
+This service is a leaf in the assessments dependency graph: it imports only the
+role-inference service and ORM models. Recommendation and Survey 2 services can
+consume it without importing assessment orchestration and creating a cycle.
 """
 
 from django.db.models import Count, Q
 
+from assessments.models import AssessmentSession
 from roadmaps.models import Question
 
-from .models import AssessmentSession
-from .role_inference import (
-    _get_role_inference_snapshot,
-    _is_core_role_profile_complete,
+from .role_inference_service import (
+    get_role_inference_snapshot,
     get_role_resolution_status,
     get_top_role_candidates,
+    is_core_role_profile_complete,
 )
 
 
@@ -46,7 +44,7 @@ def get_skill_target_role(session: AssessmentSession):
 
 
 def get_role_alignment_status(session: AssessmentSession) -> str:
-    if not _is_core_role_profile_complete(session):
+    if not is_core_role_profile_complete(session):
         return 'unknown'
     if get_role_resolution_status(session) == 'ambiguous':
         return 'ambiguous'
@@ -67,7 +65,7 @@ def get_preferred_role_gap_topics(session: AssessmentSession, *, limit: int = MA
 
 
 def build_guidance_summary(session: AssessmentSession) -> str:  # noqa: C901, PLR0911, PLR0912
-    if not _is_core_role_profile_complete(session):
+    if not is_core_role_profile_complete(session):
         if session.current_role_id is not None and session.preferred_role_id is not None:
             return (
                 f'You are currently a {session.current_role.name} and want to pursue {session.preferred_role.name}. '
@@ -125,8 +123,8 @@ def build_guidance_summary(session: AssessmentSession) -> str:  # noqa: C901, PL
 
 
 def get_role_insights(session: AssessmentSession) -> dict[str, object]:
-    snapshot = _get_role_inference_snapshot(session)
-    if not _is_core_role_profile_complete(session):
+    snapshot = get_role_inference_snapshot(session)
+    if not is_core_role_profile_complete(session):
         return {
             'role_resolution_status': 'in_progress',
             'best_fit_role': None,

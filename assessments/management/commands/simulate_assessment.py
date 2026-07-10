@@ -8,9 +8,13 @@ from collections import Counter
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from assessments.flow import create_assessment_session, get_current_question, submit_answer
 from assessments.models import AssessmentSession
-from assessments.role_inference import _get_role_inference_snapshot, _is_core_role_profile_complete, get_role_resolution_status
+from assessments.services.assessment_service import create_assessment_session, get_current_question, submit_answer
+from assessments.services.role_inference_service import (
+    get_role_inference_snapshot,
+    get_role_resolution_status,
+    is_core_role_profile_complete,
+)
 from roadmaps.models import Question
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 
@@ -49,7 +53,7 @@ class Command(BaseCommand):
                     session.refresh_from_db()
                     role_question_count += 1
 
-                snapshot = _get_role_inference_snapshot(session)
+                snapshot = get_role_inference_snapshot(session)
                 resolution_status = get_role_resolution_status(session)
                 results.append({
                     'phase': session.phase,
@@ -61,7 +65,7 @@ class Command(BaseCommand):
                     'score_margin': round(float(snapshot['score_margin']), 4),
                     'winner_share': round(float(snapshot['winner_share']), 4),
                     'role_qs': role_question_count,
-                    'core_complete': _is_core_role_profile_complete(session),
+                    'core_complete': is_core_role_profile_complete(session),
                 })
 
             summary = self._summarize(results, samples, options['random_seed'])

@@ -45,7 +45,7 @@ def _compute_role_dimension_idf(role_profile_weights: dict[str, dict[str, float]
 ROLE_DIMENSION_IDF: dict[str, float] = _compute_role_dimension_idf(ROLE_PROFILE_WEIGHTS)
 
 
-def _score_dimension_overlap(signals: dict[str, float], profile: dict[str, float]) -> float:
+def score_dimension_overlap(signals: dict[str, float], profile: dict[str, float]) -> float:
     score = 0.0
     for dimension_key, signal_weight in (signals or {}).items():
         try:
@@ -76,18 +76,18 @@ def _score_roles_for_answer(question: dict, scale_value: int | None) -> dict[str
 
     role_scores: dict[str, float] = {}
     for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        selected_overlap = _score_dimension_overlap(selected_signals, profile)
-        rejected_overlap = _score_dimension_overlap(rejected_signals, profile)
+        selected_overlap = score_dimension_overlap(selected_signals, profile)
+        rejected_overlap = score_dimension_overlap(rejected_signals, profile)
         role_signal = selected_overlap - rejected_overlap
         role_scores[role_slug] = ROLE_EVIDENCE_SCORE_SCALE * answer_strength * _log_sigmoid(ROLE_EVIDENCE_LOGISTIC_SCALE * role_signal)
     return role_scores
 
 
-def _get_sorted_role_scores(role_scores: dict[str, float]) -> list[tuple[str, float]]:
+def get_sorted_role_scores(role_scores: dict[str, float]) -> list[tuple[str, float]]:
     return sorted(role_scores.items(), key=lambda item: (-item[1], item[0]))
 
 
-def _build_role_shares(role_scores: dict[str, float], active_role_slugs: list[str]) -> dict[str, float]:
+def build_role_shares(role_scores: dict[str, float], active_role_slugs: list[str]) -> dict[str, float]:
     if not active_role_slugs:
         return {}
     scores = {slug: float(role_scores.get(slug, 0.0)) for slug in active_role_slugs}
@@ -157,8 +157,8 @@ def build_role_inference_snapshot(  # noqa: PLR0913
 ) -> dict[str, object]:
     role_names = {} if role_names is None else role_names
     role_scores = {role_slug: evidence.role_scores.get(role_slug, 0.0) for role_slug in active_role_slugs}
-    sorted_scores = _get_sorted_role_scores(role_scores)
-    role_shares = _build_role_shares(role_scores, active_role_slugs)
+    sorted_scores = get_sorted_role_scores(role_scores)
+    role_shares = build_role_shares(role_scores, active_role_slugs)
     top_slug, top_score = sorted_scores[0] if sorted_scores else (None, 0.0)
     runner_up_slug = sorted_scores[1][0] if len(sorted_scores) > 1 else None
     runner_up_score = sorted_scores[1][1] if len(sorted_scores) > 1 else 0.0

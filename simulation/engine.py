@@ -1,5 +1,5 @@
-"""Django-free Monte Carlo simulator for role-discovery scoring. Workers import
-this without ``django.setup()``; all math delegates to :mod:`assessments.scoring`.
+"""Django-free Monte Carlo simulator for role-discovery scoring_service. Workers import
+this without ``django.setup()``; all math delegates to :mod:`assessments.services.scoring_service`.
 """
 
 import concurrent.futures
@@ -8,7 +8,7 @@ import random
 from collections import Counter
 from dataclasses import dataclass, field
 
-from assessments import scoring
+from assessments.services import scoring_service
 
 
 LIKERT_VALUES = (-2, -1, 0, 1, 2)
@@ -34,7 +34,7 @@ class _SampleState:
             self.role_scores = dict.fromkeys(self.active_role_slugs, 0.0)
 
     def apply_answer(self, question: dict, scale_value: int) -> None:
-        selected, _rejected, strength = scoring._resolve_signal_sides(question, scale_value)
+        selected, _rejected, strength = scoring_service._resolve_signal_sides(question, scale_value)
         if strength > 0:
             multiplier = abs(float(scale_value))
             for dimension_key, raw_weight in (selected or {}).items():
@@ -46,7 +46,7 @@ class _SampleState:
                     continue
                 self.dimension_scores[dimension_key] = self.dimension_scores.get(dimension_key, 0.0) + weight * multiplier
                 self.dimension_evidence_counts[dimension_key] = self.dimension_evidence_counts.get(dimension_key, 0) + 1
-        for role_slug, delta in scoring._score_roles_for_answer(question, scale_value).items():
+        for role_slug, delta in scoring_service._score_roles_for_answer(question, scale_value).items():
             self.role_scores[role_slug] = self.role_scores.get(role_slug, 0.0) + delta
 
         self.answered_question_ids.add(question['id'])
@@ -56,15 +56,15 @@ class _SampleState:
             self.answered_core += 1
         self.answered_total += 1
 
-    def evidence_snapshot(self) -> scoring.RoleEvidenceSnapshot:
-        return scoring.RoleEvidenceSnapshot(
+    def evidence_snapshot(self) -> scoring_service.RoleEvidenceSnapshot:
+        return scoring_service.RoleEvidenceSnapshot(
             role_scores=dict(self.role_scores),
             dimension_scores=dict(self.dimension_scores),
             dimension_evidence_counts=dict(self.dimension_evidence_counts),
         )
 
     def inference_snapshot(self) -> dict[str, object]:
-        return scoring.build_role_inference_snapshot(
+        return scoring_service.build_role_inference_snapshot(
             self.evidence_snapshot(),
             active_role_slugs=self.active_role_slugs,
             role_names=self.role_names,
@@ -92,10 +92,10 @@ def run_single_sample(  # noqa: PLR0913
     snapshot = state.inference_snapshot()
     unanswered = list(questions)
     is_resolved = False
-    has_remaining = bool(scoring.select_role_candidates(unanswered, snapshot))
+    has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
 
     while has_remaining and not is_resolved:
-        question = scoring.select_role_candidates(unanswered, snapshot)[0]
+        question = scoring_service.select_role_candidates(unanswered, snapshot)[0]
         if state.answered_total < len(prefix_answers):
             scale_value = prefix_answers[state.answered_total]
         else:
@@ -105,15 +105,15 @@ def run_single_sample(  # noqa: PLR0913
         state.apply_answer(question, scale_value)
         snapshot = state.inference_snapshot()
         unanswered = [question_dict for question_dict in unanswered if question_dict['id'] != question['id']]
-        has_remaining = bool(scoring.select_role_candidates(unanswered, snapshot))
-        is_resolved = scoring.is_role_resolution_exhausted_with_viable_winner(
+        has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
+        is_resolved = scoring_service.is_role_resolution_exhausted_with_viable_winner(
             snapshot,
             has_remaining_tie_breaks_for_top_pair=has_remaining,
         )
 
     is_core_complete = state.answered_core >= core_target > 0
     best_fit_role_slug = snapshot['top_role_slug'] or None
-    resolution_status = scoring.get_role_resolution_status(
+    resolution_status = scoring_service.get_role_resolution_status(
         is_core_complete=is_core_complete,
         best_fit_role_slug=best_fit_role_slug,
         is_resolved=is_resolved,
@@ -333,9 +333,9 @@ def run_trial(  # noqa: PLR0913
     seed: int,
     metric: str,
 ) -> dict[str, object]:
-    originals = {name: getattr(scoring, name) for name in params}
+    originals = {name: getattr(scoring_service, name) for name in params}
     for name, value in params.items():
-        setattr(scoring, name, value)
+        setattr(scoring_service, name, value)
     try:
         results = [
             run_single_sample(
@@ -351,7 +351,7 @@ def run_trial(  # noqa: PLR0913
         ]
     finally:
         for name, value in originals.items():
-            setattr(scoring, name, value)
+            setattr(scoring_service, name, value)
 
     summary = aggregate_results(
         results,
