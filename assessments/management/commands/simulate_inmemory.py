@@ -1,4 +1,4 @@
-"""Fast Monte Carlo twin of ``simulate_assessment`` — no DB writes, runs N
+"""Fast Monte Carlo twin of ``simulate_assessment`` - no DB writes, runs N
 sessions in parallel via ``ProcessPoolExecutor``.
 
 Examples:
@@ -14,6 +14,7 @@ from django.core.management.base import BaseCommand, CommandError
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 from simulation.engine import LIKERT_VALUES, CatalogContext, SimulationConfig, aggregate_results, run_samples, run_single_sample
 from simulation.loaders import count_core_questions, load_questions, load_roles
+from simulation.reporting import write_summary_text
 
 
 class Command(BaseCommand):
@@ -78,7 +79,7 @@ class Command(BaseCommand):
         if options['format'] == 'json':
             self.stdout.write(json.dumps(summary, indent=2, sort_keys=True))
         else:
-            self._print_text(summary)
+            write_summary_text(self.stdout, self.style, summary, title='In-Memory Role Resolution Simulation')
 
     def _parse_likert_weights(self, raw: str) -> dict[int, float]:
         parts = [part.strip() for part in raw.split(',') if part.strip()]
@@ -97,64 +98,3 @@ class Command(BaseCommand):
         result = run_single_sample(0, catalog, list(config.prefix_answers), deterministic_answers)
         self.stdout.write(self.style.SUCCESS('Single-sample probe:'))
         self.stdout.write(json.dumps(result, indent=2, sort_keys=True))
-
-    def _print_text(self, summary: dict[str, object]) -> None:
-        self.stdout.write(
-            self.style.MIGRATE_HEADING(
-                f'\n=== In-Memory Role Resolution Simulation (N={summary["samples"]}, seed={summary["seed"]}) ===',
-            )
-        )
-        self.stdout.write(f'Likert weights: {summary["likert_weights"]}')
-        if summary.get('prefix_answers'):
-            self.stdout.write(f'Prefix answers: {summary["prefix_answers"]}')
-        self.stdout.write(f'Completed:      {summary["completed_count"]:4d} ({summary["completed_rate"] * 100:.1f}%)')
-        self.stdout.write(f'Resolved:       {summary["resolved_count"]:4d} ({summary["resolved_rate"] * 100:.1f}%)')
-        self.stdout.write(f'Low confidence: {summary["low_confidence_count"]:4d} ({summary["low_confidence_rate"] * 100:.1f}%)')
-        self.stdout.write(f'Ambiguous:      {summary["ambiguous_count"]:4d} ({summary["ambiguous_rate"] * 100:.1f}%)')
-        answered = summary['answered_role_questions']
-        self.stdout.write(f'Answered role Qs: mean={answered["mean"]:.2f}  min={answered["min"]}  max={answered["max"]}')
-        self.stdout.write(f'95% worst-case margin of error: +/-{summary["worst_case_95pct_margin_of_error"]:.4f}')
-
-        self.stdout.write(self.style.MIGRATE_HEADING('\n--- Role coverage ---'))
-        self.stdout.write(
-            f'Best-fit roles seen: {summary["best_fit_role_coverage_count"]}/{summary["active_role_count"]} '
-            f'({summary["best_fit_role_coverage_rate"] * 100:.1f}%)',
-        )
-        self.stdout.write(f'Missing best-fit roles: {", ".join(summary["missing_best_fit_roles"]) or "None"}')
-        self.stdout.write(
-            f'Resolved roles seen: {summary["resolved_role_coverage_count"]}/{summary["active_role_count"]} '
-            f'({summary["resolved_role_coverage_rate"] * 100:.1f}%)',
-        )
-        self.stdout.write(f'Missing resolved roles: {", ".join(summary["missing_resolved_roles"]) or "None"}')
-        resolved_shape = summary['resolved_role_uniformity']
-        self.stdout.write(
-            f'Resolved role uniformity: normalized_entropy={resolved_shape["normalized_entropy"]:.4f}  max_share={resolved_shape["max_share"]:.4f}',
-        )
-
-        if 'resolved_confidence' in summary:
-            confidence = summary['resolved_confidence']
-            margin = summary['resolved_margin_share']
-            score_margin = summary['resolved_score_margin']
-            winner = summary['resolved_winner_share']
-            self.stdout.write(self.style.MIGRATE_HEADING('\n--- Resolved sessions ---'))
-            self.stdout.write(f'Confidence:        mean={confidence["mean"]:.4f}  min={confidence["min"]:.4f}  median={confidence["median"]:.4f}')
-            self.stdout.write(f'Margin (share):    mean={margin["mean"]:.4f}  min={margin["min"]:.4f}  median={margin["median"]:.4f}')
-            self.stdout.write(
-                f'Margin (score):    mean={score_margin["mean"]:.4f}  min={score_margin["min"]:.4f}  median={score_margin["median"]:.4f}'
-            )
-            self.stdout.write(f'Winner share:      mean={winner["mean"]:.4f}  min={winner["min"]:.4f}  median={winner["median"]:.4f}')
-            self.stdout.write('Best-fit role distribution:')
-            for role, count in summary['resolved_roles'].items():
-                self.stdout.write(f'  {role or "None":35s} {count:4d}')
-
-        if 'low_confidence_confidence' in summary:
-            confidence = summary['low_confidence_confidence']
-            margin = summary['low_confidence_margin_share']
-            score_margin = summary['low_confidence_score_margin']
-            self.stdout.write(self.style.WARNING('\n--- Low-confidence completions ---'))
-            self.stdout.write(f'Confidence:        mean={confidence["mean"]:.4f}  max={confidence["max"]:.4f}')
-            self.stdout.write(f'Margin (share):    mean={margin["mean"]:.4f}  max={margin["max"]:.4f}')
-            self.stdout.write(f'Margin (score):    mean={score_margin["mean"]:.4f}  max={score_margin["max"]:.4f}')
-            self.stdout.write('Best-fit role distribution:')
-            for role, count in list(summary.get('low_confidence_roles', {}).items())[:10]:
-                self.stdout.write(f'  {role:35s} {count:4d}')
