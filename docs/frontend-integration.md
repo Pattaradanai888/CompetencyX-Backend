@@ -14,7 +14,7 @@ The backend remains the source of truth for:
 - question selection
 - role-discovery progression
 - role resolution state
-- skill-assessment progression
+- Survey 2 (PSP/SDLC self-rating) state
 - final recommendation output
 
 ## Main Contract Changes
@@ -76,11 +76,9 @@ Create-session accepts an optional `language` field:
 
 Supported values are `en` and `th`. If omitted, the backend stores `language: "en"` on the session.
 
-For `role_discovery` questions only, `current_question.prompt`, `current_question.help_text`, and `response_scale[].label` are returned in the session language when a translation exists. Missing Thai translations fall back to English. Skill questions, roadmap content, recommendations, history text, and Survey 2 content remain English in this pass. Answer requests do not change: role questions still submit `scale_value`, and skill questions still submit `option_id`.
+For `role_discovery` questions, `current_question.prompt`, `current_question.help_text`, and `response_scale[].label` are returned in the session language when a translation exists. Missing Thai translations fall back to English. Roadmap content, recommendations, and history text remain English in this pass.
 
-Role-discovery questions now use `question_type: "likert_5"` and return no `options`. Render the five radio choices from `response_scale` and submit the selected numeric `value`.
-
-Skill questions remain option-based and continue to submit `option_id`.
+Role-discovery questions use `question_type: "likert_5"` and return no `options`. Render the five radio choices from `response_scale` and submit the selected numeric `value`.
 
 Role answer request:
 
@@ -90,17 +88,6 @@ Role answer request:
   "scale_value": 2,
   "response_time_ms": 4200,
   "confidence_indicator": "high"
-}
-```
-
-Skill answer request:
-
-```json
-{
-  "question_id": 201,
-  "option_id": 301,
-  "response_time_ms": 4200,
-  "confidence_indicator": "medium"
 }
 ```
 
@@ -154,9 +141,15 @@ This means detailed role-fit analysis is available from:
 | `GET` | `/api/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
 | `GET` | `/api/assessment-sessions/{id}/results/` | Returns final recommendations, mastery, and analysis after completion |
 | `GET` | `/api/assessment-sessions/{id}/history/` | Returns answer and recommendation history after completion |
+| `GET` | `/api/assessment-sessions/{id}/survey2/` | Returns saved Survey 2 state (`completed`, `answers`, `completed_at`) |
+| `POST` | `/api/assessment-sessions/{id}/survey2/` | Replaces the whole Survey 2 answer set and completion state |
+| `GET` | `/api/assessment-sessions/{id}/survey2/catalog/` | Returns the PSP/SDLC question catalog with role-aware guidance |
+| `POST` | `/api/assessment-sessions/{id}/survey2/next-question/` | Returns the adaptively selected next Survey 2 question |
+
+Survey 2 state is stored in dedicated tables; the session `profile` field is free-form client data only and no longer carries a `survey2` key.
 
 ## Role Discovery Notes
-Role discovery uses a static 36-question SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the 18 SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before moving to skill assessment.
+Role discovery uses a static 46-question core SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before completing the session.
 
 Each role-discovery prompt is a single statement answered with:
 
@@ -168,18 +161,18 @@ Each role-discovery prompt is a single statement answered with:
 
 Relevant session fields:
 
-- `phase`: `role_discovery`, `role_ambiguity`, `skill_assessment`, or `recommendation_ready`
-- `role_resolution_status`: `unknown`, `in_progress`, `resolved`, or `ambiguous`
-- `role_alignment_status`: `unknown`, `aligned`, `mismatch`, or `ambiguous`
+- `phase`: `role_discovery` or `recommendation_ready`
+- `role_resolution_status`: `in_progress`, `unknown`, `resolved`, or `low_confidence`
+- `role_alignment_status`: `unknown`, `aligned`, or `mismatch`
 
 Important implications:
 
-- `best_fit_role` remains `null` while the 36 core role questions are still in progress
-- `best_fit_confidence` remains `0.0` while the 36 core role questions are still in progress
-- `role_alignment_status` remains `unknown` while the 36 core role questions are still in progress
-- the insights endpoint returns an empty `ranked_roles` list until the 36 core role questions are complete
-- after the 36th core role answer, the backend either resolves to one best-fit role or asks targeted tie-break questions
-- a session with a `preferred_role` proceeds into that preferred-role skill assessment after role discovery completes
+- `best_fit_role` remains `null` while the 46 core role questions are still in progress
+- `best_fit_confidence` remains `0.0` while the 46 core role questions are still in progress
+- `role_alignment_status` remains `unknown` while the 46 core role questions are still in progress
+- the insights endpoint returns an empty `ranked_roles` list until the 46 core role questions are complete
+- after the 46th core role answer, the backend either resolves to one best-fit role or asks targeted tie-break questions
+- once role discovery completes the session enters `recommendation_ready`; Survey 2 is available at any time via its own endpoints
 
 ### SWEBOK role metadata
 Catalog role objects now include:

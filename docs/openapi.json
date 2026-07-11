@@ -3,7 +3,7 @@
     "info": {
         "title": "CompetencyX API",
         "version": "0.1.0",
-        "description": "Adaptive career-roadmap backend API for assessment sessions, role inference, mastery estimation, and next-topic recommendations."
+        "description": "Adaptive career-roadmap backend API for assessment sessions, role inference, and next-topic recommendations."
     },
     "paths": {
         "/api/assessment-sessions/": {
@@ -17,7 +17,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SessionCreate"
+                                "$ref": "#/components/schemas/AssessmentSession"
                             }
                         }
                     }
@@ -59,7 +59,8 @@
                                             "completed_at": null,
                                             "milestones": {
                                                 "answered_role_questions": 0,
-                                                "answered_skill_questions": 0
+                                                "answered_core_role_questions": 0,
+                                                "answered_tie_break_questions": 0
                                             },
                                             "role_alignment_status": "unknown",
                                             "role_resolution_status": "in_progress",
@@ -124,21 +125,21 @@
         },
         "/api/assessment-sessions/{id}/": {
             "get": {
-                "operationId": "getAssessmentSession",
-                "summary": "Get the current assessment session state",
+                "operationId": "assessment_sessions_retrieve",
                 "parameters": [
                     {
                         "in": "path",
                         "name": "id",
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "format": "uuid"
                         },
-                        "description": "Assessment session UUID.",
+                        "description": "A UUID string identifying this assessment session.",
                         "required": true
                     }
                 ],
                 "tags": [
-                    "Assessment Sessions"
+                    "assessment-sessions"
                 ],
                 "security": [
                     {
@@ -152,90 +153,10 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/AssessmentSession"
-                                },
-                                "examples": {
-                                    "SessionResponse": {
-                                        "value": {
-                                            "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
-                                            "status": "in_progress",
-                                            "phase": "role_discovery",
-                                            "language": "en",
-                                            "best_fit_confidence": 0.0,
-                                            "preferred_role": {
-                                                "id": 1,
-                                                "slug": "backend-engineer",
-                                                "name": "Backend Engineer",
-                                                "description": "Builds APIs and backend services."
-                                            },
-                                            "best_fit_role": null,
-                                            "profile": {
-                                                "education_level": "student",
-                                                "current_stage": "beginner"
-                                            },
-                                            "started_at": "2026-04-17T04:00:00Z",
-                                            "updated_at": "2026-04-17T04:00:00Z",
-                                            "completed_at": null,
-                                            "milestones": {
-                                                "answered_role_questions": 0,
-                                                "answered_skill_questions": 0
-                                            },
-                                            "role_alignment_status": "unknown",
-                                            "role_resolution_status": "in_progress",
-                                            "guidance_summary": "You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.",
-                                            "current_question": {
-                                                "id": 101,
-                                                "code": "role-likert-build-working-parts",
-                                                "stage": "role",
-                                                "question_type": "likert_5",
-                                                "prompt": "I enjoy turning an idea into a working technical part.",
-                                                "help_text": "",
-                                                "role": null,
-                                                "topic": null,
-                                                "difficulty": 1,
-                                                "options": [],
-                                                "response_scale": [
-                                                    {
-                                                        "key": "strongly_agree",
-                                                        "label": "Strongly agree",
-                                                        "value": 2,
-                                                        "display_order": 1
-                                                    },
-                                                    {
-                                                        "key": "agree",
-                                                        "label": "Agree",
-                                                        "value": 1,
-                                                        "display_order": 2
-                                                    },
-                                                    {
-                                                        "key": "neutral",
-                                                        "label": "Neutral",
-                                                        "value": 0,
-                                                        "display_order": 3
-                                                    },
-                                                    {
-                                                        "key": "disagree",
-                                                        "label": "Disagree",
-                                                        "value": -1,
-                                                        "display_order": 4
-                                                    },
-                                                    {
-                                                        "key": "strongly_disagree",
-                                                        "label": "Strongly disagree",
-                                                        "value": -2,
-                                                        "display_order": 5
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        "summary": "Session response"
-                                    }
                                 }
                             }
                         },
-                        "description": "Current assessment session state, including the next question when still in progress."
-                    },
-                    "404": {
-                        "description": "Assessment session was not found."
+                        "description": ""
                     }
                 }
             }
@@ -305,7 +226,8 @@
                                             "completed_at": null,
                                             "milestones": {
                                                 "answered_role_questions": 0,
-                                                "answered_skill_questions": 0
+                                                "answered_core_role_questions": 0,
+                                                "answered_tie_break_questions": 0
                                             },
                                             "role_alignment_status": "unknown",
                                             "role_resolution_status": "in_progress",
@@ -612,7 +534,8 @@
                                             "completed_at": "2026-04-17T04:05:00Z",
                                             "milestones": {
                                                 "answered_role_questions": 2,
-                                                "answered_skill_questions": 2
+                                                "answered_core_role_questions": 2,
+                                                "answered_tie_break_questions": 0
                                             },
                                             "role_alignment_status": "aligned",
                                             "role_resolution_status": "resolved",
@@ -657,16 +580,6 @@
                                                     ]
                                                 }
                                             ],
-                                            "mastery_scores": [
-                                                {
-                                                    "topic_id": 11,
-                                                    "topic_slug": "http",
-                                                    "topic_title": "HTTP Fundamentals",
-                                                    "mastery_score": 1.0,
-                                                    "confidence_score": 0.5,
-                                                    "updated_at": "2026-04-17T04:05:00Z"
-                                                }
-                                            ],
                                             "preferred_path_recommendation": {
                                                 "id": 301,
                                                 "role_slug": "backend-engineer",
@@ -686,10 +599,13 @@
                                 }
                             }
                         },
-                        "description": "Final recommendations, mastery scores, and gap topics."
+                        "description": "Final recommendations and gap topics."
                     },
                     "404": {
                         "description": "Assessment session was not found."
+                    },
+                    "409": {
+                        "description": "Assessment results are only available after completion."
                     }
                 }
             }
@@ -948,47 +864,25 @@
                                     "items": {
                                         "$ref": "#/components/schemas/Role"
                                     }
-                                },
-                                "examples": {
-                                    "RoleList": {
-                                        "value": [
-                                            [
-                                                {
-                                                    "id": 1,
-                                                    "slug": "backend-engineer",
-                                                    "name": "Backend Engineer",
-                                                    "description": "Builds APIs and backend services."
-                                                },
-                                                {
-                                                    "id": 2,
-                                                    "slug": "frontend-engineer",
-                                                    "name": "Frontend Engineer",
-                                                    "description": "Builds web user interfaces."
-                                                }
-                                            ]
-                                        ],
-                                        "summary": "Role list"
-                                    }
                                 }
                             }
                         },
-                        "description": "Active roles available for onboarding and preference selection."
+                        "description": ""
                     }
                 }
             }
         },
-        "/api/catalog/roles/{role_slug}/topics/": {
+        "/api/catalog/roles/{slug}/topics/": {
             "get": {
                 "operationId": "listRoleTopics",
                 "summary": "List topics for a role",
                 "parameters": [
                     {
                         "in": "path",
-                        "name": "role_slug",
+                        "name": "slug",
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Slug of the active role to inspect.",
                         "required": true
                     }
                 ],
@@ -1010,45 +904,10 @@
                                     "items": {
                                         "$ref": "#/components/schemas/RoadmapTopic"
                                     }
-                                },
-                                "examples": {
-                                    "RoleTopics": {
-                                        "value": [
-                                            [
-                                                {
-                                                    "id": 11,
-                                                    "slug": "http",
-                                                    "title": "HTTP Fundamentals",
-                                                    "description": "Core HTTP concepts for API work.",
-                                                    "difficulty": "beginner",
-                                                    "display_order": 1,
-                                                    "parent_id": null,
-                                                    "prerequisites": []
-                                                },
-                                                {
-                                                    "id": 12,
-                                                    "slug": "databases",
-                                                    "title": "Databases",
-                                                    "description": "Relational data modeling and SQL.",
-                                                    "difficulty": "beginner",
-                                                    "display_order": 2,
-                                                    "parent_id": null,
-                                                    "prerequisites": [
-                                                        {
-                                                            "topic_id": 11,
-                                                            "required_mastery_threshold": 0.7,
-                                                            "dependency_weight": 1.0
-                                                        }
-                                                    ]
-                                                }
-                                            ]
-                                        ],
-                                        "summary": "Role topics"
-                                    }
                                 }
                             }
                         },
-                        "description": "Ordered roadmap topics for the selected role."
+                        "description": ""
                     },
                     "404": {
                         "description": "Role slug was not found or is inactive."
@@ -1273,6 +1132,14 @@
                         ],
                         "readOnly": true
                     },
+                    "current_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "readOnly": true
+                    },
                     "best_fit_role": {
                         "allOf": [
                             {
@@ -1282,7 +1149,9 @@
                         "nullable": true,
                         "readOnly": true
                     },
-                    "profile": {},
+                    "profile": {
+                        "readOnly": true
+                    },
                     "started_at": {
                         "type": "string",
                         "format": "date-time",
@@ -1334,13 +1203,6 @@
                         },
                         "readOnly": true
                     },
-                    "mastery_scores": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/TopicMastery"
-                        },
-                        "readOnly": true
-                    },
                     "preferred_path_recommendation": {
                         "allOf": [
                             {
@@ -1364,14 +1226,15 @@
                     "best_fit_confidence",
                     "best_fit_path_recommendation",
                     "best_fit_role",
+                    "current_role",
                     "guidance_summary",
                     "id",
-                    "mastery_scores",
                     "milestones",
                     "pillar_profile",
                     "preferred_path_recommendation",
                     "preferred_role",
                     "preferred_role_gap_topics",
+                    "profile",
                     "ranked_roles",
                     "role_alignment_status",
                     "role_resolution_status",
@@ -1387,11 +1250,29 @@
                         "format": "uuid",
                         "readOnly": true
                     },
+                    "preferred_role_slug": {
+                        "type": "string",
+                        "writeOnly": true
+                    },
+                    "current_role_slug": {
+                        "type": "string",
+                        "writeOnly": true
+                    },
                     "status": {
-                        "$ref": "#/components/schemas/StatusEnum"
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/StatusEnum"
+                            }
+                        ],
+                        "readOnly": true
                     },
                     "phase": {
-                        "$ref": "#/components/schemas/PhaseEnum"
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PhaseEnum"
+                            }
+                        ],
+                        "readOnly": true
                     },
                     "language": {
                         "$ref": "#/components/schemas/LanguageEnum"
@@ -1402,6 +1283,14 @@
                         "readOnly": true
                     },
                     "preferred_role": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Role"
+                            }
+                        ],
+                        "readOnly": true
+                    },
+                    "current_role": {
                         "allOf": [
                             {
                                 "$ref": "#/components/schemas/Role"
@@ -1432,6 +1321,7 @@
                     "completed_at": {
                         "type": "string",
                         "format": "date-time",
+                        "readOnly": true,
                         "nullable": true
                     },
                     "milestones": {
@@ -1457,14 +1347,18 @@
                 "required": [
                     "best_fit_confidence",
                     "best_fit_role",
+                    "completed_at",
                     "current_question",
+                    "current_role",
                     "guidance_summary",
                     "id",
                     "milestones",
+                    "phase",
                     "preferred_role",
                     "role_alignment_status",
                     "role_resolution_status",
                     "started_at",
+                    "status",
                     "updated_at"
                 ]
             },
@@ -1501,13 +1395,10 @@
             "PhaseEnum": {
                 "enum": [
                     "role_discovery",
-                    "role_ambiguity",
-                    "skill_assessment",
-                    "recommendation_ready",
-                    "completed"
+                    "recommendation_ready"
                 ],
                 "type": "string",
-                "description": "* `role_discovery` - Role Discovery\n* `role_ambiguity` - Role Ambiguity\n* `skill_assessment` - Skill Assessment\n* `recommendation_ready` - Recommendation Ready\n* `completed` - Completed"
+                "description": "* `role_discovery` - Role Discovery\n* `recommendation_ready` - Recommendation Ready"
             },
             "PillarInsight": {
                 "type": "object",
@@ -1541,11 +1432,10 @@
             "PolicyTypeEnum": {
                 "enum": [
                     "rule_based",
-                    "bandit",
                     "q_learning"
                 ],
                 "type": "string",
-                "description": "* `rule_based` - Rule Based\n* `bandit` - Bandit\n* `q_learning` - Q Learning"
+                "description": "* `rule_based` - Rule Based\n* `q_learning` - Q Learning"
             },
             "RankedRoleInsight": {
                 "type": "object",
@@ -1645,6 +1535,10 @@
                         "pattern": "^[-a-zA-Z0-9_]+$"
                     },
                     "title": {
+                        "type": "string",
+                        "maxLength": 160
+                    },
+                    "topic_group": {
                         "type": "string",
                         "maxLength": 160
                     },
@@ -1767,27 +1661,6 @@
                     "role_resolution_status"
                 ]
             },
-            "SessionCreate": {
-                "type": "object",
-                "properties": {
-                    "preferred_role_slug": {
-                        "type": "string",
-                        "pattern": "^[-a-zA-Z0-9_]+$"
-                    },
-                    "language": {
-                        "allOf": [
-                            {
-                                "$ref": "#/components/schemas/LanguageEnum"
-                            }
-                        ],
-                        "default": "en"
-                    },
-                    "profile": {
-                        "type": "object",
-                        "additionalProperties": {}
-                    }
-                }
-            },
             "StatusEnum": {
                 "enum": [
                     "in_progress",
@@ -1896,6 +1769,10 @@
                     "prompt": {
                         "type": "string"
                     },
+                    "translations": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
                     "dimension_key": {
                         "type": "string"
                     }
@@ -1910,6 +1787,9 @@
                 "type": "object",
                 "properties": {
                     "label": {
+                        "type": "string"
+                    },
+                    "label_th": {
                         "type": "string"
                     },
                     "value": {
@@ -1945,42 +1825,6 @@
                     }
                 }
             },
-            "TopicMastery": {
-                "type": "object",
-                "properties": {
-                    "topic_id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "topic_slug": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "topic_title": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "mastery_score": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "confidence_score": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    }
-                },
-                "required": [
-                    "topic_id",
-                    "topic_slug",
-                    "topic_title",
-                    "updated_at"
-                ]
-            },
             "TopicPrerequisite": {
                 "type": "object",
                 "properties": {
@@ -1994,11 +1838,17 @@
                     "dependency_weight": {
                         "type": "number",
                         "format": "double"
+                    },
+                    "title": {
+                        "type": "string",
+                        "readOnly": true,
+                        "default": ""
                     }
                 },
                 "required": [
                     "dependency_weight",
                     "required_mastery_threshold",
+                    "title",
                     "topic_id"
                 ]
             },
