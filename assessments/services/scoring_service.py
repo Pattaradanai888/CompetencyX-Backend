@@ -10,6 +10,9 @@ from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_PROFILE_WEIGHTS
 
 
 # Evidence pipeline constants — tuned via the Monte Carlo simulator.
+# Reproduce with `manage.py tune_scoring --grid <grid.yaml> --samples N --random-seed 42`
+# (grid YAML format in the tune_scoring module docstring). The original one-off
+# research/derive_weights and research/tune_derived scripts were never committed.
 ROLE_DISCOVERY_MIN_SCORE_MARGIN = 0.300
 ROLE_DISCOVERY_TOP_PAIR_COUNT = 2
 ROLE_EVIDENCE_LOGISTIC_SCALE = 1.989
