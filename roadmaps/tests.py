@@ -298,11 +298,11 @@ class SeedMvpContentTests(TestCase):
     def test_role_question_validation_rejects_unknown_signal_dimension(self):
         roles_data, topics_data, questions_data = load_curated_catalog()
         invalid_questions = deepcopy(questions_data)
-        invalid_questions['role_questions'][0]['agree_dimension_signals'] = {'unknown_trait': 1.0}
+        invalid_questions['role_questions'][0]['agree_signals'] = {'unknown_trait': 'primary'}
 
         with self.assertRaisesMessage(
             ValueError,
-            'Role question "role-swebok-01-requirements" has unknown agree_dimension_signals: unknown_trait',
+            'Role question "role-swebok-01-requirements" has unknown agree_signals: unknown_trait',
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
@@ -328,8 +328,8 @@ class SeedMvpContentTests(TestCase):
         assert all(
             question['question_type'] == Question.Type.LIKERT_5
             and question.get('options', []) == []
-            and question.get('agree_dimension_signals')
-            and question.get('disagree_dimension_signals')
+            and question.get('agree_signals')
+            and question.get('disagree_signals')
             for question in questions_data['role_questions']
         )
 
@@ -345,7 +345,7 @@ class SeedMvpContentTests(TestCase):
         assert [question['display_order'] for question in core_questions] == list(range(1, 47))
         dimension_counts = Counter()
         for question in core_questions:
-            signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
+            signaled_dimensions = set(question['agree_signals']) | set(question['disagree_signals'])
             for dimension in signaled_dimensions & CORE_ROLE_DIMENSIONS:
                 dimension_counts[dimension] += 1
 
@@ -366,7 +366,7 @@ class SeedMvpContentTests(TestCase):
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') != 'core':
                 continue
-            covered_dimensions.update((set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])) & CORE_ROLE_DIMENSIONS)
+            covered_dimensions.update((set(question['agree_signals']) | set(question['disagree_signals'])) & CORE_ROLE_DIMENSIONS)
 
         assert CORE_ROLE_DIMENSIONS.issubset(covered_dimensions)
 
@@ -377,7 +377,7 @@ class SeedMvpContentTests(TestCase):
         for question in questions_data['role_questions']:
             if question.get('item_group', 'core') != 'core':
                 continue
-            signaled_dimensions = set(question['agree_dimension_signals']) | set(question['disagree_dimension_signals'])
+            signaled_dimensions = set(question['agree_signals']) | set(question['disagree_signals'])
             for dimension in signaled_dimensions & CORE_ROLE_DIMENSIONS:
                 dimension_totals[dimension] += 1
 

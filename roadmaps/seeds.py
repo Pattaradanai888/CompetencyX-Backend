@@ -12,7 +12,7 @@ from roadmaps.models import (
     Role,
     TopicPrerequisite,
 )
-from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_DIMENSIONS
+from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_DIMENSIONS, SIGNAL_STRENGTH_WEIGHTS
 
 
 BASE_DATA_DIR = Path(__file__).resolve().parent.parent / 'data'
@@ -187,12 +187,13 @@ def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
     return topics_by_key
 
 
+def _signal_levels_to_weights(signal_levels: dict[str, str]) -> dict[str, float]:
+    return {dimension_key: SIGNAL_STRENGTH_WEIGHTS[level] for dimension_key, level in signal_levels.items()}
+
+
 def _sync_questions(*, role_questions: list[dict], roles_by_slug, topics_by_key):
     seed_codes = {question_seed['code'] for question_seed in role_questions}
     for question_seed in role_questions:
-        agree_dimension_signals = question_seed.get('agree_dimension_signals', {})
-        disagree_dimension_signals = question_seed.get('disagree_dimension_signals', {})
-        trait_positive_dimension = question_seed.get('trait_positive_dimension') or next(iter(agree_dimension_signals), '')
         question, _created = Question.objects.update_or_create(
             code=question_seed['code'],
             defaults={
@@ -203,13 +204,11 @@ def _sync_questions(*, role_questions: list[dict], roles_by_slug, topics_by_key)
                 'translations': question_seed.get('translations', {}),
                 'role': None,
                 'topic': None,
-                'difficulty': question_seed['difficulty'],
-                'discrimination_score': question_seed['discrimination_score'],
                 'item_group': question_seed.get('item_group', Question.ItemGroup.CORE),
                 'discriminates_between': question_seed.get('discriminates_between', []),
-                'agree_dimension_signals': agree_dimension_signals,
-                'disagree_dimension_signals': disagree_dimension_signals,
-                'trait_positive_dimension': trait_positive_dimension,
+                'agree_dimension_signals': _signal_levels_to_weights(question_seed['agree_signals']),
+                'disagree_dimension_signals': _signal_levels_to_weights(question_seed['disagree_signals']),
+                'trait_positive_dimension': question_seed['construct'],
                 'display_order': question_seed['display_order'],
                 'is_active': True,
             },
@@ -294,35 +293,49 @@ def _validate_option_key_uniqueness(question_code: str, option_seed: dict, optio
     option_keys.add(option_key)
 
 
+LEGACY_QUESTION_FIELDS = {'agree_dimension_signals', 'disagree_dimension_signals', 'difficulty', 'discrimination_score', 'trait_positive_dimension'}
+VALID_QUESTION_REVIEW_STATUSES = {'draft', 'reviewed'}
+
+
 def _validate_role_question_seed(role_question: dict, *, role_slugs: set[str], existing_codes: set[str]) -> None:
     _validate_question_seed_uniqueness(role_question, existing_codes=existing_codes)
+    code = role_question['code']
+    legacy_fields = LEGACY_QUESTION_FIELDS & role_question.keys()
+    if legacy_fields:
+        msg = (
+            f'Role question "{code}" uses pre-provenance field(s) {sorted(legacy_fields)}; '
+            'use construct/agree_signals/disagree_signals levels instead (docs/scoring-methodology.md).'
+        )
+        raise ValueError(msg)
     _validate_translation_seed(
         role_question.get('translations', {}),
-        item_label=f'Question "{role_question["code"]}"',
+        item_label=f'Question "{code}"',
         allowed_fields=QUESTION_TRANSLATION_FIELDS,
     )
     item_group = role_question.get('item_group', Question.ItemGroup.CORE)
     if item_group not in {Question.ItemGroup.CORE, Question.ItemGroup.TIE_BREAK}:
-        msg = f'Role question "{role_question["code"]}" must use item_group "core" or "tie_break".'
+        msg = f'Role question "{code}" must use item_group "core" or "tie_break".'
         raise ValueError(msg)
     if role_question.get('question_type') != Question.Type.LIKERT_5:
-        msg = f'Role question "{role_question["code"]}" must use question_type "likert_5".'
+        msg = f'Role question "{code}" must use question_type "likert_5".'
         raise ValueError(msg)
     if role_question.get('options'):
-        msg = f'Role question "{role_question["code"]}" must not define options.'
+        msg = f'Role question "{code}" must not define options.'
         raise ValueError(msg)
-    agree_dimension_signals = _validate_dimension_signal_map(role_question, field_name='agree_dimension_signals')
-    disagree_dimension_signals = _validate_dimension_signal_map(role_question, field_name='disagree_dimension_signals')
+
+    agree_signals = _validate_signal_level_map(role_question, field_name='agree_signals')
+    disagree_signals = _validate_signal_level_map(role_question, field_name='disagree_signals')
+    _validate_question_provenance(role_question, agree_signals=agree_signals)
     if item_group == Question.ItemGroup.CORE:
-        core_signal_dimensions = set(agree_dimension_signals) | set(disagree_dimension_signals)
+        core_signal_dimensions = set(agree_signals) | set(disagree_signals)
         if not core_signal_dimensions & CORE_ROLE_DIMENSIONS:
-            msg = f'Core role question "{role_question["code"]}" must signal at least one SWEBOK knowledge area.'
+            msg = f'Core role question "{code}" must signal at least one SWEBOK knowledge area.'
             raise ValueError(msg)
 
     _validate_role_question_pairing(role_question, item_group=item_group, role_slugs=role_slugs)
 
 
-def _validate_dimension_signal_map(role_question: dict, *, field_name: str) -> dict:
+def _validate_signal_level_map(role_question: dict, *, field_name: str) -> dict:
     signals = role_question.get(field_name)
     if not isinstance(signals, dict) or not signals:
         msg = f'Role question "{role_question["code"]}" must define {field_name}.'
@@ -331,11 +344,34 @@ def _validate_dimension_signal_map(role_question: dict, *, field_name: str) -> d
     if unknown_dimensions:
         msg = f'Role question "{role_question["code"]}" has unknown {field_name}: {", ".join(unknown_dimensions)}'
         raise ValueError(msg)
-    invalid_weights = sorted(key for key, value in signals.items() if not isinstance(value, int | float) or float(value) <= 0)
-    if invalid_weights:
-        msg = f'Role question "{role_question["code"]}" has invalid {field_name} weight(s): {", ".join(invalid_weights)}'
+    invalid_levels = sorted(key for key, level in signals.items() if level not in SIGNAL_STRENGTH_WEIGHTS)
+    if invalid_levels:
+        allowed = ', '.join(sorted(SIGNAL_STRENGTH_WEIGHTS))
+        msg = f'Role question "{role_question["code"]}" has invalid {field_name} level(s) for: {", ".join(invalid_levels)} (allowed: {allowed})'
         raise ValueError(msg)
     return signals
+
+
+def _validate_question_provenance(role_question: dict, *, agree_signals: dict) -> None:
+    from roadmaps.weight_derivation import _load_known_source_anchors, _validate_sources  # noqa: PLC0415 - lazy: pulls in the YAML source anchors
+
+    code = role_question['code']
+    construct = role_question.get('construct')
+    if construct not in agree_signals or agree_signals[construct] != 'primary':
+        msg = f'Role question "{code}" construct must be an agree_signals dimension at level "primary" (got: {construct!r}).'
+        raise ValueError(msg)
+    if not str(role_question.get('rationale') or '').strip():
+        msg = f'Role question "{code}" requires a non-empty rationale.'
+        raise ValueError(msg)
+    review = role_question.get('review') or {}
+    if review.get('status') not in VALID_QUESTION_REVIEW_STATUSES:
+        msg = f'Role question "{code}" review.status must be one of {sorted(VALID_QUESTION_REVIEW_STATUSES)}.'
+        raise ValueError(msg)
+    ka_codes, manifest_files = _load_known_source_anchors()
+    source_errors: list[str] = []
+    _validate_sources(f'question "{code}"', role_question.get('sources'), ka_codes=ka_codes, manifest_files=manifest_files, errors=source_errors)
+    if source_errors:
+        raise ValueError('; '.join(source_errors))
 
 
 def _validate_role_question_pairing(role_question: dict, *, item_group: str, role_slugs: set[str]) -> None:
@@ -385,7 +421,7 @@ def _validate_role_question_bank(role_questions: list[dict]) -> None:
     for question in role_questions:
         item_group = question.get('item_group', Question.ItemGroup.CORE)
         if item_group == Question.ItemGroup.CORE:
-            question_dimensions = set(question.get('agree_dimension_signals', {})) | set(question.get('disagree_dimension_signals', {}))
+            question_dimensions = set(question.get('agree_signals', {})) | set(question.get('disagree_signals', {}))
             question_core_dimensions = question_dimensions & CORE_ROLE_DIMENSIONS
             core_dimensions.update(question_core_dimensions)
 

@@ -1,1077 +1,1456 @@
+# Role-discovery question catalog (provenance schema).
+# Signals are ordinal levels (primary/secondary/contrast) converted to numbers
+# by roadmaps/seeds.py via SIGNAL_STRENGTH_WEIGHTS; construct is the dimension
+# the item measures. See docs/scoring-methodology.md for the authoring checklist
+# and review workflow. review.status=draft means the rationale has not yet been
+# human-verified against the cited sources.
 role_questions:
 - code: role-swebok-01-requirements
   item_group: core
   question_type: likert_5
-  prompt: Under tight sprint deadlines with fuzzy requirements, I stop to run problem-discovery
-    workshops even if it risks delaying our initial coding start date.
+  prompt: Under tight sprint deadlines with fuzzy requirements, I stop to run problem-discovery workshops even if it risks delaying our initial coding start
+    date.
   translations:
     th:
-      prompt: ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์
-        แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม
-  agree_dimension_signals:
-    requirements: 1
-    people_product: 0.8
-  disagree_dimension_signals:
-    architecture: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม
+  construct: requirements
+  agree_signals:
+    requirements: primary
+    people_product: secondary
+  disagree_signals:
+    architecture: contrast
+  rationale: Choosing discovery workshops over an early coding start is the KA1 elicitation trade-off; disagreement signals a schema-first architectural
+    instinct.
+  sources:
+  - swebok:
+      ka: KA1
+      topic: Requirements Elicitation
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 1
 - code: role-swebok-02-architecture
   item_group: core
   question_type: likert_5
-  prompt: Before coding a complex system, I refuse to start building screens until
-    I've mapped the database schema and integration boundaries, even if project managers
-    demand a quick UI demo.
+  prompt: Before coding a complex system, I refuse to start building screens until I've mapped the database schema and integration boundaries, even if project
+    managers demand a quick UI demo.
   translations:
     th:
-      prompt: ก่อนจะเริ่มพัฒนาคีย์เวิร์กที่มีความซับซ้อน ฉันยืนกรานที่จะไม่ทำหน้าจอ
-        UI จนกว่าจะออกแบบโครงสร้าง Database และ Interface ร่วมระหว่างระบบให้จบ แม้จะถูกเร่งรัดให้ทำเดโมสวย
-        ๆ ไปอวดโชว์ก็ตาม
-  agree_dimension_signals:
-    architecture: 1
-    backend_platform: 0.7
-  disagree_dimension_signals:
-    design: 0.6
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ก่อนจะเริ่มพัฒนาคีย์เวิร์กที่มีความซับซ้อน ฉันยืนกรานที่จะไม่ทำหน้าจอ UI จนกว่าจะออกแบบโครงสร้าง Database และ Interface ร่วมระหว่างระบบให้จบ
+        แม้จะถูกเร่งรัดให้ทำเดโมสวย ๆ ไปอวดโชว์ก็ตาม
+  construct: architecture
+  agree_signals:
+    architecture: primary
+    backend_platform: secondary
+  disagree_signals:
+    design: secondary
+  rationale: Mapping schema and integration boundaries before building screens is architectural significant-decision work (KA2).
+  sources:
+  - swebok:
+      ka: KA2
+      topic: Architectural Structures and Views
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 2
 - code: role-swebok-03-design
   item_group: core
   question_type: likert_5
-  prompt: When designing a new user onboarding, I map the complete user journey and
-    interaction states before writing any code, even when pressed to use pre-built
-    components immediately.
+  prompt: When designing a new user onboarding, I map the complete user journey and interaction states before writing any code, even when pressed to use
+    pre-built components immediately.
   translations:
     th:
-      prompt: เมื่อต้องออกแบบระบบ Onboarding ใหม่ ฉันเลือกที่จะลงแรงวาด User Journey
-        และ Interaction Flow ให้ครบทุกเส้นทางก่อนเริ่มเขียนโค้ด แม้จะโดนกดดันให้รีบแกะ
+      prompt: เมื่อต้องออกแบบระบบ Onboarding ใหม่ ฉันเลือกที่จะลงแรงวาด User Journey และ Interaction Flow ให้ครบทุกเส้นทางก่อนเริ่มเขียนโค้ด แม้จะโดนกดดันให้รีบแกะ
         Component สำเร็จรูปมาใช้เลยก็ตาม
-  agree_dimension_signals:
-    design: 1
-    people_product: 0.6
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: design
+  agree_signals:
+    design: primary
+    people_product: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Mapping journeys and interaction states before code is detailed interaction design (KA3); disagreement favors building directly.
+  sources:
+  - swebok:
+      ka: KA3
+      topic: User Interface Design
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 3
 - code: role-swebok-04-construction
   item_group: core
   question_type: likert_5
-  prompt: I would rather take on high-volume coding tickets in isolation than sit
-    through project planning and alignment meetings, even if it leads to integration
+  prompt: I would rather take on high-volume coding tickets in isolation than sit through project planning and alignment meetings, even if it leads to integration
     friction later.
   translations:
     th:
-      prompt: ฉันยอมเลือกปิดตัวลุยโค้ดทีเดียวหลาย ๆ ทิกเก็ต ดีกว่าต้องแบ่งเวลาไปเข้าประชุมประสานแผนงานหรือวางแผนสปรินต์
-        แม้จะเสี่ยงทำให้ระบบประกอบกันยากขึ้นในภายหลังก็ตาม
-  agree_dimension_signals:
-    construction: 1
-    application_build: 0.7
-  disagree_dimension_signals:
-    management: 0.7
-    leadership_process: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมเลือกปิดตัวลุยโค้ดทีเดียวหลาย ๆ ทิกเก็ต ดีกว่าต้องแบ่งเวลาไปเข้าประชุมประสานแผนงานหรือวางแผนสปรินต์ แม้จะเสี่ยงทำให้ระบบประกอบกันยากขึ้นในภายหลังก็ตาม
+  construct: construction
+  agree_signals:
+    construction: primary
+    application_build: secondary
+  disagree_signals:
+    management: secondary
+    leadership_process: secondary
+  rationale: Preferring high-volume coding over planning meetings is a pure construction-orientation signal (KA4) traded against management work.
+  sources:
+  - swebok:
+      ka: KA4
+      topic: Practical Considerations
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 4
 - code: role-swebok-05-testing
   item_group: core
   question_type: likert_5
-  prompt: I refuse to ship features without full unit and integration test coverage,
-    even when product managers pressure us to bypass testing to meet a critical marketing
-    deadline.
+  prompt: I refuse to ship features without full unit and integration test coverage, even when product managers pressure us to bypass testing to meet a
+    critical marketing deadline.
   translations:
     th:
-      prompt: ฉันยืนกรานที่จะไม่ปล่อย Feature ที่ไม่มี Test Coverage ครอบคลุม (Unit
-        & Integration Tests) แม้จะถูก PM กดดันอย่างหนักให้ปล่อยของด่วนเพื่อทันแคมเปญการตลาดก็ตาม
-  agree_dimension_signals:
-    testing: 1
-    quality: 0.6
-    leadership_process: 0.4
-  disagree_dimension_signals:
-    construction: 0.6
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยืนกรานที่จะไม่ปล่อย Feature ที่ไม่มี Test Coverage ครอบคลุม (Unit & Integration Tests) แม้จะถูก PM กดดันอย่างหนักให้ปล่อยของด่วนเพื่อทันแคมเปญการตลาดก็ตาม
+  construct: testing
+  agree_signals:
+    testing: primary
+    quality: secondary
+    leadership_process: contrast
+  disagree_signals:
+    construction: secondary
+  rationale: Refusing to ship without coverage under deadline pressure is the KA5 testing-discipline trade-off.
+  sources:
+  - swebok:
+      ka: KA5
+      topic: Test Levels
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 5
 - code: role-swebok-06-operations
   item_group: core
   question_type: likert_5
-  prompt: I spend substantial time configuring application logging and alert dashboards
-    before launching a feature, even if the team views it as post-release overhead.
+  prompt: I spend substantial time configuring application logging and alert dashboards before launching a feature, even if the team views it as post-release
+    overhead.
   translations:
     th:
-      prompt: ฉันเลือกเสียเวลานั่งเซ็ตระบบ Log และ Alert Dashboard ให้ละเอียดล่วงหน้าก่อนเอาโค้ดขึ้นระบบจริง
-        แม้เพื่อนในทีมจะมองว่าเป็นงานงอกส่วนเกินที่ค่อยทำทีหลังปล่อยของไปแล้วก็ได้
-  agree_dimension_signals:
-    operations: 1
-    operations_security: 0.8
-  disagree_dimension_signals:
-    requirements: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันเลือกเสียเวลานั่งเซ็ตระบบ Log และ Alert Dashboard ให้ละเอียดล่วงหน้าก่อนเอาโค้ดขึ้นระบบจริง แม้เพื่อนในทีมจะมองว่าเป็นงานงอกส่วนเกินที่ค่อยทำทีหลังปล่อยของไปแล้วก็ได้
+  construct: operations
+  agree_signals:
+    operations: primary
+    operations_security: secondary
+  disagree_signals:
+    requirements: contrast
+  rationale: Investing in logging and alert dashboards pre-launch is operations/observability work (KA6).
+  sources:
+  - swebok:
+      ka: KA6
+      topic: Operational Monitoring
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 6
 - code: role-swebok-07-maintenance
   item_group: core
   question_type: likert_5
-  prompt: I prefer refactoring a legacy module to make it stable and maintainable
-    over building a greenfield service from scratch, even if refactoring gets zero
-    stakeholder recognition.
+  prompt: I prefer refactoring a legacy module to make it stable and maintainable over building a greenfield service from scratch, even if refactoring gets
+    zero stakeholder recognition.
   translations:
     th:
-      prompt: ฉันเลือกที่จะจมอยู่กับการรื้อ Refactor โค้ดมรดก (Legacy Module) ให้มั่นคงและคลีนขึ้น
-        ดีกว่าการสร้างโปรเจกต์ใหม่ด้วยเทคโนโลยีใหม่ ๆ แม้งานรื้อนี้จะไม่มีสเตกโฮลเดอร์เห็นเป็นผลงานเลยก็ตาม
-  agree_dimension_signals:
-    maintenance: 1
-    quality: 0.5
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันเลือกที่จะจมอยู่กับการรื้อ Refactor โค้ดมรดก (Legacy Module) ให้มั่นคงและคลีนขึ้น ดีกว่าการสร้างโปรเจกต์ใหม่ด้วยเทคโนโลยีใหม่ ๆ แม้งานรื้อนี้จะไม่มีสเตกโฮลเดอร์เห็นเป็นผลงานเลยก็ตาม
+  construct: maintenance
+  agree_signals:
+    maintenance: primary
+    quality: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Preferring stabilizing refactors of legacy modules over greenfield building is the KA7 maintenance disposition.
+  sources:
+  - swebok:
+      ka: KA7
+      topic: Maintenance Categories
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 7
 - code: role-swebok-08-configuration-management
   item_group: core
   question_type: likert_5
-  prompt: I spend time locking down version boundaries, Docker setups, and CI/CD pipelines
-    even when developers complain that strict configurations slow down their local
-    workflows.
+  prompt: I spend time locking down version boundaries, Docker setups, and CI/CD pipelines even when developers complain that strict configurations slow
+    down their local workflows.
   translations:
     th:
-      prompt: ฉันยอมเสียเวลาควบคุม Version, จัดแจง Docker และล็อก CI/CD Pipeline ให้เป็นระเบียบสุด
-        ๆ แม้คนในทีมจะบ่นว่าความเข้มงวดนี้ทำให้ขยับตัวแก้บั๊กใน Local ได้ช้าลงก็ตาม
-  agree_dimension_signals:
-    configuration_management: 1
-    operations_security: 0.7
-  disagree_dimension_signals:
-    application_build: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมเสียเวลาควบคุม Version, จัดแจง Docker และล็อก CI/CD Pipeline ให้เป็นระเบียบสุด ๆ แม้คนในทีมจะบ่นว่าความเข้มงวดนี้ทำให้ขยับตัวแก้บั๊กใน
+        Local ได้ช้าลงก็ตาม
+  construct: configuration_management
+  agree_signals:
+    configuration_management: primary
+    operations_security: secondary
+  disagree_signals:
+    application_build: contrast
+  rationale: Locking down versions, containers, and pipelines despite developer friction is SCM discipline (KA8).
+  sources:
+  - swebok:
+      ka: KA8
+      topic: Configuration Control
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 8
 - code: role-swebok-09-management
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend my days resolving team dependencies, mapping delivery
-    timelines, and managing stakeholder expectations than writing core application
-    code myself.
+  prompt: I would rather spend my days resolving team dependencies, mapping delivery timelines, and managing stakeholder expectations than writing core
+    application code myself.
   translations:
     th:
-      prompt: ฉันยินดีวางมือจากการเขียนโค้ดฟีเจอร์หลัก แล้วทุ่มเวลากับการไล่เคลียร์
-        Dependency ของคนในทีม จัดการไทม์ไลน์ และเคลียร์กับลูกค้า เพื่อให้แผนการส่งมอบไม่หลุดพ้นจากเป้าหมาย
-  agree_dimension_signals:
-    management: 1
-    leadership_process: 0.9
-    people_product: 0.5
-  disagree_dimension_signals:
-    construction: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยินดีวางมือจากการเขียนโค้ดฟีเจอร์หลัก แล้วทุ่มเวลากับการไล่เคลียร์ Dependency ของคนในทีม จัดการไทม์ไลน์ และเคลียร์กับลูกค้า เพื่อให้แผนการส่งมอบไม่หลุดพ้นจากเป้าหมาย
+  construct: management
+  agree_signals:
+    management: primary
+    leadership_process: primary
+    people_product: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Preferring dependency resolution, timelines, and stakeholder management over coding is KA9 project-management orientation.
+  sources:
+  - swebok:
+      ka: KA9
+      topic: Project Planning
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 9
 - code: role-swebok-10-process
   item_group: core
   question_type: likert_5
-  prompt: I would advocate for stopping the sprint to resolve team workflow bottlenecks,
-    even if it reduces our immediate feature delivery velocity for the business.
+  prompt: I would advocate for stopping the sprint to resolve team workflow bottlenecks, even if it reduces our immediate feature delivery velocity for
+    the business.
   translations:
     th:
-      prompt: ฉันกล้าที่จะขอสั่งเบรก Sprint เพื่อคุยแก้ปัญหาคอขวดในกระบวนการทำงานของทีม
-        (Workflow Bottlenecks) แม้รู้ดีว่ามันจะทำให้อัตราความเร็วในการส่งมอบฟีเจอร์ลดฮวบลงก็ตาม
-  agree_dimension_signals:
-    process: 1
-    leadership_process: 0.8
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันกล้าที่จะขอสั่งเบรก Sprint เพื่อคุยแก้ปัญหาคอขวดในกระบวนการทำงานของทีม (Workflow Bottlenecks) แม้รู้ดีว่ามันจะทำให้อัตราความเร็วในการส่งมอบฟีเจอร์ลดฮวบลงก็ตาม
+  construct: process
+  agree_signals:
+    process: primary
+    leadership_process: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Stopping the sprint to fix workflow bottlenecks values process improvement (KA10) over immediate delivery.
+  sources:
+  - swebok:
+      ka: KA10
+      topic: Process Assessment and Improvement
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 10
 - code: role-swebok-11-models-methods
   item_group: core
   question_type: likert_5
-  prompt: I spend significant time analyzing architectural paradigms and design patterns
-    before coding, even when the team pressures me to start hacking a solution immediately.
+  prompt: I spend significant time analyzing architectural paradigms and design patterns before coding, even when the team pressures me to start hacking
+    a solution immediately.
   translations:
     th:
-      prompt: ฉันยอมจมอยู่กับการศึกษารูปแบบโครงสร้าง (Architectural Paradigms) หรือหาดีไซน์แพทเทิร์นที่เหมาะสมก่อนเขียนโค้ด
-        แม้ทีมจะพยายามเร่งให้ฉันรีบเขียน ๆ ไปก่อนก็ตาม
-  agree_dimension_signals:
-    models_methods: 1
-    data_ai: 0.6
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมจมอยู่กับการศึกษารูปแบบโครงสร้าง (Architectural Paradigms) หรือหาดีไซน์แพทเทิร์นที่เหมาะสมก่อนเขียนโค้ด แม้ทีมจะพยายามเร่งให้ฉันรีบเขียน
+        ๆ ไปก่อนก็ตาม
+  construct: models_methods
+  agree_signals:
+    models_methods: primary
+    data_ai: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Analyzing paradigms and patterns before coding reflects model-driven method preference (KA11).
+  sources:
+  - swebok:
+      ka: KA11
+      topic: Software Engineering Methods
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 11
 - code: role-swebok-12-quality
   item_group: core
   question_type: likert_5
-  prompt: I spend my sprint allocations optimizing API response times and system resilience,
-    even when customers complain that they want visible feature updates instead.
+  prompt: I spend my sprint allocations optimizing API response times and system resilience, even when customers complain that they want visible feature
+    updates instead.
   translations:
     th:
-      prompt: ฉันเลือกที่จะลุยงานหลังบ้านเพื่อเพิ่มความเร็ว API และความล่มยากของระบบ
-        แม้ผู้ใช้งานจะคอยกดดันว่าอยากเห็นฟีเจอร์ใหม่ ๆ บนหน้าจ่อนเป็นอันดับแรกก็ตาม
-  agree_dimension_signals:
-    quality: 1
-    leadership_process: 0.4
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันเลือกที่จะลุยงานหลังบ้านเพื่อเพิ่มความเร็ว API และความล่มยากของระบบ แม้ผู้ใช้งานจะคอยกดดันว่าอยากเห็นฟีเจอร์ใหม่ ๆ บนหน้าจ่อนเป็นอันดับแรกก็ตาม
+  construct: quality
+  agree_signals:
+    quality: primary
+    leadership_process: contrast
+  disagree_signals:
+    construction: secondary
+  rationale: Spending sprint capacity on response times and resilience over visible features is quality-attribute ownership (KA12).
+  sources:
+  - swebok:
+      ka: KA12
+      topic: Quality Management Processes
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 12
 - code: role-swebok-13-security
   item_group: core
   question_type: likert_5
-  prompt: I strictly enforce rigorous security checks and input validation rules,
-    even when product designers argue that these security gates degrade the user experience.
+  prompt: I strictly enforce rigorous security checks and input validation rules, even when product designers argue that these security gates degrade the
+    user experience.
   translations:
     th:
       prompt: ฉันยอมโดนบ่นจากทีม Designer ว่าระบบทำออนบอร์ดดิ้งยาวเกินไป ดีกว่าต้องยอมปล่อยฟีเจอร์ออกไปโดยที่ยังไม่ได้เขียนโค้ดดักช่องโหว่ด้านความปลอดภัย
         (Security Inputs Validation)
-  agree_dimension_signals:
-    security: 1
-    operations_security: 0.9
-  disagree_dimension_signals:
-    design: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: security
+  agree_signals:
+    security: primary
+    operations_security: primary
+  disagree_signals:
+    design: contrast
+  rationale: Enforcing security checks against UX pushback is the KA13 security-first trade-off.
+  sources:
+  - swebok:
+      ka: KA13
+      topic: Secure Design and Coding
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 13
 - code: role-swebok-14-professional-practice
   item_group: core
   question_type: likert_5
-  prompt: I spend time writing comprehensive API guides and architecture decision
-    records (ADRs) to mentor the team, even when it delays my personal coding task
-    deadlines.
+  prompt: I spend time writing comprehensive API guides and architecture decision records (ADRs) to mentor the team, even when it delays my personal coding
+    task deadlines.
   translations:
     th:
-      prompt: ฉันยินดีแชร์ความรู้โดยเขียนไกด์คู่มือระบบและบันทึกการตัดสินใจทางเทคนิค
-        (ADRs) ให้ทีมมีมาตรฐานเดียวกัน แม้จะทำให้ทาสก์เขียนโค้ดของตัวเองล่าช้าไปบ้างก็ตาม
-  agree_dimension_signals:
-    professional_practice: 1
-    documentation_practice: 0.8
-    people_product: 0.5
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยินดีแชร์ความรู้โดยเขียนไกด์คู่มือระบบและบันทึกการตัดสินใจทางเทคนิค (ADRs) ให้ทีมมีมาตรฐานเดียวกัน แม้จะทำให้ทาสก์เขียนโค้ดของตัวเองล่าช้าไปบ้างก็ตาม
+  construct: professional_practice
+  agree_signals:
+    professional_practice: primary
+    documentation_practice: secondary
+    people_product: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: Writing guides and ADRs to mentor the team over personal coding is professional practice and communication (KA14).
+  sources:
+  - swebok:
+      ka: KA14
+      topic: Communication Skills
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 14
 - code: role-swebok-15-economics
   item_group: core
   question_type: likert_5
-  prompt: I would choose a cheap, slightly clunky third-party API that achieves the
-    business goal over spending weeks building an elegant custom service in-house.
+  prompt: I would choose a cheap, slightly clunky third-party API that achieves the business goal over spending weeks building an elegant custom service
+    in-house.
   translations:
     th:
-      prompt: ฉันยอมเลือกใช้ API นอกแบบชำระเงินที่ตอบโจทย์ธุรกิจได้ทันที แม้ตัวโค้ดจะไม่ได้เนี้ยบหรูหรา
-        ดีกว่าต้องเสียเวลาสองสามสัปดาห์ปั้นระบบใหม่เองในบ้านให้สมบูรณ์แบบเชิงเทคนิค
-  agree_dimension_signals:
-    economics: 1
-    people_product: 0.6
-    leadership_process: 0.4
-  disagree_dimension_signals:
-    construction: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมเลือกใช้ API นอกแบบชำระเงินที่ตอบโจทย์ธุรกิจได้ทันที แม้ตัวโค้ดจะไม่ได้เนี้ยบหรูหรา ดีกว่าต้องเสียเวลาสองสามสัปดาห์ปั้นระบบใหม่เองในบ้านให้สมบูรณ์แบบเชิงเทคนิค
+  construct: economics
+  agree_signals:
+    economics: primary
+    people_product: secondary
+    leadership_process: contrast
+  disagree_signals:
+    construction: secondary
+  rationale: Choosing a cheap adequate third-party API over an elegant in-house build is engineering-economics reasoning (KA15).
+  sources:
+  - swebok:
+      ka: KA15
+      topic: Life-Cycle Economics
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 15
 - code: role-swebok-16-computing-foundations
   item_group: core
   question_type: likert_5
-  prompt: I spend time optimizing memory footprints and algorithmic time complexities
-    of my data processing models, even when computing resources are cheap.
+  prompt: I spend time optimizing memory footprints and algorithmic time complexities of my data processing models, even when computing resources are cheap.
   translations:
     th:
-      prompt: ฉันยอมเสียเวลาวิเคราะห์เรื่องความซับซ้อนของ Algorithm (Time Complexity)
-        และการจัดการ Memory ในโค้ดดึงข้อมูล แม้เซิร์ฟเวอร์คลาวด์จะแรงและมีราคาถูกพอจะกดข้ามเรื่องนี้ได้ก็ตาม
-  agree_dimension_signals:
-    computing_ai: 1
-    data_ai: 0.8
-  disagree_dimension_signals:
-    requirements: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมเสียเวลาวิเคราะห์เรื่องความซับซ้อนของ Algorithm (Time Complexity) และการจัดการ Memory ในโค้ดดึงข้อมูล แม้เซิร์ฟเวอร์คลาวด์จะแรงและมีราคาถูกพอจะกดข้ามเรื่องนี้ได้ก็ตาม
+  construct: computing_ai
+  agree_signals:
+    computing_ai: primary
+    data_ai: secondary
+  disagree_signals:
+    requirements: contrast
+  rationale: Optimizing memory and algorithmic complexity even with cheap compute signals CS-foundations orientation (KA16).
+  sources:
+  - swebok:
+      ka: KA16
+      topic: Algorithms and Data Structures
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 16
 - code: role-swebok-17-mathematical-foundations
   item_group: core
   question_type: likert_5
-  prompt: I refuse to finalize a product change or hypothesis until I've run statistically
-    valid A/B tests, even when the executive team is confident in their gut feelings.
+  prompt: I refuse to finalize a product change or hypothesis until I've run statistically valid A/B tests, even when the executive team is confident in
+    their gut feelings.
   translations:
     th:
-      prompt: ฉันจะไม่ตกลงเปลี่ยนฟีเจอร์ตามความรู้สึกส่วนตัวของใคร จนกว่าจะได้รัน
-        A/B Testing เก็บตัวเลขพิสูจน์เชิงสถิติจนชัวร์ แม้ผู้บริหารจะมั่นใจในสัญชาตญาณตัวเองมากก็ตาม
-  agree_dimension_signals:
-    math: 1
-    data_ai: 0.8
-  disagree_dimension_signals:
-    design: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันจะไม่ตกลงเปลี่ยนฟีเจอร์ตามความรู้สึกส่วนตัวของใคร จนกว่าจะได้รัน A/B Testing เก็บตัวเลขพิสูจน์เชิงสถิติจนชัวร์ แม้ผู้บริหารจะมั่นใจในสัญชาตญาณตัวเองมากก็ตาม
+  construct: math
+  agree_signals:
+    math: primary
+    data_ai: secondary
+  disagree_signals:
+    design: contrast
+  rationale: Requiring statistically valid A/B tests over executive gut feel is mathematical-foundations discipline (KA17).
+  sources:
+  - swebok:
+      ka: KA17
+      topic: Probability and Statistics
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 17
 - code: role-swebok-18-engineering-foundations
   item_group: core
   question_type: likert_5
-  prompt: When resources are limited, I secure zero-downtime deployment pipelines
-    and API security over polishing the visual UI for stakeholders.
+  prompt: When resources are limited, I secure zero-downtime deployment pipelines and API security over polishing the visual UI for stakeholders.
   translations:
     th:
-      prompt: ในวันที่ทรัพยากรมีจำกัด ฉันเลือกจัดสรรงบไปกับการวางระบบ Deployment แบบไม่ล่ม
-        (Zero-Downtime Pipeline) และความปลอดภัยของ API ก่อนเรื่องหน้าตา UI ที่เอาไว้โชว์สเตกโฮลเดอร์
-  agree_dimension_signals:
-    engineering: 1
-    backend_platform: 0.6
-  disagree_dimension_signals:
-    design: 0.6
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ในวันที่ทรัพยากรมีจำกัด ฉันเลือกจัดสรรงบไปกับการวางระบบ Deployment แบบไม่ล่ม (Zero-Downtime Pipeline) และความปลอดภัยของ API ก่อนเรื่องหน้าตา
+        UI ที่เอาไว้โชว์สเตกโฮลเดอร์
+  construct: engineering
+  agree_signals:
+    engineering: primary
+    backend_platform: secondary
+  disagree_signals:
+    design: secondary
+  rationale: Prioritizing deployment reliability and API security over UI polish under scarcity is engineering-trade-off thinking (KA18).
+  sources:
+  - swebok:
+      ka: KA18
+      topic: Empirical Methods
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 18
 - code: role-swebok-19-user-needs-vs-internals
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend my week conducting interactive user interviews to validate
-    feature ideas than tuning a microservice performance bottleneck.
+  prompt: I would rather spend my week conducting interactive user interviews to validate feature ideas than tuning a microservice performance bottleneck.
   translations:
     th:
-      prompt: ฉันอยากเอาตัวเองออกไปนั่งจับเข่าคุยกับผู้ใช้งานจริงเพื่อหาสิ่งที่พวกเขาลำบากใจ
-        แทนที่จะมานั่งไล่จูนคอขวดในระบบหลังบ้าน (Microservice Performance Tuning)
-  agree_dimension_signals:
-    requirements: 1
-    people_product: 1
-  disagree_dimension_signals:
-    operations: 0.6
-    backend_platform: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันอยากเอาตัวเองออกไปนั่งจับเข่าคุยกับผู้ใช้งานจริงเพื่อหาสิ่งที่พวกเขาลำบากใจ แทนที่จะมานั่งไล่จูนคอขวดในระบบหลังบ้าน (Microservice Performance
+        Tuning)
+  construct: requirements
+  agree_signals:
+    requirements: primary
+    people_product: primary
+  disagree_signals:
+    operations: secondary
+    backend_platform: contrast
+  rationale: 'Bipolar axis: user interviews (KA1, people-facing) versus microservice performance tuning (operations/platform).'
+  sources:
+  - swebok:
+      ka: KA1
+      topic: Requirements Elicitation
+  - swebok:
+      ka: KA6
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 19
 - code: role-swebok-20-structure-vs-iteration
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend a sprint building a rigid, highly scalable architecture
-    plan than spinning up rapid prototypes that might require complete rewrites.
+  prompt: I would rather spend a sprint building a rigid, highly scalable architecture plan than spinning up rapid prototypes that might require complete
+    rewrites.
   translations:
     th:
-      prompt: ฉันยอมทุ่มหมดเวลาทั้งสปรินต์ไปกับการปักเสาเข็มโครงสร้างเชิงเทคนิคให้แข็งแกร่ง
-        (Architecture Plan) ดีกว่าการทำต้นแบบลวก ๆ มาทดลองใช้แล้วต้องโละทิ้งเขียนใหม่หมดในอีกไม่กี่เดือน
-  agree_dimension_signals:
-    architecture: 1
-    engineering: 0.5
-    backend_platform: 0.6
-  disagree_dimension_signals:
-    process: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยอมทุ่มหมดเวลาทั้งสปรินต์ไปกับการปักเสาเข็มโครงสร้างเชิงเทคนิคให้แข็งแกร่ง (Architecture Plan) ดีกว่าการทำต้นแบบลวก ๆ มาทดลองใช้แล้วต้องโละทิ้งเขียนใหม่หมดในอีกไม่กี่เดือน
+  construct: architecture
+  agree_signals:
+    architecture: primary
+    engineering: secondary
+    backend_platform: secondary
+  disagree_signals:
+    process: secondary
+  rationale: 'Bipolar axis: upfront scalable architecture (KA2) versus rapid prototype iteration (process-led delivery).'
+  sources:
+  - swebok:
+      ka: KA2
+      topic: Quality-Attribute Analysis
+  - swebok:
+      ka: KA10
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 20
 - code: role-swebok-21-screen-vs-data-flow
   item_group: core
   question_type: likert_5
-  prompt: I enjoy perfecting interactive UI transitions and pixel layouts on the frontend
-    more than structuring complex background jobs and data pipelines.
+  prompt: I enjoy perfecting interactive UI transitions and pixel layouts on the frontend more than structuring complex background jobs and data pipelines.
   translations:
     th:
-      prompt: ฉันสนุกกับการขัดเกลาปุ่มกด เลย์เอาต์ และแอนิเมชันสวย ๆ บนหน้าจอเว็บมากกว่าการมานั่งปวดหัวคุมท่อส่งข้อมูล
-        (Data Pipeline) และจัดการคิวงานระบบหลังบ้าน
-  agree_dimension_signals:
-    design: 1
-    web_frontend: 0.8
-  disagree_dimension_signals:
-    architecture: 0.5
-    backend_platform: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันสนุกกับการขัดเกลาปุ่มกด เลย์เอาต์ และแอนิเมชันสวย ๆ บนหน้าจอเว็บมากกว่าการมานั่งปวดหัวคุมท่อส่งข้อมูล (Data Pipeline) และจัดการคิวงานระบบหลังบ้าน
+  construct: design
+  agree_signals:
+    design: primary
+    web_frontend: secondary
+  disagree_signals:
+    architecture: secondary
+    backend_platform: secondary
+  rationale: 'Bipolar axis: UI craft on the web frontend (KA3) versus background jobs and pipelines (architecture/platform).'
+  sources:
+  - swebok:
+      ka: KA3
+      topic: User Interface Design
+  - roadmap_sh:
+      file: frontend.json
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 21
 - code: role-swebok-22-build-vs-analyze
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend a full day coding complex business logic into a feature
-    than reviewing performance reports and metrics charts.
+  prompt: I would rather spend a full day coding complex business logic into a feature than reviewing performance reports and metrics charts.
   translations:
     th:
       prompt: ฉันขอเลือกนั่งเคาะแป้นเขียน Logic และพ่นฟีเจอร์ลงโค้ดทั้งวัน ดีกว่าการต้องมานั่งกวาดสายตาวิเคราะห์รายงานระบบหรือแดชบอร์ดประสิทธิภาพขององค์กร
-  agree_dimension_signals:
-    construction: 1
-    application_build: 0.8
-  disagree_dimension_signals:
-    economics: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: construction
+  agree_signals:
+    construction: primary
+    application_build: secondary
+  disagree_signals:
+    economics: contrast
+  rationale: 'Bipolar axis: coding business logic (KA4) versus reviewing performance metrics (economics).'
+  sources:
+  - swebok:
+      ka: KA4
+  - swebok:
+      ka: KA15
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 22
 - code: role-swebok-23-test-vs-operate
   item_group: core
   question_type: likert_5
-  prompt: I prefer writing deep QA edge-case testing suites to catch bugs before release
-    over configuring real-time alert logs to monitor production anomalies.
+  prompt: I prefer writing deep QA edge-case testing suites to catch bugs before release over configuring real-time alert logs to monitor production anomalies.
   translations:
     th:
-      prompt: ฉันชอบขลุกตัวอยู่กับการทำ QA Test Scenarios เพื่อสกัด Bug ให้หมดเกลี้ยงก่อนเอาขึ้นระบบจริง
-        มากกว่าการคอยไปนั่งเฝ้าหน้าจอ Monitor หรือรับ Alert เมื่อระบบ Production มีปัญหา
-  agree_dimension_signals:
-    testing: 1
-    quality: 0.7
-  disagree_dimension_signals:
-    operations: 1
-    operations_security: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันชอบขลุกตัวอยู่กับการทำ QA Test Scenarios เพื่อสกัด Bug ให้หมดเกลี้ยงก่อนเอาขึ้นระบบจริง มากกว่าการคอยไปนั่งเฝ้าหน้าจอ Monitor หรือรับ Alert
+        เมื่อระบบ Production มีปัญหา
+  construct: testing
+  agree_signals:
+    testing: primary
+    quality: secondary
+  disagree_signals:
+    operations: primary
+    operations_security: secondary
+  rationale: 'Bipolar axis: pre-release edge-case testing (KA5) versus production monitoring (KA6) — QA against ops.'
+  sources:
+  - swebok:
+      ka: KA5
+      topic: Test Techniques
+  - swebok:
+      ka: KA6
+      topic: Operational Monitoring
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 23
 - code: role-swebok-24-run-vs-plan
   item_group: core
   question_type: likert_5
-  prompt: I would rather refine zero-downtime deployment pipelines and automate infra-scaling
-    than attend sprint planning and estimation sessions.
+  prompt: I would rather refine zero-downtime deployment pipelines and automate infra-scaling than attend sprint planning and estimation sessions.
   translations:
     th:
-      prompt: ฉันยินดีสละเวลาร่วมประชุมกรูมมิ่งหรือประเมินสตอรี่พอยต์ (Estimation
-        Sessions) เพื่อไปขัดเกลาท่อระบบการ Deploy หรือเขียนสคริปต์สเกลเครื่องอัตโนมัติ
-  agree_dimension_signals:
-    operations: 1
-    operations_security: 0.8
-  disagree_dimension_signals:
-    management: 0.8
-    leadership_process: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยินดีสละเวลาร่วมประชุมกรูมมิ่งหรือประเมินสตอรี่พอยต์ (Estimation Sessions) เพื่อไปขัดเกลาท่อระบบการ Deploy หรือเขียนสคริปต์สเกลเครื่องอัตโนมัติ
+  construct: operations
+  agree_signals:
+    operations: primary
+    operations_security: secondary
+  disagree_signals:
+    management: secondary
+    leadership_process: secondary
+  rationale: 'Bipolar axis: deployment/infra automation (KA6) versus sprint planning and estimation (KA9).'
+  sources:
+  - swebok:
+      ka: KA6
+      topic: Deployment and Release Management
+  - swebok:
+      ka: KA9
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 24
 - code: role-swebok-25-maintain-vs-create
   item_group: core
   question_type: likert_5
-  prompt: I enjoy cleaning up spaghetti code and removing unused dependencies in legacy
-    files more than hacking together new, highly requested product prototypes.
+  prompt: I enjoy cleaning up spaghetti code and removing unused dependencies in legacy files more than hacking together new, highly requested product prototypes.
   translations:
     th:
-      prompt: ฉันรู้สึกผ่อนคลายและสนุกเมื่อได้เคลียร์โค้ดรก ๆ (Spaghetti Code) ในโปรเจกต์มรดก
-        มากกว่าต้องรีบเขียนโค้ดทดลองฟีเจอร์ใหม่ที่ไม่รู้จะได้ใช้อีกกี่วัน
-  agree_dimension_signals:
-    maintenance: 1
-    quality: 0.7
-  disagree_dimension_signals:
-    people_product: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันรู้สึกผ่อนคลายและสนุกเมื่อได้เคลียร์โค้ดรก ๆ (Spaghetti Code) ในโปรเจกต์มรดก มากกว่าต้องรีบเขียนโค้ดทดลองฟีเจอร์ใหม่ที่ไม่รู้จะได้ใช้อีกกี่วัน
+  construct: maintenance
+  agree_signals:
+    maintenance: primary
+    quality: secondary
+  disagree_signals:
+    people_product: secondary
+  rationale: 'Bipolar axis: legacy cleanup (KA7) versus hacking new product prototypes (people/product novelty).'
+  sources:
+  - swebok:
+      ka: KA7
+      topic: Program Comprehension
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 25
 - code: role-swebok-26-release-control-vs-creative-flow
   item_group: core
   question_type: likert_5
-  prompt: I support enforcing strict feature-flag controls and slow rollout plans,
-    even when designers complain it stifles their ability to release creative updates
-    quickly.
+  prompt: I support enforcing strict feature-flag controls and slow rollout plans, even when designers complain it stifles their ability to release creative
+    updates quickly.
   translations:
     th:
-      prompt: ฉันยืนยันให้จัดระบบ Feature Flags และค่อย ๆ เผยแพร่ฟีเจอร์ทีละกลุ่มย่อย
-        แม้ดีไซเนอร์จะบอกว่าตัวควบคุมนี้ทำให้ปล่อยของแปลกใหม่ให้ชาวโลกเล่นได้ช้าลงก็ตาม
-  agree_dimension_signals:
-    configuration_management: 1
-    operations_security: 0.7
-  disagree_dimension_signals:
-    design: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยืนยันให้จัดระบบ Feature Flags และค่อย ๆ เผยแพร่ฟีเจอร์ทีละกลุ่มย่อย แม้ดีไซเนอร์จะบอกว่าตัวควบคุมนี้ทำให้ปล่อยของแปลกใหม่ให้ชาวโลกเล่นได้ช้าลงก็ตาม
+  construct: configuration_management
+  agree_signals:
+    configuration_management: primary
+    operations_security: secondary
+  disagree_signals:
+    design: secondary
+  rationale: 'Bipolar axis: feature-flag and rollout control (KA8) versus creative release freedom (design).'
+  sources:
+  - swebok:
+      ka: KA8
+      topic: Software Building and Release Management
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 26
 - code: role-swebok-27-lead-vs-build
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend my entire day resolving git merge conflicts, coaching
-    juniors, and unblocking teammates than coding a core feature myself.
+  prompt: I would rather spend my entire day resolving git merge conflicts, coaching juniors, and unblocking teammates than coding a core feature myself.
   translations:
     th:
-      prompt: ฉันยินดีเสียเวลาทั้งสปรินต์ไปกับการนั่งตรวจโค้ด (Code Review) เคลียร์
-        Git Conflict และสอนน้องใหม่เพื่อแก้อาการคอขวดในทีม แทนที่จะปั้นฟีเจอร์เจ๋ง
+      prompt: ฉันยินดีเสียเวลาทั้งสปรินต์ไปกับการนั่งตรวจโค้ด (Code Review) เคลียร์ Git Conflict และสอนน้องใหม่เพื่อแก้อาการคอขวดในทีม แทนที่จะปั้นฟีเจอร์เจ๋ง
         ๆ ด้วยมือตัวเอง
-  agree_dimension_signals:
-    management: 1
-    leadership_process: 1
-    people_product: 0.5
-  disagree_dimension_signals:
-    construction: 1
-    application_build: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: management
+  agree_signals:
+    management: primary
+    leadership_process: primary
+    people_product: secondary
+  disagree_signals:
+    construction: primary
+    application_build: secondary
+  rationale: 'Bipolar axis: unblocking and coaching the team (KA9 leadership) versus coding core features yourself (KA4).'
+  sources:
+  - swebok:
+      ka: KA9
+  - swebok:
+      ka: KA4
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 27
 - code: role-swebok-28-process-vs-speed
   item_group: core
   question_type: likert_5
-  prompt: I prefer spending time adding strict pre-commit hooks and linting rules
-    over shipping one extra business feature at the end of a sprint.
+  prompt: I prefer spending time adding strict pre-commit hooks and linting rules over shipping one extra business feature at the end of a sprint.
   translations:
     th:
-      prompt: ฉันยินยอมที่จะสละฟีเจอร์พิเศษท้ายรอบงานเพื่อไปติดตั้งกฎ Pre-commit Hooks
-        และด่านตรวจคุณภาพโค้ด (Linter) เพื่อรักษาฟอร์มการทำงานระยะยาวของทีม
-  agree_dimension_signals:
-    process: 1
-    leadership_process: 0.8
-  disagree_dimension_signals:
-    construction: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยินยอมที่จะสละฟีเจอร์พิเศษท้ายรอบงานเพื่อไปติดตั้งกฎ Pre-commit Hooks และด่านตรวจคุณภาพโค้ด (Linter) เพื่อรักษาฟอร์มการทำงานระยะยาวของทีม
+  construct: process
+  agree_signals:
+    process: primary
+    leadership_process: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: 'Bipolar axis: process guardrails like hooks and linting (KA10) versus one more shipped feature (KA4).'
+  sources:
+  - swebok:
+      ka: KA10
+      topic: Process Measurement
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 28
 - code: role-swebok-29-method-vs-intuition
   item_group: core
   question_type: likert_5
-  prompt: I refuse to support architectural changes or UX flows based on 'developer
-    gut feel' without metric evidence from real-user instrumentation.
+  prompt: I refuse to support architectural changes or UX flows based on 'developer gut feel' without metric evidence from real-user instrumentation.
   translations:
     th:
-      prompt: ฉันยืนกรานที่จะไม่โหวตเปลี่ยนทิศทาง UI หรือปรับระบบตามความชอบส่วนตัว
-        (Gut Feel) ของทีมพัฒนา หากยังไม่มีตัวเลขการวัดผลจริงมาหนุนหลังอย่างเป็นรูปธรรม
-  agree_dimension_signals:
-    models_methods: 1
-    math: 0.7
-    data_ai: 0.7
-  disagree_dimension_signals:
-    professional_practice: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยืนกรานที่จะไม่โหวตเปลี่ยนทิศทาง UI หรือปรับระบบตามความชอบส่วนตัว (Gut Feel) ของทีมพัฒนา หากยังไม่มีตัวเลขการวัดผลจริงมาหนุนหลังอย่างเป็นรูปธรรม
+  construct: models_methods
+  agree_signals:
+    models_methods: primary
+    math: secondary
+    data_ai: secondary
+  disagree_signals:
+    professional_practice: contrast
+  rationale: Demanding instrumented evidence over gut feel is model/method rigor (KA11) with statistical backing (KA17).
+  sources:
+  - swebok:
+      ka: KA11
+      topic: Model Analysis
+  - swebok:
+      ka: KA17
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 29
 - code: role-swebok-30-quality-vs-novelty
   item_group: core
   question_type: likert_5
-  prompt: I refuse to let the team adopt a trending framework or database until we've
-    proven its long-term stability and team expertise, regardless of the developer
-    hype.
+  prompt: I refuse to let the team adopt a trending framework or database until we've proven its long-term stability and team expertise, regardless of the
+    developer hype.
   translations:
     th:
-      prompt: ฉันจะไม่ยอมให้ทีมรีบสลับไปใช้ Framework คลื่นลูกใหม่ที่คนกำลังอวยกันตามกระแส
-        หากยังไม่ได้รับประกันเสถียรภาพระยะยาวและการดูแลรักษาของทีมอย่างถ่องแท้
-  agree_dimension_signals:
-    quality: 1
-    maintenance: 0.6
-  disagree_dimension_signals:
-    computing_ai: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันจะไม่ยอมให้ทีมรีบสลับไปใช้ Framework คลื่นลูกใหม่ที่คนกำลังอวยกันตามกระแส หากยังไม่ได้รับประกันเสถียรภาพระยะยาวและการดูแลรักษาของทีมอย่างถ่องแท้
+  construct: quality
+  agree_signals:
+    quality: primary
+    maintenance: secondary
+  disagree_signals:
+    computing_ai: contrast
+  rationale: Blocking trending tech until stability is proven weighs quality and maintainability (KA12) against novelty.
+  sources:
+  - swebok:
+      ka: KA12
+      topic: Software Quality Fundamentals
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 30
 - code: role-swebok-31-security-vs-usability
   item_group: core
   question_type: likert_5
-  prompt: I would enforce strict multi-factor authentication and role-based access
-    control even if onboarding became slower for new developers and employees.
+  prompt: I would enforce strict multi-factor authentication and role-based access control even if onboarding became slower for new developers and employees.
   translations:
     th:
-      prompt: ฉันยินดีให้กระบวนการติดตั้งและขอสิทธิ์ใช้งานเครื่องมือพัฒนา (Access
-        Permission) มีหลายด่านจนน้องใหม่ออนบอร์ดได้ช้าลง หากมันช่วยให้รอดพ้นจากการถูกแฮกข้อมูลสำคัญได้ดีขึ้น
-  agree_dimension_signals:
-    security: 1
-    operations_security: 0.8
-  disagree_dimension_signals:
-    requirements: 0.4
-    people_product: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันยินดีให้กระบวนการติดตั้งและขอสิทธิ์ใช้งานเครื่องมือพัฒนา (Access Permission) มีหลายด่านจนน้องใหม่ออนบอร์ดได้ช้าลง หากมันช่วยให้รอดพ้นจากการถูกแฮกข้อมูลสำคัญได้ดีขึ้น
+  construct: security
+  agree_signals:
+    security: primary
+    operations_security: secondary
+  disagree_signals:
+    requirements: contrast
+    people_product: contrast
+  rationale: Enforcing MFA/RBAC at onboarding cost is the classic security-versus-usability trade-off (KA13).
+  sources:
+  - swebok:
+      ka: KA13
+      topic: Security Fundamentals
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 31
 - code: role-swebok-32-explain-vs-implement
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend my week preparing technical sharing sessions and peer-programming
-    with juniors than building production features by myself.
+  prompt: I would rather spend my week preparing technical sharing sessions and peer-programming with juniors than building production features by myself.
   translations:
     th:
-      prompt: ฉันขอเลือกที่จะใช้เวลาเตรียมสไลด์แชร์ความรู้เชิงเทคนิคหรือทำ Pair Programming
-        กับน้อง ๆ ดีกว่านั่งปั้นโค้ดส่งขึ้นระบบโปรดักชันอย่างเดียวโดด ๆ
-  agree_dimension_signals:
-    professional_practice: 1
-    documentation_practice: 0.8
-    developer_community: 0.7
-  disagree_dimension_signals:
-    construction: 0.7
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันขอเลือกที่จะใช้เวลาเตรียมสไลด์แชร์ความรู้เชิงเทคนิคหรือทำ Pair Programming กับน้อง ๆ ดีกว่านั่งปั้นโค้ดส่งขึ้นระบบโปรดักชันอย่างเดียวโดด
+        ๆ
+  construct: professional_practice
+  agree_signals:
+    professional_practice: primary
+    documentation_practice: secondary
+    developer_community: secondary
+  disagree_signals:
+    construction: secondary
+  rationale: 'Bipolar axis: teaching, sharing, and pairing (KA14) versus solo production building (KA4).'
+  sources:
+  - swebok:
+      ka: KA14
+      topic: Group Dynamics
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 32
 - code: role-swebok-33-business-vs-technical
   item_group: core
   question_type: likert_5
-  prompt: I would approve shipping a codebase filled with hardcoded shortcuts if it
-    was the only way to beat a competitor to market and win a crucial commercial deal.
+  prompt: I would approve shipping a codebase filled with hardcoded shortcuts if it was the only way to beat a competitor to market and win a crucial commercial
+    deal.
   translations:
     th:
       prompt: ฉันยอมปิดตาข้างหนึ่งปล่อยโค้ดที่มีการ Hardcode ทางลัดแบบหยาบ ๆ หากนั่นเป็นเพียงวิถีเดียวที่จะส่งฟีเจอร์ตัดหน้าคู่แข่งและปิดดีลการค้าครั้งประวัติศาสตร์ของบริษัทได้
-  agree_dimension_signals:
-    economics: 1
-    people_product: 0.7
-  disagree_dimension_signals:
-    architecture: 0.8
-    engineering: 0.5
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: economics
+  agree_signals:
+    economics: primary
+    people_product: secondary
+  disagree_signals:
+    architecture: secondary
+    engineering: secondary
+  rationale: Accepting hardcoded shortcuts to win a market is business-value-first reasoning (KA15) against engineering purity (KA2/KA18).
+  sources:
+  - swebok:
+      ka: KA15
+      topic: Decision Analysis
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 33
 - code: role-swebok-34-ai-vs-classic-apps
   item_group: core
   question_type: likert_5
-  prompt: I would rather spend my sprint optimization cycles engineering data pipelines
-    and tuning AI models than building CRUD forms and general product web pages.
+  prompt: I would rather spend my sprint optimization cycles engineering data pipelines and tuning AI models than building CRUD forms and general product
+    web pages.
   translations:
     th:
-      prompt: ฉันอยากใช้พลังงานจมดิ่งกับการพัฒนาท่อข้อมูลขนาดใหญ่ (Data Pipelines)
-        และวิเคราะห์จูน Model AI ดีกว่าการนั่งออกแบบหน้าเว็บฟอร์มกรอกข้อมูลทั่วไป
+      prompt: ฉันอยากใช้พลังงานจมดิ่งกับการพัฒนาท่อข้อมูลขนาดใหญ่ (Data Pipelines) และวิเคราะห์จูน Model AI ดีกว่าการนั่งออกแบบหน้าเว็บฟอร์มกรอกข้อมูลทั่วไป
         (CRUD Web Forms)
-  agree_dimension_signals:
-    computing_ai: 1
-    data_ai: 0.9
-  disagree_dimension_signals:
-    application_build: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+  construct: computing_ai
+  agree_signals:
+    computing_ai: primary
+    data_ai: primary
+  disagree_signals:
+    application_build: contrast
+  rationale: 'Bipolar axis: data pipelines and model tuning (KA16 AI foundations) versus CRUD application building.'
+  sources:
+  - swebok:
+      ka: KA16
+      topic: AI and Machine Learning Foundations
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 34
 - code: role-swebok-35-statistics-vs-craft
   item_group: core
   question_type: likert_5
-  prompt: I find analyzing regression test patterns and user analytics reports more
-    satisfying than crafting beautiful frontend UI layouts or page transitions.
+  prompt: I find analyzing regression test patterns and user analytics reports more satisfying than crafting beautiful frontend UI layouts or page transitions.
   translations:
     th:
-      prompt: ฉันฟินกับการแกะข้อมูลสถิติเพื่อดูเทรนด์การใช้งานของผู้ใช้และเจาะปัญหาหลังบ้าน
-        มากกว่าการมานั่งขัดเกลาหน้าตาของ UI หรือแอนิเมชันตอนเปลี่ยนหน้าแอป
-  agree_dimension_signals:
-    math: 1
-    data_ai: 0.8
-  disagree_dimension_signals:
-    design: 0.6
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันฟินกับการแกะข้อมูลสถิติเพื่อดูเทรนด์การใช้งานของผู้ใช้และเจาะปัญหาหลังบ้าน มากกว่าการมานั่งขัดเกลาหน้าตาของ UI หรือแอนิเมชันตอนเปลี่ยนหน้าแอป
+  construct: math
+  agree_signals:
+    math: primary
+    data_ai: secondary
+  disagree_signals:
+    design: secondary
+  rationale: 'Bipolar axis: analytics and regression patterns (KA17) versus frontend visual craft (KA3).'
+  sources:
+  - swebok:
+      ka: KA17
+      topic: Probability and Statistics
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 35
 - code: role-swebok-36-engineering-vs-product
   item_group: core
   question_type: likert_5
-  prompt: I refuse to release a feature until its core systems are verified for performance
-    bottlenecks, even if business stakeholders demand faster release updates for market
-    testing.
+  prompt: I refuse to release a feature until its core systems are verified for performance bottlenecks, even if business stakeholders demand faster release
+    updates for market testing.
   translations:
     th:
-      prompt: ฉันจะปักหลักไม่ยอมลอนช์ฟีเจอร์ถ้าความล่มยากและประสิทธิภาพ (Performance
-        Bottlenecks) ยังไม่ได้มาตรฐาน แม้ฝั่ง Business จะเร่งรัดเอาไปทดลองชิงตลาดด่วนแค่ไหนก็ตาม
-  agree_dimension_signals:
-    engineering: 1
-    backend_platform: 0.7
-    quality: 0.5
-  disagree_dimension_signals:
-    economics: 0.8
-    people_product: 0.6
-  difficulty: 1
-  discrimination_score: 4.0
+      prompt: ฉันจะปักหลักไม่ยอมลอนช์ฟีเจอร์ถ้าความล่มยากและประสิทธิภาพ (Performance Bottlenecks) ยังไม่ได้มาตรฐาน แม้ฝั่ง Business จะเร่งรัดเอาไปทดลองชิงตลาดด่วนแค่ไหนก็ตาม
+  construct: engineering
+  agree_signals:
+    engineering: primary
+    backend_platform: secondary
+    quality: secondary
+  disagree_signals:
+    economics: secondary
+    people_product: secondary
+  rationale: Verifying performance before release against stakeholder pressure is engineering rigor (KA18) versus product economics.
+  sources:
+  - swebok:
+      ka: KA18
+      topic: Root-Cause Analysis
+  - swebok:
+      ka: KA15
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 36
 - code: role-swebok-37-mobile-native
   item_group: core
   question_type: likert_5
-  prompt: I would rather build native mobile apps that respect platform design guidelines
-    than build responsive web dashboards, even when the web version would reach more users
-    faster.
-  agree_dimension_signals:
-    android_platform: 0.8
-    ios_platform: 0.8
-    construction: 0.6
-    design: 0.5
-  disagree_dimension_signals:
-    web_frontend: 0.8
-    application_build: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I would rather build native mobile apps that respect platform design guidelines than build responsive web dashboards, even when the web version
+    would reach more users faster.
+  construct: android_platform
+  agree_signals:
+    android_platform: primary
+    ios_platform: secondary
+    construction: secondary
+    design: secondary
+  disagree_signals:
+    web_frontend: secondary
+    application_build: contrast
+  rationale: Preferring platform-native mobile apps over responsive web separates the mobile endpoints from web frontend.
+  sources:
+  - roadmap_sh:
+      file: android-developer.json
+  - swebok:
+      ka: KA4
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 37
 - code: role-swebok-38-backend-platforms
   item_group: core
   question_type: likert_5
-  prompt: I prefer optimizing server-side data pipelines, API throughput, and concurrency
-    patterns over building user-facing screens, even when stakeholders push for visible
-    UI progress.
-  agree_dimension_signals:
-    server_backend: 1
-    architecture: 0.5
-    operations: 0.5
-  disagree_dimension_signals:
-    web_frontend: 0.5
-    design: 0.4
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I prefer optimizing server-side data pipelines, API throughput, and concurrency patterns over building user-facing screens, even when stakeholders
+    push for visible UI progress.
+  construct: server_backend
+  agree_signals:
+    server_backend: primary
+    architecture: secondary
+    operations: secondary
+  disagree_signals:
+    web_frontend: secondary
+    design: contrast
+  rationale: Preferring server-side throughput and concurrency over user-facing screens marks the server backend endpoint.
+  sources:
+  - roadmap_sh:
+      file: backend.json
+  - swebok:
+      ka: KA2
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 38
 - code: role-swebok-39-database-dba
   item_group: core
   question_type: likert_5
-  prompt: I would rather tune database query plans, indexing strategies, and replication
-    topology than write application business logic, even if it means fewer shipped features.
-  agree_dimension_signals:
-    database_postgresql: 1
-    operations: 0.5
-    configuration_management: 0.4
-  disagree_dimension_signals:
-    construction: 0.5
-    design: 0.3
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I would rather tune database query plans, indexing strategies, and replication topology than write application business logic, even if it means
+    fewer shipped features.
+  construct: database_postgresql
+  agree_signals:
+    database_postgresql: primary
+    operations: secondary
+    configuration_management: contrast
+  disagree_signals:
+    construction: secondary
+    design: contrast
+  rationale: Preferring query plans, indexing, and replication over application logic marks the PostgreSQL/DBA endpoint.
+  sources:
+  - swebok:
+      ka: KA6
+  - swebok:
+      ka: KA16
+      topic: Database Fundamentals
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 39
 - code: role-swebok-40-blockchain
   item_group: core
   question_type: likert_5
-  prompt: I am drawn to building decentralized protocols and smart contract logic over
-    traditional CRUD applications, even when the business value is less immediately clear.
-  agree_dimension_signals:
-    blockchain_platform: 1
-    security: 0.5
-    architecture: 0.4
-  disagree_dimension_signals:
-    maintenance: 0.4
-    testing: 0.3
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I am drawn to building decentralized protocols and smart contract logic over traditional CRUD applications, even when the business value is less
+    immediately clear.
+  construct: blockchain_platform
+  agree_signals:
+    blockchain_platform: primary
+    security: secondary
+    architecture: contrast
+  disagree_signals:
+    maintenance: contrast
+    testing: contrast
+  rationale: Attraction to decentralized protocols and smart contracts over CRUD marks the blockchain endpoint with its security emphasis.
+  sources:
+  - swebok:
+      ka: KA13
+  - swebok:
+      ka: KA4
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 40
 - code: role-swebok-41-game-client
   item_group: core
   question_type: likert_5
-  prompt: I would rather work on real-time rendering pipelines, physics simulations, and
-    gameplay feel than build typical business web applications, even if the game industry
-    is more volatile.
-  agree_dimension_signals:
-    game_client: 1
-    game_family: 0.8
-    computing_ai: 0.5
-    construction: 0.4
-  disagree_dimension_signals:
-    management: 0.3
-    economics: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I would rather work on real-time rendering pipelines, physics simulations, and gameplay feel than build typical business web applications, even
+    if the game industry is more volatile.
+  construct: game_client
+  agree_signals:
+    game_client: primary
+    game_family: secondary
+    computing_ai: secondary
+    construction: contrast
+  disagree_signals:
+    management: contrast
+    economics: contrast
+  rationale: Preferring rendering, physics, and gameplay feel over business apps marks the game client endpoint.
+  sources:
+  - roadmap_sh:
+      file: game-developer.json
+  - swebok:
+      ka: KA16
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 41
 - code: role-swebok-42-game-server
   item_group: core
   question_type: likert_5
-  prompt: I find the challenge of synchronizing real-time multiplayer state and scaling
-    game servers more interesting than building single-player game mechanics or client-side
-    rendering.
-  agree_dimension_signals:
-    game_server: 1
-    game_family: 0.7
-    operations: 0.6
-    architecture: 0.4
-  disagree_dimension_signals:
-    design: 0.3
-    quality: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I find the challenge of synchronizing real-time multiplayer state and scaling game servers more interesting than building single-player game mechanics
+    or client-side rendering.
+  construct: game_server
+  agree_signals:
+    game_server: primary
+    game_family: secondary
+    operations: secondary
+    architecture: contrast
+  disagree_signals:
+    design: contrast
+    quality: contrast
+  rationale: Preferring multiplayer state sync and server scaling over single-player mechanics marks the game server endpoint.
+  sources:
+  - roadmap_sh:
+      file: server-side-game-developer.json
+  - swebok:
+      ka: KA2
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 42
 - code: role-swebok-43-tech-docs
   item_group: core
   question_type: likert_5
-  prompt: I would rather write precise API documentation and developer onboarding guides
-    than debug production incidents, even when the team is short on on-call volunteers.
-  agree_dimension_signals:
-    technical_documentation: 1
-    professional_practice: 0.5
-    maintenance: 0.4
-  disagree_dimension_signals:
-    operations: 0.4
-    testing: 0.3
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I would rather write precise API documentation and developer onboarding guides than debug production incidents, even when the team is short on
+    on-call volunteers.
+  construct: technical_documentation
+  agree_signals:
+    technical_documentation: primary
+    professional_practice: secondary
+    maintenance: contrast
+  disagree_signals:
+    operations: contrast
+    testing: contrast
+  rationale: Preferring precise documentation over on-call debugging marks the technical documentation endpoint (KA14 communication).
+  sources:
+  - roadmap_sh:
+      file: technical-writer.json
+  - swebok:
+      ka: KA14
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 43
 - code: role-swebok-44-bi-analytics
   item_group: core
   question_type: likert_5
-  prompt: I prefer building data dashboards, analytics reports, and SQL transformations
-    over writing backend API endpoints, even when API work is on the critical path.
-  agree_dimension_signals:
-    business_intelligence: 1
-    economics: 0.5
-    computing_ai: 0.4
-    math: 0.3
-  disagree_dimension_signals:
-    server_backend: 0.4
-    construction: 0.3
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I prefer building data dashboards, analytics reports, and SQL transformations over writing backend API endpoints, even when API work is on the
+    critical path.
+  construct: business_intelligence
+  agree_signals:
+    business_intelligence: primary
+    economics: secondary
+    computing_ai: contrast
+    math: contrast
+  disagree_signals:
+    server_backend: contrast
+    construction: contrast
+  rationale: Preferring dashboards, reports, and SQL transformations over API endpoints marks the BI endpoint.
+  sources:
+  - roadmap_sh:
+      file: bi-analyst.json
+  - swebok:
+      ka: KA15
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 44
 - code: role-swebok-45-ml-platform
   item_group: core
   question_type: likert_5
-  prompt: I would rather build ML training pipelines, model registries, and deployment
-    infrastructure than write user-facing application code, even if the feedback loop
-    is slower.
-  agree_dimension_signals:
-    ml_platform: 1
-    computing_ai: 0.6
-    operations: 0.4
-    configuration_management: 0.3
-  disagree_dimension_signals:
-    design: 0.3
-    documentation_practice: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I would rather build ML training pipelines, model registries, and deployment infrastructure than write user-facing application code, even if the
+    feedback loop is slower.
+  construct: ml_platform
+  agree_signals:
+    ml_platform: primary
+    computing_ai: secondary
+    operations: contrast
+    configuration_management: contrast
+  disagree_signals:
+    design: contrast
+    documentation_practice: contrast
+  rationale: Preferring training pipelines, registries, and model infra over user-facing code marks the ML platform endpoint.
+  sources:
+  - roadmap_sh:
+      file: mlops-engineer.json
+  - swebok:
+      ka: KA16
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 45
 - code: role-swebok-46-devrel
   item_group: core
   question_type: likert_5
-  prompt: I enjoy representing our engineering team at conferences and in developer communities
-    more than heads-down feature delivery, even if it means fewer commits on my record.
-  agree_dimension_signals:
-    developer_community: 1
-    professional_practice: 0.6
-    requirements: 0.3
-  disagree_dimension_signals:
-    construction: 0.4
-    models_methods: 0.2
-  difficulty: 1
-  discrimination_score: 4.0
+  prompt: I enjoy representing our engineering team at conferences and in developer communities more than heads-down feature delivery, even if it means
+    fewer commits on my record.
+  construct: developer_community
+  agree_signals:
+    developer_community: primary
+    professional_practice: secondary
+    requirements: contrast
+  disagree_signals:
+    construction: contrast
+    models_methods: contrast
+  rationale: Preferring conference and community work over heads-down delivery marks the developer community endpoint (KA14).
+  sources:
+  - swebok:
+      ka: KA14
+      topic: Communication Skills
+  review:
+    status: draft
+    date: '2026-07-11'
   display_order: 46
 - code: role-swebok-tie-01-frontend-backend
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer optimizing browser performance, rendering lifecycles, and client-side
-    caching over managing server-side controllers and server memory management.
+  prompt: I prefer optimizing browser performance, rendering lifecycles, and client-side caching over managing server-side controllers and server memory
+    management.
   translations:
     th:
-      prompt: ฉันชอบขลุกตัวอยู่กับการเค้นประสิทธิภาพฝั่ง Browser จัดการ Render Lifecycle
-        และ Client Caching มากกว่าไปกังวลเรื่องการจูน Thread เซิร์ฟเวอร์หรือจัดการเมมโมรี่หลังบ้าน
-  agree_dimension_signals:
-    web_frontend: 1
-    design: 0.6
-    application_build: 0.8
-  disagree_dimension_signals:
-    server_backend: 1
-    architecture: 0.6
-    backend_platform: 0.8
+      prompt: ฉันชอบขลุกตัวอยู่กับการเค้นประสิทธิภาพฝั่ง Browser จัดการ Render Lifecycle และ Client Caching มากกว่าไปกังวลเรื่องการจูน Thread เซิร์ฟเวอร์หรือจัดการเมมโมรี่หลังบ้าน
+  construct: web_frontend
+  agree_signals:
+    web_frontend: primary
+    design: secondary
+    application_build: secondary
+  disagree_signals:
+    server_backend: primary
+    architecture: secondary
+    backend_platform: secondary
+  rationale: Splits frontend from backend (and locates full-stack) on the client-versus-server optimization axis.
+  sources:
+  - roadmap_sh:
+      file: frontend.json
+  - roadmap_sh:
+      file: backend.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 101
   discriminates_between:
   - frontend-developer
   - backend-developer
   - full-stack-developer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 101
 - code: role-swebok-tie-02-devops-devsecops
   item_group: tie_break
   question_type: likert_5
-  prompt: I focus on accelerating CI/CD pipeline speeds and reducing build times over
-    adding extra automated compliance and security scanners.
+  prompt: I focus on accelerating CI/CD pipeline speeds and reducing build times over adding extra automated compliance and security scanners.
   translations:
     th:
-      prompt: ฉันมุ่งมั่นจะดึงความเร็วของ CI/CD Pipeline ให้เสร็จอย่างรวดเร็วที่สุด
-        ดีกว่าต้องเพิ่มสแกนเนอร์ด่านตรวจ Security และ Compliance หลายด่านจนต้องใช้เวลาบิลด์นานเป็นชั่วโมง
-  agree_dimension_signals:
-    operations: 1
-    configuration_management: 0.7
-  disagree_dimension_signals:
-    security: 1
-    operations_security: 0.9
+      prompt: ฉันมุ่งมั่นจะดึงความเร็วของ CI/CD Pipeline ให้เสร็จอย่างรวดเร็วที่สุด ดีกว่าต้องเพิ่มสแกนเนอร์ด่านตรวจ Security และ Compliance หลายด่านจนต้องใช้เวลาบิลด์นานเป็นชั่วโมง
+  construct: operations
+  agree_signals:
+    operations: primary
+    configuration_management: secondary
+  disagree_signals:
+    security: primary
+    operations_security: primary
+  rationale: Splits delivery-speed DevOps from security-gated DevSecOps/cyber-security on the pipeline-priorities axis.
+  sources:
+  - roadmap_sh:
+      file: devops-engineer.json
+  - swebok:
+      ka: KA13
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 102
   discriminates_between:
   - devops-engineer
   - devsecops-engineer
   - cyber-security-engineer-analyst
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 102
 - code: role-swebok-tie-03-data-analyst-bi
   item_group: tie_break
   question_type: likert_5
-  prompt: I would rather perform open-ended exploratory analysis on raw, unstructured
-    data to uncover insights than build and schedule clean, recurring business dashboards.
+  prompt: I would rather perform open-ended exploratory analysis on raw, unstructured data to uncover insights than build and schedule clean, recurring
+    business dashboards.
   translations:
     th:
-      prompt: ฉันชอบการเข้าไปดิ้นรนคุ้ยหาอินไซต์จาก Data ดิบแบบปลายเปิดที่ไร้โครงสร้าง
-        (Exploratory Analysis) มากกว่าการมานั่งขัดเกลาทำแดชบอร์ดสรุปตัวเลขรายสัปดาห์ให้ลูกค้าดู
-  agree_dimension_signals:
-    data_ai: 0.8
-    math: 0.7
-  disagree_dimension_signals:
-    business_intelligence: 1
-    economics: 0.7
+      prompt: ฉันชอบการเข้าไปดิ้นรนคุ้ยหาอินไซต์จาก Data ดิบแบบปลายเปิดที่ไร้โครงสร้าง (Exploratory Analysis) มากกว่าการมานั่งขัดเกลาทำแดชบอร์ดสรุปตัวเลขรายสัปดาห์ให้ลูกค้าดู
+  construct: data_ai
+  agree_signals:
+    data_ai: primary
+    math: secondary
+  disagree_signals:
+    business_intelligence: primary
+    economics: secondary
+  rationale: Splits exploratory analysis (data analyst) from scheduled business reporting (BI/product) on the discovery-versus-reporting axis.
+  sources:
+  - roadmap_sh:
+      file: data-analyst.json
+  - roadmap_sh:
+      file: bi-analyst.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 103
   discriminates_between:
   - data-analyst
   - bi-analyst
   - product-manager
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 103
 - code: role-swebok-tie-04-ai-engineer-scientist
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer integrating pretrained AI APIs into core application workflows
-    over spent weeks training models to prove academic accuracy metrics.
+  prompt: I prefer integrating pretrained AI APIs into core application workflows over spent weeks training models to prove academic accuracy metrics.
   translations:
     th:
-      prompt: ฉันเน้นที่จะหยิบจับ API ของ AI สำเร็จรูปมาเชื่อมต่อให้แอปใช้งานได้จริง
-        ดีกว่าทนหลังขดหลังแข็งนั่งจูนและพิสูจน์สมมติฐานทางวิชาการของ Model นานแรมสัปดาห์
-  agree_dimension_signals:
-    construction: 1
-    architecture: 0.7
-    backend_platform: 0.5
-  disagree_dimension_signals:
-    models_methods: 1
-    math: 0.8
-    data_ai: 0.8
+      prompt: ฉันเน้นที่จะหยิบจับ API ของ AI สำเร็จรูปมาเชื่อมต่อให้แอปใช้งานได้จริง ดีกว่าทนหลังขดหลังแข็งนั่งจูนและพิสูจน์สมมติฐานทางวิชาการของ Model
+        นานแรมสัปดาห์
+  construct: construction
+  agree_signals:
+    construction: primary
+    architecture: secondary
+    backend_platform: secondary
+  disagree_signals:
+    models_methods: primary
+    math: secondary
+    data_ai: secondary
+  rationale: Splits product AI integration (AI engineer) from model research rigor (data scientist / ML engineer).
+  sources:
+  - roadmap_sh:
+      file: ai-engineer.json
+  - roadmap_sh:
+      file: ai-data-scientist.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 104
   discriminates_between:
   - ai-engineer
   - ai-data-scientist
   - machine-learning-engineer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 104
 - code: role-swebok-tie-05-data-engineer-mlops
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer building raw ETL pipelines and streaming data systems over designing
-    model monitoring and model serving infrastructure.
+  prompt: I prefer building raw ETL pipelines and streaming data systems over designing model monitoring and model serving infrastructure.
   translations:
     th:
       prompt: ฉันหลงใหลการออกแบบท่อดึงข้อมูล ดัดแปลง และโหลด (ETL Pipeline) รวมถึงสตรีมมิ่งข้อมูลมากว่าการปั้นโครงสร้างเซิร์ฟเวอร์เสิร์ฟและคอยมอนิเตอร์ตัว
         Model AI
-  agree_dimension_signals:
-    data_ai: 0.8
-    construction: 0.7
-  disagree_dimension_signals:
-    ml_platform: 1
-    operations: 0.8
-    configuration_management: 0.7
+  construct: data_ai
+  agree_signals:
+    data_ai: primary
+    construction: secondary
+  disagree_signals:
+    ml_platform: primary
+    operations: secondary
+    configuration_management: secondary
+  rationale: Splits raw data pipelines (data engineer) from model serving and monitoring infrastructure (MLOps/ML engineer).
+  sources:
+  - roadmap_sh:
+      file: data-engineer.json
+  - roadmap_sh:
+      file: mlops-engineer.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 105
   discriminates_between:
   - data-engineer
   - mlops-engineer
   - machine-learning-engineer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 105
 - code: role-swebok-tie-06-mobile-platform
   item_group: tie_break
   question_type: likert_5
-  prompt: I enjoy optimizing Android Kotlin applications and understanding JVM garbage
-    collection details more than designing iOS apps using Swift and UIKit/SwiftUI.
+  prompt: I enjoy optimizing Android Kotlin applications and understanding JVM garbage collection details more than designing iOS apps using Swift and UIKit/SwiftUI.
   translations:
     th:
-      prompt: ฉันสนุกกับการเค้นความจุของแอป Android ด้วย Kotlin และการแกะการทำงานของ
-        JVM Garbage Collection มากกว่าการทำแอป iOS ด้วย Swift และ SwiftUI
-  agree_dimension_signals:
-    android_platform: 1
-    application_build: 0.6
-  disagree_dimension_signals:
-    ios_platform: 1
-    application_build: 0.6
+      prompt: ฉันสนุกกับการเค้นความจุของแอป Android ด้วย Kotlin และการแกะการทำงานของ JVM Garbage Collection มากกว่าการทำแอป iOS ด้วย Swift และ SwiftUI
+  construct: android_platform
+  agree_signals:
+    android_platform: primary
+    application_build: secondary
+  disagree_signals:
+    ios_platform: primary
+    application_build: secondary
+  rationale: Splits Android from iOS on platform-stack affinity.
+  sources:
+  - roadmap_sh:
+      file: android-developer.json
+  - swebok:
+      ka: KA4
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 106
   discriminates_between:
   - android-developer
   - ios-developer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 106
 - code: role-swebok-tie-07-database-backend
   item_group: tie_break
   question_type: likert_5
-  prompt: I would rather spend my days optimizing complex SQL queries, index structures,
-    and transaction locks than writing standard backend REST API controllers.
+  prompt: I would rather spend my days optimizing complex SQL queries, index structures, and transaction locks than writing standard backend REST API controllers.
   translations:
     th:
-      prompt: ฉันขอเลือกใช้ชีวิตกับการนั่งงัดประสิทธิภาพของ SQL Query ออกแบบคีย์ ดัชนี
-        และระบบล็อก Transaction ของฐานข้อมูลดีกว่าปั้น Endpoint ทำงานแบบ CRUD ไปวัน
-        ๆ
-  agree_dimension_signals:
-    database_postgresql: 1
-    quality: 0.7
-    operations: 0.5
-  disagree_dimension_signals:
-    server_backend: 1
-    construction: 0.7
+      prompt: ฉันขอเลือกใช้ชีวิตกับการนั่งงัดประสิทธิภาพของ SQL Query ออกแบบคีย์ ดัชนี และระบบล็อก Transaction ของฐานข้อมูลดีกว่าปั้น Endpoint ทำงานแบบ
+        CRUD ไปวัน ๆ
+  construct: database_postgresql
+  agree_signals:
+    database_postgresql: primary
+    quality: secondary
+    operations: secondary
+  disagree_signals:
+    server_backend: primary
+    construction: secondary
+  rationale: Splits database-first work (DBA) from application-API work (backend/data engineer).
+  sources:
+  - swebok:
+      ka: KA16
+      topic: Database Fundamentals
+  - roadmap_sh:
+      file: backend.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 107
   discriminates_between:
   - postgresql-developer-dba
   - backend-developer
   - data-engineer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 107
 - code: role-swebok-tie-08-blockchain-security
   item_group: tie_break
   question_type: likert_5
-  prompt: I enjoy auditing solidity smart-contract logic and exploring consensus mechanisms
-    more than managing cloud firewalls and standard server intrusion detections.
+  prompt: I enjoy auditing solidity smart-contract logic and exploring consensus mechanisms more than managing cloud firewalls and standard server intrusion
+    detections.
   translations:
     th:
-      prompt: ฉันชอบขุดคุ้ยหาช่องโหว่ใน Logic ของ Solidity Smart Contract และแกะเรื่องกลไกฉันทามติ
-        (Consensus) มากกว่าการคอยเฝ้าระบบตรวจจับผู้บุกรุกเซิร์ฟเวอร์คลาวด์ทั่วไป
-  agree_dimension_signals:
-    blockchain_platform: 1
-    construction: 0.7
-    economics: 0.5
-  disagree_dimension_signals:
-    security: 1
-    operations_security: 0.8
+      prompt: ฉันชอบขุดคุ้ยหาช่องโหว่ใน Logic ของ Solidity Smart Contract และแกะเรื่องกลไกฉันทามติ (Consensus) มากกว่าการคอยเฝ้าระบบตรวจจับผู้บุกรุกเซิร์ฟเวอร์คลาวด์ทั่วไป
+  construct: blockchain_platform
+  agree_signals:
+    blockchain_platform: primary
+    construction: secondary
+    economics: secondary
+  disagree_signals:
+    security: primary
+    operations_security: secondary
+  rationale: Splits smart-contract building (blockchain) from infrastructure defense (cyber-security/DevSecOps).
+  sources:
+  - swebok:
+      ka: KA13
+  - swebok:
+      ka: KA4
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 108
   discriminates_between:
   - blockchain-developer
   - cyber-security-engineer-analyst
   - devsecops-engineer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 108
 - code: role-swebok-tie-09-qa-architect
   item_group: tie_break
   question_type: likert_5
-  prompt: I trust automated integration test suites and functional regression tests
-    more than senior architecture blueprints that have not been validated by tests.
+  prompt: I trust automated integration test suites and functional regression tests more than senior architecture blueprints that have not been validated
+    by tests.
   translations:
     th:
-      prompt: ฉันเชื่อมั่นในรายงานการทดสอบระบบ (Integration Test Results) มากกว่าแบบร่างดีไซน์ของ
-        Senior Architect ที่ยังไม่มี Test Suite ใด ๆ มารองรับและพิสูจน์ยืนยันความถูกต้อง
-  agree_dimension_signals:
-    testing: 1
-    quality: 0.8
-  disagree_dimension_signals:
-    architecture: 1
-    design: 0.7
+      prompt: ฉันเชื่อมั่นในรายงานการทดสอบระบบ (Integration Test Results) มากกว่าแบบร่างดีไซน์ของ Senior Architect ที่ยังไม่มี Test Suite ใด ๆ มารองรับและพิสูจน์ยืนยันความถูกต้อง
+  construct: testing
+  agree_signals:
+    testing: primary
+    quality: secondary
+  disagree_signals:
+    architecture: primary
+    design: secondary
+  rationale: Splits test-evidence trust (QA) from architecture-blueprint trust (architect).
+  sources:
+  - roadmap_sh:
+      file: qa-engineer.json
+  - roadmap_sh:
+      file: software-architect.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 109
   discriminates_between:
   - qa-engineer
   - software-architect
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 109
 - code: role-swebok-tie-10-ux-product
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer crafting user flow diagrams and screen wireframes over analyzing
-    customer acquisition costs and prioritize business impact matrices.
+  prompt: I prefer crafting user flow diagrams and screen wireframes over analyzing customer acquisition costs and prioritize business impact matrices.
   translations:
     th:
-      prompt: ฉันรักการวาดออกแบบ User Flows และขึ้น Wireframe หน้าจอเพื่อให้ผู้ใช้ประทับใจ
-        มากกว่าการคอยนั่งอ่านรายงานวิเคราะห์ต้นทุนการตลาดหรือตั้งค่า KPI เชิงธุรกิจ
-  agree_dimension_signals:
-    design: 1
-    requirements: 0.7
-    people_product: 0.8
-  disagree_dimension_signals:
-    economics: 1
-    management: 0.7
-    leadership_process: 0.6
+      prompt: ฉันรักการวาดออกแบบ User Flows และขึ้น Wireframe หน้าจอเพื่อให้ผู้ใช้ประทับใจ มากกว่าการคอยนั่งอ่านรายงานวิเคราะห์ต้นทุนการตลาดหรือตั้งค่า
+        KPI เชิงธุรกิจ
+  construct: design
+  agree_signals:
+    design: primary
+    requirements: secondary
+    people_product: secondary
+  disagree_signals:
+    economics: primary
+    management: secondary
+    leadership_process: secondary
+  rationale: Splits design-artifact work (UX) from business-impact prioritization (product manager).
+  sources:
+  - swebok:
+      ka: KA3
+  - roadmap_sh:
+      file: product-manager.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 110
   discriminates_between:
   - ux-designer
   - product-manager
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 110
 - code: role-swebok-tie-11-docs-devrel
   item_group: tie_break
   question_type: likert_5
-  prompt: I would rather write highly detailed, precise technical reference manuals
-    and API schemas than present at developer conferences and build public community
-    demos.
+  prompt: I would rather write highly detailed, precise technical reference manuals and API schemas than present at developer conferences and build public
+    community demos.
   translations:
     th:
-      prompt: ฉันพึงพอใจที่จะนั่งเขียนคู่มือเชิงลึก (Developer References) และจัดโครงสร้างของ
-        API Schema ให้เนี้ยบสุด ๆ มากกว่าออกงานสัมมนาหรือสร้างเดโมล่อเป้าดึงดูดคนในคอมมูนิตี้
-  agree_dimension_signals:
-    technical_documentation: 1
-    maintenance: 0.6
-  disagree_dimension_signals:
-    developer_community: 1
-    construction: 0.6
+      prompt: ฉันพึงพอใจที่จะนั่งเขียนคู่มือเชิงลึก (Developer References) และจัดโครงสร้างของ API Schema ให้เนี้ยบสุด ๆ มากกว่าออกงานสัมมนาหรือสร้างเดโมล่อเป้าดึงดูดคนในคอมมูนิตี้
+  construct: technical_documentation
+  agree_signals:
+    technical_documentation: primary
+    maintenance: secondary
+  disagree_signals:
+    developer_community: primary
+    construction: secondary
+  rationale: Splits reference writing (technical writer) from public community advocacy (developer relations).
+  sources:
+  - roadmap_sh:
+      file: technical-writer.json
+  - swebok:
+      ka: KA14
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 111
   discriminates_between:
   - technical-writer
   - developer-relations
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 111
 - code: role-swebok-tie-12-game-client-server
   item_group: tie_break
   question_type: likert_5
-  prompt: I prefer spend time tuning gameplay controls, physics simulations, and frame
-    rates over optimizing server-side load balancers and multiplayer synchronization
-    databases.
+  prompt: I prefer spend time tuning gameplay controls, physics simulations, and frame rates over optimizing server-side load balancers and multiplayer
+    synchronization databases.
   translations:
     th:
-      prompt: ฉันมีความสุขกับการไปขัดเกลาระบบการเคลื่อนไหว (Gameplay Controls) ค่าฟิสิกส์
-        และเฟรมเรตในแอปเกมมากกว่าแก้ปัญหาจูนเซิร์ฟเวอร์ล็อกอินหลังบ้านและซิงก์ข้อมูลผู้เล่น
-  agree_dimension_signals:
-    game_client: 1
-    game_family: 0.9
-    design: 0.6
-  disagree_dimension_signals:
-    game_server: 1
-    operations: 0.8
-    backend_platform: 0.8
+      prompt: ฉันมีความสุขกับการไปขัดเกลาระบบการเคลื่อนไหว (Gameplay Controls) ค่าฟิสิกส์ และเฟรมเรตในแอปเกมมากกว่าแก้ปัญหาจูนเซิร์ฟเวอร์ล็อกอินหลังบ้านและซิงก์ข้อมูลผู้เล่น
+  construct: game_client
+  agree_signals:
+    game_client: primary
+    game_family: primary
+    design: secondary
+  disagree_signals:
+    game_server: primary
+    operations: secondary
+    backend_platform: secondary
+  rationale: Splits gameplay-feel client work from multiplayer-infrastructure server work.
+  sources:
+  - roadmap_sh:
+      file: game-developer.json
+  - roadmap_sh:
+      file: server-side-game-developer.json
+  review:
+    status: draft
+    date: '2026-07-11'
+  display_order: 112
   discriminates_between:
   - game-developer
   - server-side-game-developer
-  difficulty: 1
-  discrimination_score: 4.5
-  display_order: 112
