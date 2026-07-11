@@ -1,0 +1,38 @@
+{
+  "content_digest": "6cda0f7f2353f44fd33462ddbf88a6520df061ce4838af7efc328249b2d16f09",
+  "metrics": {
+    "precision_resolved": 0.993,
+    "resolved_rate": 0.6562,
+    "top1_accuracy": 0.9015
+  },
+  "per_role_accuracy": {
+    "ai-data-scientist": 0.96,
+    "ai-engineer": 0.98,
+    "android-developer": 0.96,
+    "backend-developer": 0.86,
+    "bi-analyst": 0.82,
+    "blockchain-developer": 0.94,
+    "cyber-security-engineer-analyst": 0.48,
+    "data-analyst": 0.98,
+    "data-engineer": 0.78,
+    "developer-relations": 0.98,
+    "devops-engineer": 0.98,
+    "devsecops-engineer": 0.56,
+    "engineering-manager": 1.0,
+    "frontend-developer": 0.76,
+    "full-stack-developer": 0.94,
+    "game-developer": 0.96,
+    "ios-developer": 0.82,
+    "machine-learning-engineer": 0.92,
+    "mlops-engineer": 1.0,
+    "postgresql-developer-dba": 0.88,
+    "product-manager": 0.98,
+    "qa-engineer": 1.0,
+    "server-side-game-developer": 0.9,
+    "software-architect": 1.0,
+    "technical-writer": 1.0,
+    "ux-designer": 1.0
+  },
+  "samples_per_role": 50,
+  "seed": 42
+}

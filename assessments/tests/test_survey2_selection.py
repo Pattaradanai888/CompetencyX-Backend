@@ -56,6 +56,6 @@ def test_exploration_path_uses_injected_rng(session_with_questions):
 
 
 def test_seeded_random_instance_is_reproducible(session_with_questions):
-    picks_a = [select_next_survey2_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]  # noqa: S311
-    picks_b = [select_next_survey2_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]  # noqa: S311
+    picks_a = [select_next_survey2_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]
+    picks_b = [select_next_survey2_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]
     assert picks_a == picks_b
