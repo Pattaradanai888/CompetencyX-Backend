@@ -28,7 +28,11 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 minversion = "8.3"
-addopts = "-p no:cacheprovider --basetemp=.codex-pytest-basetemp --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
+# Coverage is opt-in to keep the dev loop fast; for a coverage run use:
+#   .venv\Scripts\python.exe -m pytest -n 0 --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
+# (coverage needs -n 0: under xdist each worker measures only its own slice)
+# Pass -n 0 to disable parallelism for debugging single tests.
+addopts = "-p no:cacheprovider --basetemp=.codex-pytest-basetemp --ds=config.settings.test --reuse-db --import-mode=importlib -n auto"
 python_files = ["tests.py", "test_*.py"]
 testpaths = ["api", "roadmaps", "assessments", "recommendations", "config", "simulation"]
 tmp_path_retention_count = 1
