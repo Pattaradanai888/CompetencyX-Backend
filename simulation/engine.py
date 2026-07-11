@@ -291,8 +291,7 @@ def _distribution_shape(role_counts: Counter, role_count: int) -> dict[str, floa
 # constants, runs the same pre-generated answer stream, then restores originals.
 TUNABLE_PARAM_NAMES = (
     'ROLE_DISCOVERY_MIN_SCORE_MARGIN',
-    'ROLE_EVIDENCE_LOGISTIC_SCALE',
-    'ROLE_EVIDENCE_SCORE_SCALE',
+    'ROLE_CONFIDENCE_FULL_MARGIN',
 )
 
 METRIC_HIGHER_IS_BETTER = {

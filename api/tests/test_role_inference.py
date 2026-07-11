@@ -248,7 +248,7 @@ class RoleInferenceTests(AssessmentFlowTestCase):
                 {'slug': 'qa-engineer', 'fit_share': 0.35},
             ],
             'margin_share': 0.35,
-            'score_margin': 0.35,
+            'score_margin': 3.0,
         }
         candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
         self.assertEqual(candidates, [])

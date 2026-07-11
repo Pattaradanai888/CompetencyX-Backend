@@ -6,9 +6,8 @@ runs the SAME pre-generated answer stream so the only variable is the params.
 Grid file format (YAML):
 
     grid:
-      ROLE_SCORE_SOFTMAX_TEMPERATURE: [1.5, 2.0, 2.242, 2.5, 3.0]
-      ROLE_DISCOVERY_CONFIDENCE_THRESHOLD: [0.25, 0.289, 0.33]
-      ROLE_EVIDENCE_SCORE_SCALE: [4.0, 5.229, 6.0]
+      ROLE_DISCOVERY_MIN_SCORE_MARGIN: [2.0, 2.5, 3.0]
+      ROLE_CONFIDENCE_FULL_MARGIN: [4.0, 5.0, 6.0]
 
 Example:
     python manage.py tune_scoring --grid data/scoring_tuning_grid.yaml --samples 500

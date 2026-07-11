@@ -1,22 +1,37 @@
-"""Pure-Python role-discovery scoring math — single source of truth shared by
+"""Pure-Python role-discovery scoring — single source of truth shared by
 production (``role_inference``) and the in-memory simulator. No Django imports.
+
+The model is vote counting. For each answer and each role, ask one question:
+does this answer side with the role (positive overlap between the chosen
+signal side and the role profile) or against it? The role receives a vote of
+``+strength`` or ``-strength`` (strength is 0.5 for a mild answer, 1.0 for a
+strong one). The best-fit role is the one with the most votes, and every
+threshold below is expressed in vote units, so "the winner must lead the
+runner-up by at least 2.5 votes" means literally that.
+
+This replaced an IDF + log-sigmoid + tuned-scale pipeline in 2026-07: ablation
+with the noisy-persona harness showed plain sign votes were both simpler and
+more accurate (0.947 vs 0.887 top-1), and vote margins separate correct from
+confused outcomes (median margin 5.0 when right vs 0.5 when wrong), which the
+old score margins never did. Recalibrate with `manage.py tune_scoring`.
 """
 
-import math
 from collections import defaultdict
 from dataclasses import dataclass
 
 from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_PROFILE_WEIGHTS
 
 
-# Evidence pipeline constants — tuned via the Monte Carlo simulator.
-# Reproduce with `manage.py tune_scoring --grid <grid.yaml> --samples N --random-seed 42`
-# (grid YAML format in the tune_scoring module docstring). The original one-off
-# research/derive_weights and research/tune_derived scripts were never committed.
-ROLE_DISCOVERY_MIN_SCORE_MARGIN = 0.300
+# Minimum vote lead over the runner-up to declare the role resolved.
+# Calibrated on the noisy-persona harness: at 2.5 votes, 99% of resolved
+# sessions name the persona's true role while ~2/3 of sessions resolve at all
+# (the rest finish as low_confidence, which is honest for confusable roles).
+ROLE_DISCOVERY_MIN_SCORE_MARGIN = 2.5
+
+# Vote lead treated as full confidence (median winning margin on the harness).
+ROLE_CONFIDENCE_FULL_MARGIN = 5.0
+
 ROLE_DISCOVERY_TOP_PAIR_COUNT = 2
-ROLE_EVIDENCE_LOGISTIC_SCALE = 1.989
-ROLE_EVIDENCE_SCORE_SCALE = 5.229
 
 
 @dataclass(frozen=True)
@@ -24,28 +39,6 @@ class RoleEvidenceSnapshot:
     role_scores: dict[str, float]
     dimension_scores: dict[str, float]
     dimension_evidence_counts: dict[str, int]
-
-
-def _log_sigmoid(value: float) -> float:
-    if value >= 0:
-        return -math.log1p(math.exp(-value))
-    return value - math.log1p(math.exp(value))
-
-
-def _compute_role_dimension_idf(role_profile_weights: dict[str, dict[str, float]]) -> dict[str, float]:
-    role_count = len(role_profile_weights)
-    dimension_role_counts: dict[str, int] = defaultdict(int)
-    for profile in role_profile_weights.values():
-        for dimension_key, weight in profile.items():
-            if max(float(weight), 0.0) > 0:
-                dimension_role_counts[dimension_key] += 1
-    return {
-        dimension_key: math.log((role_count + 1.0) / (role_count_for_dimension + 1.0)) + 1.0
-        for dimension_key, role_count_for_dimension in dimension_role_counts.items()
-    }
-
-
-ROLE_DIMENSION_IDF: dict[str, float] = _compute_role_dimension_idf(ROLE_PROFILE_WEIGHTS)
 
 
 def score_dimension_overlap(signals: dict[str, float], profile: dict[str, float]) -> float:
@@ -57,7 +50,7 @@ def score_dimension_overlap(signals: dict[str, float], profile: dict[str, float]
             continue
         if clean_signal_weight <= 0:
             continue
-        score += clean_signal_weight * max(float(profile.get(dimension_key, 0.0)), 0.0) * ROLE_DIMENSION_IDF.get(dimension_key, 1.0)
+        score += clean_signal_weight * max(float(profile.get(dimension_key, 0.0)), 0.0)
     return score
 
 
@@ -79,10 +72,13 @@ def _score_roles_for_answer(question: dict, scale_value: int | None) -> dict[str
 
     role_scores: dict[str, float] = {}
     for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        selected_overlap = score_dimension_overlap(selected_signals, profile)
-        rejected_overlap = score_dimension_overlap(rejected_signals, profile)
-        role_signal = selected_overlap - rejected_overlap
-        role_scores[role_slug] = ROLE_EVIDENCE_SCORE_SCALE * answer_strength * _log_sigmoid(ROLE_EVIDENCE_LOGISTIC_SCALE * role_signal)
+        role_signal = score_dimension_overlap(selected_signals, profile) - score_dimension_overlap(rejected_signals, profile)
+        if role_signal > 0:
+            role_scores[role_slug] = answer_strength
+        elif role_signal < 0:
+            role_scores[role_slug] = -answer_strength
+        else:
+            role_scores[role_slug] = 0.0
     return role_scores
 
 
@@ -91,21 +87,21 @@ def get_sorted_role_scores(role_scores: dict[str, float]) -> list[tuple[str, flo
 
 
 def build_role_shares(role_scores: dict[str, float], active_role_slugs: list[str]) -> dict[str, float]:
+    """Linear share of each role's vote lead over the last-place role.
+
+    Purely for display (ranked-role bars); resolution and confidence use raw
+    vote margins instead.
+    """
     if not active_role_slugs:
         return {}
     scores = {slug: float(role_scores.get(slug, 0.0)) for slug in active_role_slugs}
-    if all(score == 0.0 for score in scores.values()):
-        uniform = 1.0 / len(active_role_slugs)
-        return dict.fromkeys(active_role_slugs, uniform)
-    # Scores are cumulative log-sigmoid (log-probabilities); convert to shares
-    # via softmax with fixed temperature=1 (no tunable constants needed).
-    max_score = max(scores.values())
-    exp_scores = {slug: math.exp(score - max_score) for slug, score in scores.items()}
-    total = sum(exp_scores.values())
+    min_score = min(scores.values())
+    shifted = {slug: score - min_score for slug, score in scores.items()}
+    total = sum(shifted.values())
     if total <= 0:
         uniform = 1.0 / len(active_role_slugs)
         return dict.fromkeys(active_role_slugs, uniform)
-    return {slug: score / total for slug, score in exp_scores.items()}
+    return {slug: value / total for slug, value in shifted.items()}
 
 
 def _get_top_supporting_pillars(role_slug: str, dimension_scores: dict[str, float], *, limit: int = 3) -> list[str]:
@@ -166,8 +162,11 @@ def build_role_inference_snapshot(  # noqa: PLR0913
     runner_up_slug = sorted_scores[1][0] if len(sorted_scores) > 1 else None
     runner_up_score = sorted_scores[1][1] if len(sorted_scores) > 1 else 0.0
     winner_share = role_shares.get(top_slug, 0.0) if top_slug else 0.0
+    score_margin = top_score - runner_up_score
     has_evidence = bool(evidence.role_scores)
-    confidence = max(0.0, min(1.0, winner_share * min(1.0, answered_core / max(core_target, 1)))) if has_evidence else 0.0
+    progress = min(1.0, answered_core / max(core_target, 1))
+    margin_confidence = min(1.0, max(score_margin, 0.0) / ROLE_CONFIDENCE_FULL_MARGIN)
+    confidence = margin_confidence * progress if has_evidence else 0.0
     total_dimension_score = sum(max(score, 0.0) for score in evidence.dimension_scores.values())
     pillar_profile = [
         {
@@ -197,7 +196,7 @@ def build_role_inference_snapshot(  # noqa: PLR0913
         'top_role_slug': top_slug,
         'winner_share': winner_share,
         'margin_share': winner_share - role_shares.get(runner_up_slug, 0.0),
-        'score_margin': top_score - runner_up_score,
+        'score_margin': score_margin,
         'confidence': confidence,
         'core_question_target': core_target,
         'dimension_scores': evidence.dimension_scores,

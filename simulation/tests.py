@@ -202,7 +202,8 @@ def test_run_single_sample_all_neutral_prefix_ends_low_confidence():
     assert result['answered_core_questions'] == 2
     assert result['answered_tie_break_questions'] == 1
     assert result['score_margin'] == 0.0
-    assert result['confidence'] == 0.5
+    # Zero vote margin means zero confidence under vote-based scoring.
+    assert result['confidence'] == 0.0
     # low_confidence still surfaces the top-ranked role as best fit.
     assert result['best_fit_role'] == result['top_ranked_role']
 
@@ -340,22 +341,19 @@ def test_distribution_shape_single_role_universe_pins_entropy_to_one():
 
 def test_run_trial_restores_scoring_constants_after_success():
     original_margin = scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN
-    original_logistic = scoring_service.ROLE_EVIDENCE_LOGISTIC_SCALE
-    original_score_scale = scoring_service.ROLE_EVIDENCE_SCORE_SCALE
+    original_full_margin = scoring_service.ROLE_CONFIDENCE_FULL_MARGIN
     trial = run_trial(
         trial_id=1,
         params={
             'ROLE_DISCOVERY_MIN_SCORE_MARGIN': 999.0,
-            'ROLE_EVIDENCE_LOGISTIC_SCALE': 0.5,
-            'ROLE_EVIDENCE_SCORE_SCALE': 1.0,
+            'ROLE_CONFIDENCE_FULL_MARGIN': 9.0,
         },
         catalog=CATALOG_CTX,
         config=SimulationConfig(samples=2, seed=42, likert_weights={-2: 0.1, -1: 0.2, 0: 0.4, 1: 0.2, 2: 0.1}, metric='resolved_rate'),
         pre_generated_choices=[[2, 2, 2], [0, 0, 0]],
     )
     assert original_margin == scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN
-    assert original_logistic == scoring_service.ROLE_EVIDENCE_LOGISTIC_SCALE
-    assert original_score_scale == scoring_service.ROLE_EVIDENCE_SCORE_SCALE
+    assert original_full_margin == scoring_service.ROLE_CONFIDENCE_FULL_MARGIN
     assert trial['trial_id'] == 1
     assert trial['metric'] == 'resolved_rate'
     # An impossible margin threshold means nothing resolves.
