@@ -118,6 +118,7 @@ ignore = ["S101", "COM812", "TRY003", "RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests.py" = ["S105", "S106", "S107", "PLR2004", "PT009"]
+"**/tests/*.py" = ["S105", "S106", "S107", "PLR2004", "PT009"]
 "**/migrations/*.py" = ["ALL"]
 "manage.py" = ["INP001", "PLC0415", "EM101"]
 "config/settings/__init__.py" = ["F403"]
