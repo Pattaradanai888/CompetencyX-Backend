@@ -16,7 +16,7 @@ from assessments.services.assessment_service import create_assessment_session, s
 from assessments.services.role_inference_service import get_role_inference_snapshot
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
-from simulation.engine import LIKERT_VALUES, aggregate_results, run_single_sample
+from simulation.engine import LIKERT_VALUES, CatalogContext, SimulationConfig, aggregate_results, run_single_sample
 
 
 SAMPLE_QUESTION = {
@@ -209,16 +209,14 @@ class ScoringParityTests(APITestCase):
             }
             for question in Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).order_by('display_order', 'id')
         ]
-        fixed_answers = list((LIKERT_VALUES * 10)[:len(questions)])
-        result = run_single_sample(
-            0,
-            questions,
-            list(self.active_role_slugs),
-            self.role_names,
-            self.core_target,
-            [],
-            fixed_answers,
+        fixed_answers = list((LIKERT_VALUES * 10)[: len(questions)])
+        catalog = CatalogContext(
+            questions=questions,
+            active_role_slugs=list(self.active_role_slugs),
+            role_names=self.role_names,
+            core_target=self.core_target,
         )
+        result = run_single_sample(0, catalog, [], fixed_answers)
         assert result['answered_role_questions'] >= self.core_target
         assert result['resolution_status'] in {'resolved', 'low_confidence', 'unknown'}
         assert result['best_fit_role'] is None or result['best_fit_role'] in self.active_role_slugs
@@ -233,9 +231,9 @@ class ScoringParityTests(APITestCase):
                 'resolution_status': 'resolved',
                 'best_fit_role': 'backend-developer',
                 'top_ranked_role': 'backend-developer',
-        'answered_core_questions': 46,
-        'answered_tie_break_questions': 0,
-        'answered_role_questions': 46,
+                'answered_core_questions': 46,
+                'answered_tie_break_questions': 0,
+                'answered_role_questions': 46,
                 'confidence': 0.5,
                 'margin_share': 0.3,
                 'score_margin': 4.0,
@@ -244,11 +242,17 @@ class ScoringParityTests(APITestCase):
         ]
         summary = aggregate_results(
             results,
-            samples=1,
-            seed=42,
-            likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2},
-            active_role_slugs=list(self.active_role_slugs),
-            prefix_answers=[],
+            catalog=CatalogContext(
+                questions=questions,
+                active_role_slugs=list(self.active_role_slugs),
+                role_names=self.role_names,
+                core_target=self.core_target,
+            ),
+            config=SimulationConfig(
+                samples=1,
+                seed=42,
+                likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2},
+            ),
         )
         assert summary['resolved_count'] == 1
         assert summary['resolved_rate'] == 1.0

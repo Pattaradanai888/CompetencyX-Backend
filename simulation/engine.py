@@ -15,9 +15,30 @@ LIKERT_VALUES = (-2, -1, 0, 1, 2)
 BASELINE_LIKERT_WEIGHTS = {-2: 0.10, -1: 0.20, 0: 0.40, 1: 0.20, 2: 0.10}
 
 
+@dataclass(frozen=True)
+class CatalogContext:
+    """Static question/role catalog shared by every sample. Picklable for worker processes."""
+
+    questions: list[dict]
+    active_role_slugs: list[str]
+    role_names: dict[str, str]
+    core_target: int
+
+
+@dataclass(frozen=True)
+class SimulationConfig:
+    """Per-run simulation knobs. Picklable for worker processes."""
+
+    samples: int
+    seed: int
+    likert_weights: dict[int, float]
+    prefix_answers: list[int] = field(default_factory=list)
+    workers: int | None = None
+    metric: str = 'resolved_rate'
+
+
 @dataclass
 class _SampleState:
-
     active_role_slugs: list[str]
     role_names: dict[str, str]
     core_target: int
@@ -73,24 +94,22 @@ class _SampleState:
         )
 
 
-def run_single_sample(  # noqa: PLR0913
+def run_single_sample(
     sample_index: int,
-    questions: list[dict],
-    active_role_slugs: list[str],
-    role_names: dict[str, str],
-    core_target: int,
+    catalog: CatalogContext,
     prefix_answers: list[int],
     pre_generated_choices: list[int],
 ) -> dict[str, object]:
+    core_target = catalog.core_target
     state = _SampleState(
-        active_role_slugs=list(active_role_slugs),
-        role_names=role_names,
+        active_role_slugs=list(catalog.active_role_slugs),
+        role_names=catalog.role_names,
         core_target=core_target,
     )
 
     choice_index = 0
     snapshot = state.inference_snapshot()
-    unanswered = list(questions)
+    unanswered = list(catalog.questions)
     is_resolved = False
     has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
 
@@ -148,33 +167,18 @@ def _pre_generate_choices(
     population = list(LIKERT_VALUES)
     weights = [likert_weights[value] for value in population]
     needed = max(questions_per_sample - prefix_length, 0)
-    return [
-        [rng.choices(population, weights=weights, k=1)[0] for _ in range(needed)]
-        for _ in range(samples)
-    ]
+    return [[rng.choices(population, weights=weights, k=1)[0] for _ in range(needed)] for _ in range(samples)]
 
 
-def run_samples(  # noqa: PLR0913
-    *,
-    samples: int,
-    questions: list[dict],
-    active_role_slugs: list[str],
-    role_names: dict[str, str],
-    core_target: int,
-    prefix_answers: list[int],
-    likert_weights: dict[int, float],
-    seed: int,
-    workers: int | None = None,
-) -> list[dict[str, object]]:
-    questions_per_sample = len(questions)
+def run_samples(catalog: CatalogContext, config: SimulationConfig) -> list[dict[str, object]]:
     pre_generated_choices = _pre_generate_choices(
-        samples,
-        questions_per_sample,
-        len(prefix_answers),
-        likert_weights,
-        seed,
+        config.samples,
+        len(catalog.questions),
+        len(config.prefix_answers),
+        config.likert_weights,
+        config.seed,
     )
-    worker_count = workers if workers and workers > 0 else None
+    worker_count = config.workers if config.workers and config.workers > 0 else None
 
     results: list[dict[str, object]] = []
     with concurrent.futures.ProcessPoolExecutor(max_workers=worker_count) as executor:
@@ -182,14 +186,11 @@ def run_samples(  # noqa: PLR0913
             executor.submit(
                 run_single_sample,
                 index,
-                questions,
-                list(active_role_slugs),
-                role_names,
-                core_target,
-                list(prefix_answers),
+                catalog,
+                list(config.prefix_answers),
                 pre_generated_choices[index],
             )
-            for index in range(samples)
+            for index in range(config.samples)
         ]
         results.extend(future.result() for future in concurrent.futures.as_completed(futures))
 
@@ -197,15 +198,14 @@ def run_samples(  # noqa: PLR0913
     return results
 
 
-def aggregate_results(  # noqa: PLR0913
+def aggregate_results(
     results: list[dict[str, object]],
     *,
-    samples: int,
-    seed: int,
-    likert_weights: dict[int, float],
-    active_role_slugs: list[str],
-    prefix_answers: list[int],
+    catalog: CatalogContext,
+    config: SimulationConfig,
 ) -> dict[str, object]:
+    samples = config.samples
+    active_role_slugs = catalog.active_role_slugs
     resolved = [result for result in results if result['resolution_status'] == 'resolved']
     low_confidence = [result for result in results if result['resolution_status'] == 'low_confidence']
     ambiguous = [result for result in results if result['phase'] == 'role_ambiguity']
@@ -217,9 +217,9 @@ def aggregate_results(  # noqa: PLR0913
 
     summary: dict[str, object] = {
         'samples': samples,
-        'seed': seed,
-        'prefix_answers': list(prefix_answers),
-        'likert_weights': {key: likert_weights[key] for key in LIKERT_VALUES},
+        'seed': config.seed,
+        'prefix_answers': list(config.prefix_answers),
+        'likert_weights': {key: config.likert_weights[key] for key in LIKERT_VALUES},
         'random_answer_values': list(LIKERT_VALUES),
         'active_role_count': role_count,
         'completed_count': len(completed),
@@ -320,19 +320,14 @@ def extract_metric(summary: dict[str, object], metric: str) -> float:
     return float(summary[metric])
 
 
-def run_trial(  # noqa: PLR0913
+def run_trial(
     trial_id: int,
     params: dict[str, float],
-    samples: int,
-    questions: list[dict],
-    active_role_slugs: list[str],
-    role_names: dict[str, str],
-    core_target: int,
+    catalog: CatalogContext,
+    config: SimulationConfig,
     pre_generated_choices: list[list[int]],
-    likert_weights: dict[int, float],
-    seed: int,
-    metric: str,
 ) -> dict[str, object]:
+    metric = config.metric
     originals = {name: getattr(scoring_service, name) for name in params}
     for name, value in params.items():
         setattr(scoring_service, name, value)
@@ -340,27 +335,17 @@ def run_trial(  # noqa: PLR0913
         results = [
             run_single_sample(
                 index,
-                questions,
-                list(active_role_slugs),
-                role_names,
-                core_target,
+                catalog,
                 [],
                 pre_generated_choices[index],
             )
-            for index in range(samples)
+            for index in range(config.samples)
         ]
     finally:
         for name, value in originals.items():
             setattr(scoring_service, name, value)
 
-    summary = aggregate_results(
-        results,
-        samples=samples,
-        seed=seed,
-        likert_weights=likert_weights,
-        active_role_slugs=list(active_role_slugs),
-        prefix_answers=[],
-    )
+    summary = aggregate_results(results, catalog=catalog, config=config)
     return {
         'trial_id': trial_id,
         'params': params,

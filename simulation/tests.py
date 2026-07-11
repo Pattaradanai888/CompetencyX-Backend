@@ -12,6 +12,8 @@ import pytest
 from assessments.services import scoring_service
 from simulation.engine import (
     LIKERT_VALUES,
+    CatalogContext,
+    SimulationConfig,
     _distribution_shape,
     _pre_generate_choices,
     _SampleState,
@@ -54,6 +56,12 @@ TIE_BREAK_QUESTION = {
     'trait_positive_dimension': '',
 }
 CATALOG = [CORE_QUESTION_BACKEND, CORE_QUESTION_PLATFORM, TIE_BREAK_QUESTION]
+CATALOG_CTX = CatalogContext(
+    questions=CATALOG,
+    active_role_slugs=list(ACTIVE_ROLE_SLUGS),
+    role_names=ROLE_NAMES,
+    core_target=CORE_TARGET,
+)
 
 EXPECTED_SAMPLE_RESULT_KEYS = {
     'sample_index',
@@ -167,17 +175,17 @@ def test_apply_answer_neutral_adds_no_evidence_but_still_counts():
 
 
 def test_run_single_sample_is_deterministic_for_identical_inputs():
-    kwargs = (7, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [2, -1, 1], [])
-    assert run_single_sample(*kwargs) == run_single_sample(*kwargs)
+    args = (7, CATALOG_CTX, [2, -1, 1], [])
+    assert run_single_sample(*args) == run_single_sample(*args)
 
 
 def test_run_single_sample_result_has_stable_keys():
-    result = run_single_sample(0, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [2, 2, 2], [])
+    result = run_single_sample(0, CATALOG_CTX, [2, 2, 2], [])
     assert set(result) == EXPECTED_SAMPLE_RESULT_KEYS
 
 
 def test_run_single_sample_strong_backend_prefix_resolves_without_tie_break():
-    result = run_single_sample(0, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [2, 2, 2], [])
+    result = run_single_sample(0, CATALOG_CTX, [2, 2, 2], [])
     assert result['resolution_status'] == 'resolved'
     assert result['best_fit_role'] == 'backend-developer'
     assert result['top_ranked_role'] == 'backend-developer'
@@ -188,7 +196,7 @@ def test_run_single_sample_strong_backend_prefix_resolves_without_tie_break():
 
 
 def test_run_single_sample_all_neutral_prefix_ends_low_confidence():
-    result = run_single_sample(0, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [0, 0, 0], [])
+    result = run_single_sample(0, CATALOG_CTX, [0, 0, 0], [])
     assert result['resolution_status'] == 'low_confidence'
     # Zero margin forces the tie-break question to be consumed too.
     assert result['answered_core_questions'] == 2
@@ -200,8 +208,8 @@ def test_run_single_sample_all_neutral_prefix_ends_low_confidence():
 
 
 def test_run_single_sample_falls_back_to_pre_generated_choices_after_prefix():
-    from_prefix = run_single_sample(0, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [2, 2], [])
-    from_choices = run_single_sample(0, CATALOG, list(ACTIVE_ROLE_SLUGS), ROLE_NAMES, CORE_TARGET, [], [2, 2, 2])
+    from_prefix = run_single_sample(0, CATALOG_CTX, [2, 2], [])
+    from_choices = run_single_sample(0, CATALOG_CTX, [], [2, 2, 2])
     assert {key: from_prefix[key] for key in from_prefix if key != 'sample_index'} == {
         key: from_choices[key] for key in from_choices if key != 'sample_index'
     }
@@ -242,11 +250,8 @@ def test_aggregate_results_exact_rates_coverage_and_conditional_keys():
     likert_weights = {-2: 0.1, -1: 0.2, 0: 0.4, 1: 0.2, 2: 0.1}
     summary = aggregate_results(
         results,
-        samples=4,
-        seed=42,
-        likert_weights=likert_weights,
-        active_role_slugs=list(ACTIVE_ROLE_SLUGS),
-        prefix_answers=[2, 0],
+        catalog=CATALOG_CTX,
+        config=SimulationConfig(samples=4, seed=42, likert_weights=likert_weights, prefix_answers=[2, 0]),
     )
     assert summary['samples'] == 4
     assert summary['seed'] == 42
@@ -287,11 +292,8 @@ def test_aggregate_results_omits_conditional_sections_when_empty():
     ]
     summary = aggregate_results(
         results,
-        samples=1,
-        seed=1,
-        likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2},
-        active_role_slugs=list(ACTIVE_ROLE_SLUGS),
-        prefix_answers=[],
+        catalog=CATALOG_CTX,
+        config=SimulationConfig(samples=1, seed=1, likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2}),
     )
     assert summary['resolved_rate'] == 0.0
     assert summary['missing_best_fit_roles'] == sorted(ACTIVE_ROLE_SLUGS)
@@ -350,15 +352,9 @@ def test_run_trial_restores_scoring_constants_after_success():
             'ROLE_EVIDENCE_LOGISTIC_SCALE': 0.5,
             'ROLE_EVIDENCE_SCORE_SCALE': 1.0,
         },
-        samples=2,
-        questions=CATALOG,
-        active_role_slugs=list(ACTIVE_ROLE_SLUGS),
-        role_names=ROLE_NAMES,
-        core_target=CORE_TARGET,
+        catalog=CATALOG_CTX,
+        config=SimulationConfig(samples=2, seed=42, likert_weights={-2: 0.1, -1: 0.2, 0: 0.4, 1: 0.2, 2: 0.1}, metric='resolved_rate'),
         pre_generated_choices=[[2, 2, 2], [0, 0, 0]],
-        likert_weights={-2: 0.1, -1: 0.2, 0: 0.4, 1: 0.2, 2: 0.1},
-        seed=42,
-        metric='resolved_rate',
     )
     assert original_margin == scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN
     assert original_logistic == scoring_service.ROLE_EVIDENCE_LOGISTIC_SCALE
@@ -376,14 +372,8 @@ def test_run_trial_restores_scoring_constants_after_exception():
         run_trial(
             trial_id=2,
             params={'ROLE_DISCOVERY_MIN_SCORE_MARGIN': 999.0},
-            samples=1,
-            questions=CATALOG,
-            active_role_slugs=list(ACTIVE_ROLE_SLUGS),
-            role_names=ROLE_NAMES,
-            core_target=CORE_TARGET,
+            catalog=CATALOG_CTX,
+            config=SimulationConfig(samples=1, seed=42, likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2}),
             pre_generated_choices=[[]],  # No choices available -> IndexError mid-sample.
-            likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2},
-            seed=42,
-            metric='resolved_rate',
         )
     assert original_margin == scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN

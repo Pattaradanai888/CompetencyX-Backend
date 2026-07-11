@@ -26,6 +26,8 @@ from simulation.engine import (
     METRIC_HIGHER_IS_BETTER,
     METRIC_LOWER_IS_BETTER,
     TUNABLE_PARAM_NAMES,
+    CatalogContext,
+    SimulationConfig,
     _pre_generate_choices,
     run_trial,
 )
@@ -58,8 +60,18 @@ class Command(BaseCommand):
             msg = 'No active ROLE-stage questions found. Run seed_mvp_content first.'
             raise CommandError(msg)
         active_role_slugs, role_names = load_roles()
-        core_target = count_core_questions(questions)
-        likert_weights = {-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2}
+        catalog = CatalogContext(
+            questions=questions,
+            active_role_slugs=active_role_slugs,
+            role_names=role_names,
+            core_target=count_core_questions(questions),
+        )
+        config = SimulationConfig(
+            samples=options['samples'],
+            seed=options['random_seed'],
+            likert_weights={-2: 0.2, -1: 0.2, 0: 0.2, 1: 0.2, 2: 0.2},
+            metric=options['metric'],
+        )
 
         trials = self._expand_grid(grid)
         if not trials:
@@ -67,21 +79,30 @@ class Command(BaseCommand):
             raise CommandError(msg)
 
         pre_generated_choices = _pre_generate_choices(
-            options['samples'], len(questions), 0, likert_weights, options['random_seed'],
+            config.samples,
+            len(catalog.questions),
+            0,
+            config.likert_weights,
+            config.seed,
         )
 
-        self.stdout.write(self.style.MIGRATE_HEADING(
-            f'\n=== Scoring Hyperparameter Tuning ({len(trials)} trials x {options["samples"]} samples, '
-            f'metric={options["metric"]}, seed={options["random_seed"]}) ===',
-        ))
+        self.stdout.write(
+            self.style.MIGRATE_HEADING(
+                f'\n=== Scoring Hyperparameter Tuning ({len(trials)} trials x {options["samples"]} samples, '
+                f'metric={options["metric"]}, seed={options["random_seed"]}) ===',
+            )
+        )
 
         worker_count = options['workers'] if options['workers'] and options['workers'] > 0 else None
         with concurrent.futures.ProcessPoolExecutor(max_workers=worker_count) as executor:
             futures = {
                 executor.submit(
-                    run_trial, trial_id, params, options['samples'], questions,
-                    active_role_slugs, role_names, core_target,
-                    pre_generated_choices, likert_weights, options['random_seed'], options['metric'],
+                    run_trial,
+                    trial_id,
+                    params,
+                    catalog,
+                    config,
+                    pre_generated_choices,
                 ): trial_id
                 for trial_id, params in enumerate(trials)
             }
