@@ -64,59 +64,67 @@ def get_preferred_role_gap_topics(session: AssessmentSession, *, limit: int = MA
     return list(role.topics.filter(is_active=True).order_by('display_order', 'id')[:limit])
 
 
-def build_guidance_summary(session: AssessmentSession) -> str:  # noqa: C901, PLR0911, PLR0912
-    if not is_core_role_profile_complete(session):
-        if session.current_role_id is not None and session.preferred_role_id is not None:
-            return (
-                f'You are currently a {session.current_role.name} and want to pursue {session.preferred_role.name}. '
-                'Complete the role-discovery profile to compare your current fit against that target.'
-            )
+def _incomplete_profile_summary(session: AssessmentSession) -> str:
+    if session.current_role_id is not None and session.preferred_role_id is not None:
         return (
-            f'You want to pursue {session.preferred_role.name}. Complete the role-discovery profile to compare fit.'
-            if session.preferred_role_id is not None
-            else 'Complete the role-discovery profile to identify the best-fit roadmap.'
+            f'You are currently a {session.current_role.name} and want to pursue {session.preferred_role.name}. '
+            'Complete the role-discovery profile to compare your current fit against that target.'
         )
+    return (
+        f'You want to pursue {session.preferred_role.name}. Complete the role-discovery profile to compare fit.'
+        if session.preferred_role_id is not None
+        else 'Complete the role-discovery profile to identify the best-fit roadmap.'
+    )
 
-    alignment_status = get_role_alignment_status(session)
+
+def _ambiguous_summary(session: AssessmentSession) -> str:
+    candidate_names = ' and '.join(candidate['name'] for candidate in get_top_role_candidates(session)[:2])
+    return f'Your answers are not confident enough to separate {candidate_names} yet.'
+
+
+def _awaiting_best_fit_summary(session: AssessmentSession) -> str:
+    if session.current_role is not None:
+        return (
+            f'You are currently a {session.current_role.name} and want to pursue {session.preferred_role.name}. '
+            'Answer the role-discovery questions to see how close your current fit is to that target.'
+        )
+    return f'You want to pursue {session.preferred_role.name}. Answer the role-discovery questions to see how close your current fit is.'
+
+
+def _base_fit_message(session: AssessmentSession, *, resolution_status: str) -> str:
     preferred_role = session.preferred_role
     current_role = session.current_role
     best_fit_role = session.best_fit_role
-    role_snapshot = get_top_role_candidates(session)
-    gap_topics = get_preferred_role_gap_topics(session)
-    gap_names = ', '.join(topic.title for topic in gap_topics)
-
-    resolution_status = get_role_resolution_status(session)
-    if resolution_status == 'ambiguous':
-        candidate_names = ' and '.join(candidate['name'] for candidate in role_snapshot[:2])
-        return f'Your answers are not confident enough to separate {candidate_names} yet.'
-    if preferred_role is None and best_fit_role is None:
-        return 'Answer the role-discovery questions to identify the best-fit roadmap.'
-
-    if preferred_role is not None and best_fit_role is None:
-        if current_role is not None:
-            return (
-                f'You are currently a {current_role.name} and want to pursue {preferred_role.name}. '
-                'Answer the role-discovery questions to see how close your current fit is to that target.'
-            )
-        return f'You want to pursue {preferred_role.name}. Answer the role-discovery questions to see how close your current fit is.'
-
     if resolution_status == 'low_confidence' and best_fit_role is not None:
-        base_message = f'Your answers weakly point toward {best_fit_role.name}. Treat this as a tentative fit and validate it in Survey 2.'
-    elif preferred_role is None and best_fit_role is not None:
-        base_message = f'Your current answers align best with {best_fit_role.name}.'
-    elif alignment_status == 'aligned':
+        return f'Your answers weakly point toward {best_fit_role.name}. Treat this as a tentative fit and validate it in Survey 2.'
+    if preferred_role is None and best_fit_role is not None:
+        return f'Your current answers align best with {best_fit_role.name}.'
+    if get_role_alignment_status(session) == 'aligned':
         if current_role is not None:
-            base_message = f'You are currently a {current_role.name} and are tracking well toward {preferred_role.name}.'
-        else:
-            base_message = f'You are tracking well toward {preferred_role.name}.'
-    elif current_role is not None:
-        base_message = (
+            return f'You are currently a {current_role.name} and are tracking well toward {preferred_role.name}.'
+        return f'You are tracking well toward {preferred_role.name}.'
+    if current_role is not None:
+        return (
             f'Your current answers look closer to {best_fit_role.name}, but you can still pursue {preferred_role.name} '
             f'from your current {current_role.name} role.'
         )
-    else:
-        base_message = f'Your current answers look closer to {best_fit_role.name}, but you can still pursue {preferred_role.name}.'
+    return f'Your current answers look closer to {best_fit_role.name}, but you can still pursue {preferred_role.name}.'
 
+
+def build_guidance_summary(session: AssessmentSession) -> str:
+    if not is_core_role_profile_complete(session):
+        return _incomplete_profile_summary(session)
+
+    resolution_status = get_role_resolution_status(session)
+    if resolution_status == 'ambiguous':
+        return _ambiguous_summary(session)
+    if session.preferred_role is None and session.best_fit_role is None:
+        return 'Answer the role-discovery questions to identify the best-fit roadmap.'
+    if session.preferred_role is not None and session.best_fit_role is None:
+        return _awaiting_best_fit_summary(session)
+
+    base_message = _base_fit_message(session, resolution_status=resolution_status)
+    gap_names = ', '.join(topic.title for topic in get_preferred_role_gap_topics(session))
     if gap_names:
         return f'{base_message} Focus next on {gap_names}.'
     return base_message
