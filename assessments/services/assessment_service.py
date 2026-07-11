@@ -79,6 +79,16 @@ def get_current_question(session: AssessmentSession):
     return candidates[0] if candidates else None
 
 
+def ensure_question_is_expected(session: AssessmentSession, question: Question) -> None:
+    expected_question = get_current_question(session)
+    if expected_question is None:
+        msg = 'This assessment session is not accepting more answers.'
+        raise AssessmentFlowError(msg)
+    if question.id != expected_question.id:
+        msg = f'Out-of-order submission. Expected "{expected_question.code}" ({expected_question.id}).'
+        raise AssessmentFlowError(msg)
+
+
 @transaction.atomic
 def submit_answer(  # noqa: PLR0913
     *,
@@ -104,13 +114,7 @@ def submit_answer(  # noqa: PLR0913
         response_time_ms,
         confidence_indicator or '',
     )
-    expected_question = get_current_question(session)
-    if expected_question is None:
-        msg = 'This assessment session is not accepting more answers.'
-        raise AssessmentFlowError(msg)
-    if question.id != expected_question.id:
-        msg = f'Out-of-order answer submission. Expected question "{expected_question.code}" ({expected_question.id}).'
-        raise AssessmentFlowError(msg)
+    ensure_question_is_expected(session, question)
 
     answer, created = Answer.objects.get_or_create(
         session=session,

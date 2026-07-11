@@ -5,11 +5,12 @@ from recommendations.serializers import RecommendationSerializer
 from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
+from .exceptions import AssessmentFlowError
 from .models import Answer, AssessmentSession
 from .services.assessment_service import (
     build_session_state,
     create_assessment_session,
-    get_current_question,
+    ensure_question_is_expected,
     submit_answer,
 )
 from .services.guidance_service import (
@@ -71,13 +72,10 @@ class AnswerSubmitSerializer(serializers.Serializer):
             option, scale_value = self._validate_option_answer(attrs, question)
 
         if session is not None:
-            expected_question = get_current_question(session)
-            if expected_question is None:
-                raise serializers.ValidationError({'question_id': 'This assessment session is not accepting more answers.'})
-            if question.id != expected_question.id:
-                raise serializers.ValidationError(
-                    {'question_id': (f'Out-of-order submission. Expected "{expected_question.code}" ({expected_question.id}).')}
-                )
+            try:
+                ensure_question_is_expected(session, question)
+            except AssessmentFlowError as exc:
+                raise serializers.ValidationError({'question_id': str(exc.detail)}) from exc
 
         attrs['option'] = option
         attrs['question'] = question
