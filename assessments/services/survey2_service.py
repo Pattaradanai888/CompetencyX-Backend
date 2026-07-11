@@ -105,7 +105,12 @@ def build_survey2_state_key(session: AssessmentSession, answers: dict[str, int])
     )
 
 
-def select_next_survey2_question(session: AssessmentSession, answers: dict[str, int]) -> dict[str, object] | None:
+def select_next_survey2_question(
+    session: AssessmentSession,
+    answers: dict[str, int],
+    *,
+    rng=random,  # pass a seeded random.Random for deterministic selection
+) -> dict[str, object] | None:
     questions = list_survey2_questions()
     unanswered = [question for question in questions if question['id'] not in answers]
     if not unanswered:
@@ -113,8 +118,8 @@ def select_next_survey2_question(session: AssessmentSession, answers: dict[str, 
 
     state_key = build_survey2_state_key(session, answers)
     epsilon = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON', 0.15))
-    if random.random() < epsilon:  # noqa: S311
-        return random.choice(unanswered)  # noqa: S311
+    if rng.random() < epsilon:
+        return rng.choice(unanswered)
 
     q_map = {
         row.question_id: row
