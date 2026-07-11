@@ -82,8 +82,8 @@ def is_role_resolution_exhausted_with_viable_winner(
     )
 
 
-def is_role_inference_resolved(session: AssessmentSession) -> bool:
-    snapshot = get_role_inference_snapshot(session)
+def is_role_inference_resolved(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> bool:
+    snapshot = snapshot or get_role_inference_snapshot(session)
     return is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot)
 
 
@@ -114,12 +114,12 @@ def get_remaining_tie_break_questions(session: AssessmentSession) -> list[Questi
     )
 
 
-def has_remaining_role_questions(session: AssessmentSession) -> bool:
+def has_remaining_role_questions(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> bool:
     answered_question_ids = session.answers.values_list('question_id', flat=True)
     unanswered_role_questions = list(
         Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).exclude(id__in=answered_question_ids),
     )
-    return bool(get_selectable_role_candidates(session, unanswered_role_questions))
+    return bool(get_selectable_role_candidates(session, unanswered_role_questions, snapshot=snapshot))
 
 
 def get_selectable_role_candidates(

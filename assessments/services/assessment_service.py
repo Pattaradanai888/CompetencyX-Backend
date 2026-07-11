@@ -138,9 +138,11 @@ def submit_answer(  # noqa: PLR0913
         option.key if option else '',
         scale_value,
     )
-    _recompute_best_fit_role(session)
-    _update_phase(session)
-    recommendation_service.refresh_recommendations(session)
+    snapshot = get_role_inference_snapshot(session)
+    _recompute_best_fit_role(session, snapshot=snapshot)
+    _update_phase(session, snapshot=snapshot)
+    if session.phase == AssessmentSession.Phase.RECOMMENDATION_READY:
+        recommendation_service.refresh_recommendations(session)
     return answer
 
 
@@ -191,8 +193,8 @@ def _get_unanswered_questions(session: AssessmentSession):
     )
 
 
-def _recompute_best_fit_role(session: AssessmentSession) -> None:
-    snapshot = get_role_inference_snapshot(session)
+def _recompute_best_fit_role(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> None:
+    snapshot = snapshot or get_role_inference_snapshot(session)
     role_scores = {candidate['slug']: candidate['fit_score'] for candidate in snapshot['ranked_roles']}
 
     if not role_scores:
@@ -258,11 +260,11 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
     return [name for name, passed in gates.items() if not passed]
 
 
-def _update_phase(session: AssessmentSession) -> None:
+def _update_phase(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> None:
     previous_phase = session.phase
     previous_status = session.status
-    has_remaining_questions = has_remaining_role_questions(session)
-    is_completed = is_role_inference_resolved(session) or not has_remaining_questions
+    has_remaining_questions = has_remaining_role_questions(session, snapshot=snapshot)
+    is_completed = is_role_inference_resolved(session, snapshot=snapshot) or not has_remaining_questions
 
     if is_completed:
         session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
