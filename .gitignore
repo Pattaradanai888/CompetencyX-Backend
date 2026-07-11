@@ -32,10 +32,14 @@ package-lock.json
 .DS_Store
 Thumbs.db
 
+# One-off research scripts (sources were never committed; tuning lives in `manage.py tune_scoring`)
+research/
+
 # Local agent/tool state
 .claude/
 .serena/
 .codex
+.tokensave/
 
 
 .uv-cache/

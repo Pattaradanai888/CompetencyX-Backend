@@ -30,7 +30,7 @@ default-groups = ["dev"]
 minversion = "8.3"
 addopts = "-p no:cacheprovider --basetemp=.codex-pytest-basetemp --ds=config.settings.test --reuse-db --import-mode=importlib --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing"
 python_files = ["tests.py", "test_*.py"]
-testpaths = ["api", "roadmaps", "assessments", "recommendations", "config"]
+testpaths = ["api", "roadmaps", "assessments", "recommendations", "config", "simulation"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 norecursedirs = [
@@ -118,6 +118,7 @@ ignore = ["S101", "COM812", "TRY003", "RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests.py" = ["S105", "S106", "S107", "PLR2004", "PT009"]
+"**/tests/*.py" = ["S105", "S106", "S107", "PLR2004", "PT009"]
 "**/migrations/*.py" = ["ALL"]
 "manage.py" = ["INP001", "PLC0415", "EM101"]
 "config/settings/__init__.py" = ["F403"]

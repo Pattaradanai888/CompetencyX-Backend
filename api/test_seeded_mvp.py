@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from assessments.role_inference import _score_dimension_overlap
+from assessments.services.scoring_service import score_dimension_overlap
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 
@@ -14,7 +14,7 @@ def _score_roles_from_dimensions(dimension_scores: dict[str, float]) -> dict[str
 
     role_scores: dict[str, float] = {}
     for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        role_scores[role_slug] = _score_dimension_overlap(dimension_scores, profile)
+        role_scores[role_slug] = score_dimension_overlap(dimension_scores, profile)
     return role_scores
 
 
@@ -37,7 +37,7 @@ class SeededMvpFlowTests(APITestCase):
     def test_seeded_roles_support_session_creation_and_smoke_flows(self):
         for role in Role.objects.filter(is_active=True)[:FULL_FLOW_SMOKE_ROLE_COUNT]:
             create_response = self.client.post(
-                reverse('assessment-session-create'),
+                reverse('assessment-session-list'),
                 {'preferred_role_slug': role.slug},
                 format='json',
             )
@@ -57,7 +57,7 @@ class SeededMvpFlowTests(APITestCase):
                     answer_data = {'question_id': question.id, 'option_id': yes_option_id}
 
                 answer_response = self.client.post(
-                    reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                    reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
                     answer_data,
                     format='json',
                 )
@@ -86,7 +86,7 @@ class SeededMvpFlowTests(APITestCase):
 
     def test_seeded_backend_answer_path_resolves_to_recommendations(self):
         backend_profile = set(ROLE_PROFILE_WEIGHTS['backend-developer'])
-        create_response = self.client.post(reverse('assessment-session-create'), {}, format='json')
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         assert create_response.status_code == status.HTTP_201_CREATED
         payload = create_response.json()
 
@@ -94,7 +94,7 @@ class SeededMvpFlowTests(APITestCase):
             current_question = Question.objects.get(id=payload['current_question']['id'])
             scale_value = self._scale_for_profile(current_question, backend_profile)
             answer_response = self.client.post(
-                reverse('assessment-answer-submit', kwargs={'pk': payload['id']}),
+                reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
                 {'question_id': current_question.id, 'scale_value': scale_value},
                 format='json',
             )

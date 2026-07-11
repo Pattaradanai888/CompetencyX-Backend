@@ -5,38 +5,47 @@ from recommendations.serializers import RecommendationSerializer
 from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
-from .guidance import ROLE_RESULT_AVAILABLE_STATUSES
+from .exceptions import AssessmentFlowError
 from .models import Answer, AssessmentSession
-from .roadmaps import get_survey2_question_ids
-from .services import (
-    build_guidance_summary,
+from .services.assessment_service import (
     build_session_state,
-    get_current_question,
+    create_assessment_session,
+    ensure_question_is_expected,
+    submit_answer,
+)
+from .services.guidance_service import (
+    build_guidance_summary,
     get_preferred_role_gap_topics,
     get_role_alignment_status,
     get_role_insights,
-    get_role_resolution_status,
+    get_visible_role_result,
     serialize_milestones,
 )
+from .services.survey2_service import SURVEY2_FEEDBACK_PROFILE_KEY, get_survey2_question_ids, save_survey2_state
 
 
-class SessionCreateSerializer(serializers.Serializer):
-    preferred_role_slug = serializers.SlugField(required=False)
-    current_role_slug = serializers.SlugField(required=False)
-    language = serializers.ChoiceField(choices=AssessmentSession.Language.choices, required=False, default=AssessmentSession.Language.EN)
-    profile = serializers.DictField(required=False)
+# No docstrings on these mixins: drf-spectacular inherits class docstrings into
+# the OpenAPI component descriptions of every serializer that mixes them in.
+class ContextMemoMixin:
+    # Memoize expensive per-object builders, honoring a pre-computed value injected via serializer context.
+    def _memoized(self, obj, *, context_key, builder):
+        cached = self.context.get(context_key)
+        if cached is not None:
+            return cached
+        cache = self.__dict__.setdefault('_memo_cache', {})
+        key = (context_key, obj.pk)
+        if key not in cache:
+            cache[key] = builder(obj)
+        return cache[key]
 
-    def validate_preferred_role_slug(self, value):
-        if not Role.objects.filter(slug=value, is_active=True).exists():
-            msg = 'Unknown role slug.'
-            raise serializers.ValidationError(msg)
-        return value
 
-    def validate_current_role_slug(self, value):
-        if not Role.objects.filter(slug=value, is_active=True).exists():
-            msg = 'Unknown role slug.'
-            raise serializers.ValidationError(msg)
-        return value
+class PublicProfileField(serializers.JSONField):
+    def to_representation(self, value):
+        data = super().to_representation(value)
+        if isinstance(data, dict):
+            data = dict(data)
+            data.pop(SURVEY2_FEEDBACK_PROFILE_KEY, None)
+        return data
 
 
 class AnswerSubmitSerializer(serializers.Serializer):
@@ -63,18 +72,20 @@ class AnswerSubmitSerializer(serializers.Serializer):
             option, scale_value = self._validate_option_answer(attrs, question)
 
         if session is not None:
-            expected_question = get_current_question(session)
-            if expected_question is None:
-                raise serializers.ValidationError({'question_id': 'This assessment session is not accepting more answers.'})
-            if question.id != expected_question.id:
-                raise serializers.ValidationError(
-                    {'question_id': (f'Out-of-order submission. Expected "{expected_question.code}" ({expected_question.id}).')}
-                )
+            try:
+                ensure_question_is_expected(session, question)
+            except AssessmentFlowError as exc:
+                raise serializers.ValidationError({'question_id': str(exc.detail)}) from exc
 
-        attrs['question'] = question
         attrs['option'] = option
+        attrs['question'] = question
         attrs['scale_value'] = scale_value
+        attrs.pop('question_id')
+        attrs.pop('option_id', None)
         return attrs
+
+    def create(self, validated_data):
+        return submit_answer(session=self.context['session'], **validated_data)
 
     def _validate_likert_answer(self, attrs):
         scale_value = attrs.get('scale_value')
@@ -112,7 +123,20 @@ class RankedRoleInsightSerializer(serializers.Serializer):
     top_supporting_pillars = serializers.ListField(child=serializers.CharField())
 
 
-class RoleInsightsSerializer(serializers.ModelSerializer):
+class RoleInsightsFieldsMixin(ContextMemoMixin):
+    def _insights(self, obj):
+        return self._memoized(obj, context_key='role_insights', builder=get_role_insights)
+
+    @extend_schema_field(PillarInsightSerializer(many=True))
+    def get_pillar_profile(self, obj):
+        return self._insights(obj)['pillar_profile']
+
+    @extend_schema_field(RankedRoleInsightSerializer(many=True))
+    def get_ranked_roles(self, obj):
+        return self._insights(obj)['ranked_roles']
+
+
+class RoleInsightsSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
     role_resolution_status = serializers.SerializerMethodField()
     answered_role_questions = serializers.SerializerMethodField()
     pillar_profile = serializers.SerializerMethodField()
@@ -133,12 +157,6 @@ class RoleInsightsSerializer(serializers.ModelSerializer):
             'guidance_summary',
         )
 
-    def _insights(self, obj):
-        cached = self.context.get('role_insights')
-        if cached is not None:
-            return cached
-        return get_role_insights(obj)
-
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
         return self._insights(obj)['role_resolution_status']
@@ -156,20 +174,29 @@ class RoleInsightsSerializer(serializers.ModelSerializer):
     def get_answered_role_questions(self, obj):
         return self._insights(obj)['answered_role_questions']
 
-    @extend_schema_field(PillarInsightSerializer(many=True))
-    def get_pillar_profile(self, obj):
-        return self._insights(obj)['pillar_profile']
-
-    @extend_schema_field(RankedRoleInsightSerializer(many=True))
-    def get_ranked_roles(self, obj):
-        return self._insights(obj)['ranked_roles']
-
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return self._insights(obj)['guidance_summary']
 
 
-class AssessmentSessionSerializer(serializers.ModelSerializer):
+class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer):
+    profile = PublicProfileField(required=False)
+    preferred_role_slug = serializers.SlugRelatedField(
+        source='preferred_role',
+        slug_field='slug',
+        queryset=Role.objects.filter(is_active=True),
+        write_only=True,
+        required=False,
+        error_messages={'does_not_exist': 'Unknown role slug.'},
+    )
+    current_role_slug = serializers.SlugRelatedField(
+        source='current_role',
+        slug_field='slug',
+        queryset=Role.objects.filter(is_active=True),
+        write_only=True,
+        required=False,
+        error_messages={'does_not_exist': 'Unknown role slug.'},
+    )
     preferred_role = RoleSerializer(read_only=True)
     current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
@@ -184,6 +211,8 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
         model = AssessmentSession
         fields = (
             'id',
+            'preferred_role_slug',
+            'current_role_slug',
             'status',
             'phase',
             'language',
@@ -201,12 +230,28 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
             'guidance_summary',
             'current_question',
         )
+        read_only_fields = (
+            'status',
+            'phase',
+            'best_fit_confidence',
+            'preferred_role',
+            'current_role',
+            'best_fit_role',
+            'started_at',
+            'updated_at',
+            'completed_at',
+            'milestones',
+            'role_alignment_status',
+            'role_resolution_status',
+            'guidance_summary',
+            'current_question',
+        )
+
+    def create(self, validated_data):
+        return create_assessment_session(**validated_data)
 
     def _session_state(self, obj):
-        session_state = self.context.get('session_state')
-        if session_state is not None:
-            return session_state
-        return build_session_state(obj)
+        return self._memoized(obj, context_key='session_state', builder=build_session_state)
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
@@ -265,7 +310,8 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
         )
 
 
-class AssessmentResultSerializer(serializers.ModelSerializer):
+class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
+    profile = PublicProfileField(read_only=True)
     preferred_role = RoleSerializer(read_only=True)
     current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
@@ -305,11 +351,15 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             'best_fit_path_recommendation',
         )
 
-    def _insights(self, obj):
-        cached = self.context.get('role_insights')
-        if cached is not None:
-            return cached
-        return get_role_insights(obj)
+    def _visible_role_result(self, obj):
+        return self._memoized(obj, context_key='visible_role_result', builder=get_visible_role_result)
+
+    def _recommendations(self, obj):
+        if not hasattr(self, '_recommendation_cache'):
+            self._recommendation_cache = {}
+        if obj.pk not in self._recommendation_cache:
+            self._recommendation_cache[obj.pk] = list(obj.recommendations.all())
+        return self._recommendation_cache[obj.pk]
 
     @extend_schema_field(serializers.JSONField())
     def get_milestones(self, obj):
@@ -321,29 +371,20 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
-        return get_role_resolution_status(obj)
+        return self._visible_role_result(obj)['role_resolution_status']
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
-        if get_role_resolution_status(obj) not in ROLE_RESULT_AVAILABLE_STATUSES:
-            return None
-        return RoleSerializer(obj.best_fit_role).data if obj.best_fit_role else None
+        best_fit_role = self._visible_role_result(obj)['best_fit_role']
+        return RoleSerializer(best_fit_role).data if best_fit_role else None
 
     @extend_schema_field(serializers.FloatField())
     def get_best_fit_confidence(self, obj):
-        return obj.best_fit_confidence if get_role_resolution_status(obj) in ROLE_RESULT_AVAILABLE_STATUSES else 0.0
+        return self._visible_role_result(obj)['best_fit_confidence']
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return build_guidance_summary(obj)
-
-    @extend_schema_field(PillarInsightSerializer(many=True))
-    def get_pillar_profile(self, obj):
-        return self._insights(obj)['pillar_profile']
-
-    @extend_schema_field(RankedRoleInsightSerializer(many=True))
-    def get_ranked_roles(self, obj):
-        return self._insights(obj)['ranked_roles']
 
     @extend_schema_field(RoadmapTopicSerializer(many=True))
     def get_preferred_role_gap_topics(self, obj):
@@ -351,12 +392,12 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(RecommendationSerializer(allow_null=True))
     def get_preferred_path_recommendation(self, obj):
-        recommendation = obj.recommendations.filter(path_kind='preferred').select_related('role', 'topic').first()
+        recommendation = next((item for item in self._recommendations(obj) if item.path_kind == 'preferred'), None)
         return RecommendationSerializer(recommendation).data if recommendation else None
 
     @extend_schema_field(RecommendationSerializer(allow_null=True))
     def get_best_fit_path_recommendation(self, obj):
-        recommendation = obj.recommendations.filter(path_kind='best_fit').select_related('role', 'topic').first()
+        recommendation = next((item for item in self._recommendations(obj) if item.path_kind == 'best_fit'), None)
         return RecommendationSerializer(recommendation).data if recommendation else None
 
 
@@ -375,6 +416,18 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         )
 
 
+def _validate_survey2_answer_keys(value, *, forbid_blank):
+    known_question_ids = get_survey2_question_ids()
+    for key in value:
+        if forbid_blank and not str(key).strip():
+            msg = 'Answer keys must be non-empty strings.'
+            raise serializers.ValidationError(msg)
+        if key not in known_question_ids:
+            msg = f'Unknown Survey 2 question id "{key}".'
+            raise serializers.ValidationError(msg)
+    return value
+
+
 class Survey2SessionStateSerializer(serializers.Serializer):
     completed = serializers.BooleanField(default=False)
     answers = serializers.DictField(
@@ -384,24 +437,17 @@ class Survey2SessionStateSerializer(serializers.Serializer):
     completed_at = serializers.DateTimeField(required=False, allow_null=True)
 
     def validate_answers(self, value):
-        known_question_ids = get_survey2_question_ids()
-        for key in value:
-            if not str(key).strip():
-                msg = 'Answer keys must be non-empty strings.'
-                raise serializers.ValidationError(msg)
-            if key not in known_question_ids:
-                msg = f'Unknown Survey 2 question id "{key}".'
-                raise serializers.ValidationError(msg)
-        return value
+        return _validate_survey2_answer_keys(value, forbid_blank=True)
 
     def validate(self, attrs):
-        completed = attrs.get('completed', False)
-        answers = attrs.get('answers', {})
-        if completed:
-            missing_question_ids = sorted(get_survey2_question_ids() - set(answers))
+        if attrs.get('completed', False):
+            missing_question_ids = sorted(get_survey2_question_ids() - set(attrs.get('answers', {})))
             if missing_question_ids:
                 raise serializers.ValidationError({'answers': f'Completed Survey 2 is missing answers for: {", ".join(missing_question_ids)}.'})
         return attrs
+
+    def create(self, validated_data):
+        return save_survey2_state(session=self.context['session'], state=validated_data)
 
 
 class Survey2ScaleOptionSerializer(serializers.Serializer):
@@ -439,12 +485,7 @@ class Survey2NextQuestionRequestSerializer(serializers.Serializer):
     )
 
     def validate_answers(self, value):
-        known_question_ids = get_survey2_question_ids()
-        for key in value:
-            if key not in known_question_ids:
-                msg = f'Unknown Survey 2 question id "{key}".'
-                raise serializers.ValidationError(msg)
-        return value
+        return _validate_survey2_answer_keys(value, forbid_blank=False)
 
 
 class Survey2NextQuestionResponseSerializer(serializers.Serializer):
