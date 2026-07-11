@@ -23,6 +23,21 @@ from .services.guidance_service import (
 from .services.survey2_service import SURVEY2_FEEDBACK_PROFILE_KEY, get_survey2_question_ids, save_survey2_state
 
 
+# No docstrings on these mixins: drf-spectacular inherits class docstrings into
+# the OpenAPI component descriptions of every serializer that mixes them in.
+class ContextMemoMixin:
+    # Memoize expensive per-object builders, honoring a pre-computed value injected via serializer context.
+    def _memoized(self, obj, *, context_key, builder):
+        cached = self.context.get(context_key)
+        if cached is not None:
+            return cached
+        cache = self.__dict__.setdefault('_memo_cache', {})
+        key = (context_key, obj.pk)
+        if key not in cache:
+            cache[key] = builder(obj)
+        return cache[key]
+
+
 class PublicProfileField(serializers.JSONField):
     def to_representation(self, value):
         data = super().to_representation(value)
@@ -110,7 +125,20 @@ class RankedRoleInsightSerializer(serializers.Serializer):
     top_supporting_pillars = serializers.ListField(child=serializers.CharField())
 
 
-class RoleInsightsSerializer(serializers.ModelSerializer):
+class RoleInsightsFieldsMixin(ContextMemoMixin):
+    def _insights(self, obj):
+        return self._memoized(obj, context_key='role_insights', builder=get_role_insights)
+
+    @extend_schema_field(PillarInsightSerializer(many=True))
+    def get_pillar_profile(self, obj):
+        return self._insights(obj)['pillar_profile']
+
+    @extend_schema_field(RankedRoleInsightSerializer(many=True))
+    def get_ranked_roles(self, obj):
+        return self._insights(obj)['ranked_roles']
+
+
+class RoleInsightsSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
     role_resolution_status = serializers.SerializerMethodField()
     answered_role_questions = serializers.SerializerMethodField()
     pillar_profile = serializers.SerializerMethodField()
@@ -131,16 +159,6 @@ class RoleInsightsSerializer(serializers.ModelSerializer):
             'guidance_summary',
         )
 
-    def _insights(self, obj):
-        cached = self.context.get('role_insights')
-        if cached is not None:
-            return cached
-        if not hasattr(self, '_insights_cache'):
-            self._insights_cache = {}
-        if obj.pk not in self._insights_cache:
-            self._insights_cache[obj.pk] = get_role_insights(obj)
-        return self._insights_cache[obj.pk]
-
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
         return self._insights(obj)['role_resolution_status']
@@ -158,20 +176,12 @@ class RoleInsightsSerializer(serializers.ModelSerializer):
     def get_answered_role_questions(self, obj):
         return self._insights(obj)['answered_role_questions']
 
-    @extend_schema_field(PillarInsightSerializer(many=True))
-    def get_pillar_profile(self, obj):
-        return self._insights(obj)['pillar_profile']
-
-    @extend_schema_field(RankedRoleInsightSerializer(many=True))
-    def get_ranked_roles(self, obj):
-        return self._insights(obj)['ranked_roles']
-
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return self._insights(obj)['guidance_summary']
 
 
-class AssessmentSessionSerializer(serializers.ModelSerializer):
+class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer):
     profile = PublicProfileField(required=False)
     preferred_role_slug = serializers.SlugRelatedField(
         source='preferred_role',
@@ -243,14 +253,7 @@ class AssessmentSessionSerializer(serializers.ModelSerializer):
         return create_assessment_session(**validated_data)
 
     def _session_state(self, obj):
-        session_state = self.context.get('session_state')
-        if session_state is not None:
-            return session_state
-        if not hasattr(self, '_session_state_cache'):
-            self._session_state_cache = {}
-        if obj.pk not in self._session_state_cache:
-            self._session_state_cache[obj.pk] = build_session_state(obj)
-        return self._session_state_cache[obj.pk]
+        return self._memoized(obj, context_key='session_state', builder=build_session_state)
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
@@ -309,7 +312,7 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
         )
 
 
-class AssessmentResultSerializer(serializers.ModelSerializer):
+class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
     profile = PublicProfileField(read_only=True)
     preferred_role = RoleSerializer(read_only=True)
     current_role = RoleSerializer(read_only=True)
@@ -350,15 +353,8 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             'best_fit_path_recommendation',
         )
 
-    def _insights(self, obj):
-        cached = self.context.get('role_insights')
-        if cached is not None:
-            return cached
-        if not hasattr(self, '_insights_cache'):
-            self._insights_cache = {}
-        if obj.pk not in self._insights_cache:
-            self._insights_cache[obj.pk] = get_role_insights(obj)
-        return self._insights_cache[obj.pk]
+    def _visible_role_result(self, obj):
+        return self._memoized(obj, context_key='visible_role_result', builder=get_visible_role_result)
 
     def _recommendations(self, obj):
         if not hasattr(self, '_recommendation_cache'):
@@ -377,28 +373,20 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.CharField())
     def get_role_resolution_status(self, obj):
-        return get_visible_role_result(obj)['role_resolution_status']
+        return self._visible_role_result(obj)['role_resolution_status']
 
     @extend_schema_field(RoleSerializer(allow_null=True))
     def get_best_fit_role(self, obj):
-        best_fit_role = get_visible_role_result(obj)['best_fit_role']
+        best_fit_role = self._visible_role_result(obj)['best_fit_role']
         return RoleSerializer(best_fit_role).data if best_fit_role else None
 
     @extend_schema_field(serializers.FloatField())
     def get_best_fit_confidence(self, obj):
-        return get_visible_role_result(obj)['best_fit_confidence']
+        return self._visible_role_result(obj)['best_fit_confidence']
 
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return build_guidance_summary(obj)
-
-    @extend_schema_field(PillarInsightSerializer(many=True))
-    def get_pillar_profile(self, obj):
-        return self._insights(obj)['pillar_profile']
-
-    @extend_schema_field(RankedRoleInsightSerializer(many=True))
-    def get_ranked_roles(self, obj):
-        return self._insights(obj)['ranked_roles']
 
     @extend_schema_field(RoadmapTopicSerializer(many=True))
     def get_preferred_role_gap_topics(self, obj):
