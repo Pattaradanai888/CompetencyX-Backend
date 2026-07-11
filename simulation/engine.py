@@ -208,7 +208,6 @@ def aggregate_results(
     active_role_slugs = catalog.active_role_slugs
     resolved = [result for result in results if result['resolution_status'] == 'resolved']
     low_confidence = [result for result in results if result['resolution_status'] == 'low_confidence']
-    ambiguous = [result for result in results if result['phase'] == 'role_ambiguity']
     completed = [result for result in results if result['status'] == 'completed']
 
     best_fit_counts = Counter(result['best_fit_role'] for result in results if result['best_fit_role'])
@@ -228,8 +227,6 @@ def aggregate_results(
         'resolved_rate': round(len(resolved) / samples, 4),
         'low_confidence_count': len(low_confidence),
         'low_confidence_rate': round(len(low_confidence) / samples, 4),
-        'ambiguous_count': len(ambiguous),
-        'ambiguous_rate': round(len(ambiguous) / samples, 4),
         'best_fit_role_coverage_count': len(best_fit_counts),
         'best_fit_role_coverage_rate': round(len(best_fit_counts) / role_count, 4),
         'missing_best_fit_roles': sorted(set(active_role_slugs) - set(best_fit_counts)),
@@ -254,11 +251,6 @@ def aggregate_results(
         summary['low_confidence_margin_share'] = _stats([result['margin_share'] for result in low_confidence])
         summary['low_confidence_score_margin'] = _stats([result['score_margin'] for result in low_confidence])
         summary['low_confidence_roles'] = dict(Counter(result['best_fit_role'] for result in low_confidence if result['best_fit_role']).most_common())
-
-    if ambiguous:
-        summary['ambiguous_confidence'] = _stats([result['confidence'] for result in ambiguous])
-        summary['ambiguous_margin_share'] = _stats([result['margin_share'] for result in ambiguous])
-        summary['ambiguous_score_margin'] = _stats([result['score_margin'] for result in ambiguous])
 
     return summary
 
@@ -310,7 +302,6 @@ METRIC_HIGHER_IS_BETTER = {
 }
 METRIC_LOWER_IS_BETTER = {
     'low_confidence_rate',
-    'ambiguous_rate',
 }
 
 

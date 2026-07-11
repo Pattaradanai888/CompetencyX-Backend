@@ -235,7 +235,6 @@ def test_aggregate_results_exact_rates_coverage_and_conditional_keys():
         ),
         _make_result(
             sample_index=3,
-            phase='role_ambiguity',
             status='abandoned',
             resolution_status='unknown',
             best_fit_role=None,
@@ -265,8 +264,6 @@ def test_aggregate_results_exact_rates_coverage_and_conditional_keys():
     assert summary['resolved_rate'] == 0.5
     assert summary['low_confidence_count'] == 1
     assert summary['low_confidence_rate'] == 0.25
-    assert summary['ambiguous_count'] == 1
-    assert summary['ambiguous_rate'] == 0.25
     assert summary['best_fit_role_coverage_count'] == 2
     assert summary['best_fit_role_coverage_rate'] == 1.0
     assert summary['missing_best_fit_roles'] == []
@@ -277,7 +274,7 @@ def test_aggregate_results_exact_rates_coverage_and_conditional_keys():
     assert summary['low_confidence_roles'] == {'frontend-developer': 1}
     assert summary['answered_role_questions'] == {'mean': 2.5, 'min': 2.0, 'max': 3.0, 'median': 2.5}
     assert summary['worst_case_95pct_margin_of_error'] == round(1.96 * ((0.25 / 4) ** 0.5), 4)
-    for key in ('resolved_confidence', 'low_confidence_confidence', 'ambiguous_confidence'):
+    for key in ('resolved_confidence', 'low_confidence_confidence'):
         assert key in summary
 
 
@@ -297,7 +294,7 @@ def test_aggregate_results_omits_conditional_sections_when_empty():
     )
     assert summary['resolved_rate'] == 0.0
     assert summary['missing_best_fit_roles'] == sorted(ACTIVE_ROLE_SLUGS)
-    for key in ('resolved_confidence', 'resolved_roles', 'low_confidence_confidence', 'low_confidence_roles', 'ambiguous_confidence'):
+    for key in ('resolved_confidence', 'resolved_roles', 'low_confidence_confidence', 'low_confidence_roles'):
         assert key not in summary
 
 

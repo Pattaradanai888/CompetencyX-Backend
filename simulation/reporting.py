@@ -10,7 +10,6 @@ def write_summary_text(stdout, style, summary: dict[str, object], *, title: str)
     _write_coverage(stdout.write, style, summary)
     _write_resolved(stdout.write, style, summary)
     _write_low_confidence(stdout.write, style, summary)
-    _write_ambiguous(stdout.write, style, summary)
 
 
 def _write_headline(write, style, summary: dict[str, object], title: str) -> None:
@@ -22,7 +21,6 @@ def _write_headline(write, style, summary: dict[str, object], title: str) -> Non
     write(f'Completed:      {summary["completed_count"]:4d} ({summary["completed_rate"] * 100:.1f}%)')
     write(f'Resolved:       {summary["resolved_count"]:4d} ({summary["resolved_rate"] * 100:.1f}%)')
     write(f'Low confidence: {summary["low_confidence_count"]:4d} ({summary["low_confidence_rate"] * 100:.1f}%)')
-    write(f'Ambiguous:      {summary["ambiguous_count"]:4d} ({summary["ambiguous_rate"] * 100:.1f}%)')
     if 'answered_role_questions' in summary:
         answered = summary['answered_role_questions']
         write(f'Answered role Qs: mean={answered["mean"]:.2f}  min={answered["min"]}  max={answered["max"]}')
@@ -76,14 +74,3 @@ def _write_low_confidence(write, style, summary: dict[str, object]) -> None:
         write('Best-fit role distribution:')
         for role, count in list(summary.get('low_confidence_roles', {}).items())[:10]:
             write(f'  {role:35s} {count:4d}')
-
-
-def _write_ambiguous(write, style, summary: dict[str, object]) -> None:
-    if 'ambiguous_confidence' in summary:
-        confidence = summary['ambiguous_confidence']
-        margin = summary['ambiguous_margin_share']
-        score_margin = summary['ambiguous_score_margin']
-        write(style.WARNING('\n--- Ambiguous sessions ---'))
-        write(f'Confidence:        mean={confidence["mean"]:.4f}  max={confidence["max"]:.4f}')
-        write(f'Margin (share):    mean={margin["mean"]:.4f}  max={margin["max"]:.4f}')
-        write(f'Margin (score):    mean={score_margin["mean"]:.4f}  max={score_margin["max"]:.4f}')
