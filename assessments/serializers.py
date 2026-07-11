@@ -418,6 +418,18 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         )
 
 
+def _validate_survey2_answer_keys(value, *, forbid_blank):
+    known_question_ids = get_survey2_question_ids()
+    for key in value:
+        if forbid_blank and not str(key).strip():
+            msg = 'Answer keys must be non-empty strings.'
+            raise serializers.ValidationError(msg)
+        if key not in known_question_ids:
+            msg = f'Unknown Survey 2 question id "{key}".'
+            raise serializers.ValidationError(msg)
+    return value
+
+
 class Survey2SessionStateSerializer(serializers.Serializer):
     completed = serializers.BooleanField(default=False)
     answers = serializers.DictField(
@@ -427,15 +439,7 @@ class Survey2SessionStateSerializer(serializers.Serializer):
     completed_at = serializers.DateTimeField(required=False, allow_null=True)
 
     def validate_answers(self, value):
-        known_question_ids = get_survey2_question_ids()
-        for key in value:
-            if not str(key).strip():
-                msg = 'Answer keys must be non-empty strings.'
-                raise serializers.ValidationError(msg)
-            if key not in known_question_ids:
-                msg = f'Unknown Survey 2 question id "{key}".'
-                raise serializers.ValidationError(msg)
-        return value
+        return _validate_survey2_answer_keys(value, forbid_blank=True)
 
     def validate(self, attrs):
         if attrs.get('completed', False):
@@ -483,12 +487,7 @@ class Survey2NextQuestionRequestSerializer(serializers.Serializer):
     )
 
     def validate_answers(self, value):
-        known_question_ids = get_survey2_question_ids()
-        for key in value:
-            if key not in known_question_ids:
-                msg = f'Unknown Survey 2 question id "{key}".'
-                raise serializers.ValidationError(msg)
-        return value
+        return _validate_survey2_answer_keys(value, forbid_blank=False)
 
 
 class Survey2NextQuestionResponseSerializer(serializers.Serializer):
