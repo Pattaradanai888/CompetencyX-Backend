@@ -110,19 +110,6 @@ def get_role_resolution_status(session: AssessmentSession) -> str:
     )
 
 
-def get_top_role_candidates(session: AssessmentSession, *, limit: int = 3) -> list[dict[str, object]]:
-    snapshot = get_role_inference_snapshot(session)
-    return [
-        {
-            'slug': role['slug'],
-            'name': role['name'],
-            'score': role['fit_score'],
-            'share': role['fit_share'],
-        }
-        for role in snapshot['ranked_roles'][:limit]
-    ]
-
-
 def has_remaining_role_questions(session: AssessmentSession) -> bool:
     answered_question_ids = session.answers.values_list('question_id', flat=True)
     unanswered_role_questions = list(

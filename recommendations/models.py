@@ -10,7 +10,6 @@ class Recommendation(models.Model):
 
     class PolicyType(models.TextChoices):
         RULE_BASED = 'rule_based', 'Rule Based'
-        BANDIT = 'bandit', 'Bandit'
         Q_LEARNING = 'q_learning', 'Q Learning'
 
     session = models.ForeignKey(

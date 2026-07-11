@@ -13,7 +13,6 @@ from roadmaps.models import Question
 from .role_inference_service import (
     get_role_inference_snapshot,
     get_role_resolution_status,
-    get_top_role_candidates,
     is_core_role_profile_complete,
 )
 
@@ -46,8 +45,6 @@ def get_skill_target_role(session: AssessmentSession):
 def get_role_alignment_status(session: AssessmentSession) -> str:
     if not is_core_role_profile_complete(session):
         return 'unknown'
-    if get_role_resolution_status(session) == 'ambiguous':
-        return 'ambiguous'
     if session.best_fit_role_id is None:
         return 'unknown'
     if session.preferred_role_id is None:
@@ -75,11 +72,6 @@ def _incomplete_profile_summary(session: AssessmentSession) -> str:
         if session.preferred_role_id is not None
         else 'Complete the role-discovery profile to identify the best-fit roadmap.'
     )
-
-
-def _ambiguous_summary(session: AssessmentSession) -> str:
-    candidate_names = ' and '.join(candidate['name'] for candidate in get_top_role_candidates(session)[:2])
-    return f'Your answers are not confident enough to separate {candidate_names} yet.'
 
 
 def _awaiting_best_fit_summary(session: AssessmentSession) -> str:
@@ -116,8 +108,6 @@ def build_guidance_summary(session: AssessmentSession) -> str:
         return _incomplete_profile_summary(session)
 
     resolution_status = get_role_resolution_status(session)
-    if resolution_status == 'ambiguous':
-        return _ambiguous_summary(session)
     if session.preferred_role is None and session.best_fit_role is None:
         return 'Answer the role-discovery questions to identify the best-fit roadmap.'
     if session.preferred_role is not None and session.best_fit_role is None:

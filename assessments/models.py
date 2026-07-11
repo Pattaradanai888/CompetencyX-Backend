@@ -38,9 +38,7 @@ class AssessmentSession(models.Model):
 
     class Phase(models.TextChoices):
         ROLE_DISCOVERY = 'role_discovery', 'Role Discovery'
-        ROLE_AMBIGUITY = 'role_ambiguity', 'Role Ambiguity'
         RECOMMENDATION_READY = 'recommendation_ready', 'Recommendation Ready'
-        COMPLETED = 'completed', 'Completed'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(

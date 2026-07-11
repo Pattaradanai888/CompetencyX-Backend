@@ -88,7 +88,6 @@ class TopicPrerequisite(models.Model):
 class Question(models.Model):
     class Stage(models.TextChoices):
         ROLE = 'role', 'Role Discovery'
-        SKILL = 'skill', 'Skill Estimation'
 
     class ItemGroup(models.TextChoices):
         CORE = 'core', 'Core'

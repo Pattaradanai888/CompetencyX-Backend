@@ -72,8 +72,6 @@ def create_assessment_session(
 def get_current_question(session: AssessmentSession):
     if session.status == AssessmentSession.Status.COMPLETED:
         return None
-    if session.phase == AssessmentSession.Phase.ROLE_AMBIGUITY:
-        return None
 
     candidates = _eligible_questions_for_session(session)
     return candidates[0] if candidates else None

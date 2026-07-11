@@ -54,7 +54,7 @@ class SeedMvpContentTests(TestCase):
         for role in Role.objects.order_by('slug'):
             assert role.topics.filter(is_active=True).count() == 3
             assert TopicPrerequisite.objects.filter(topic__role=role).count() == 2
-        assert Question.objects.filter(stage=Question.Stage.SKILL).count() == 0
+        assert Question.objects.filter(stage='skill').count() == 0
 
     def test_role_question_bank_covers_all_seeded_roles(self):
         assert set(ROLE_PROFILE_WEIGHTS) == set(Role.objects.values_list('slug', flat=True))
@@ -224,7 +224,7 @@ class SeedMvpContentTests(TestCase):
         topic = RoadmapTopic.objects.filter(role=role).first()
         Question.objects.create(
             code='legacy-skill-question',
-            stage=Question.Stage.SKILL,
+            stage='skill',
             role=role,
             topic=topic,
             question_type=Question.Type.YES_NO_MAYBE,
@@ -255,7 +255,7 @@ class SeedMvpContentTests(TestCase):
         assert role_questions.get(code='role-swebok-01-requirements').translations['th']['prompt'] == (
             'ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม'
         )
-        assert Question.objects.filter(stage=Question.Stage.SKILL).count() == 0
+        assert Question.objects.filter(stage='skill').count() == 0
 
     def test_question_catalog_rejects_unsupported_translation_language(self):
         roles_data, topics_data, questions_data = load_curated_catalog()
