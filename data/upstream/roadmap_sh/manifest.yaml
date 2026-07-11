@@ -1,0 +1,103 @@
+# Provenance manifest for the roadmap.sh exports in this directory.
+#
+# Each entry records where the JSON graph export came from and when it was
+# added to the repository (from git history of the file's first commit).
+# `roadmap_sh:` source references in data/content/role_dimension_relevance.yaml
+# and the question catalog must point at a file listed here.
+#
+# License note: roadmap.sh content is used here as cited evidence for
+# role-to-skill claims, not redistributed as a product.
+
+meta:
+  source: roadmap.sh (Kamran Ahmed and contributors)
+  base_url: https://roadmap.sh
+  export_format: React-Flow graph JSON (node/edge export of the public roadmap)
+
+files:
+  - file: ai-data-scientist.json
+    role_slug: ai-data-scientist
+    source_url: https://roadmap.sh/ai-data-scientist
+    retrieved: 2026-06-22
+  - file: ai-engineer.json
+    role_slug: ai-engineer
+    source_url: https://roadmap.sh/ai-engineer
+    retrieved: 2026-06-22
+  - file: android-developer.json
+    role_slug: android-developer
+    source_url: https://roadmap.sh/android
+    retrieved: 2026-06-22
+  - file: backend-engineer.sample.json
+    role_slug: null   # hand-made minimal sample used by loader tests, not a roadmap.sh export
+    source_url: null
+    retrieved: 2026-04-17
+  - file: backend.json
+    role_slug: backend-developer
+    source_url: https://roadmap.sh/backend
+    retrieved: 2026-06-22
+  - file: bi-analyst.json
+    role_slug: bi-analyst
+    source_url: https://roadmap.sh/bi-analyst
+    retrieved: 2026-06-22
+  - file: data-analyst.json
+    role_slug: data-analyst
+    source_url: https://roadmap.sh/data-analyst
+    retrieved: 2026-06-22
+  - file: data-engineer.json
+    role_slug: data-engineer
+    source_url: https://roadmap.sh/data-engineer
+    retrieved: 2026-06-22
+  - file: devops-engineer.json
+    role_slug: devops-engineer
+    source_url: https://roadmap.sh/devops
+    retrieved: 2026-06-22
+  - file: engineering-manager.json
+    role_slug: engineering-manager
+    source_url: https://roadmap.sh/engineering-manager
+    retrieved: 2026-06-22
+  - file: frontend.json
+    role_slug: frontend-developer
+    source_url: https://roadmap.sh/frontend
+    retrieved: 2026-06-22
+  - file: fullstack.json
+    role_slug: full-stack-developer
+    source_url: https://roadmap.sh/full-stack
+    retrieved: 2026-06-22
+  - file: game-developer.json
+    role_slug: game-developer
+    source_url: https://roadmap.sh/game-developer
+    retrieved: 2026-06-22
+  - file: machine-learning-engineer.json
+    role_slug: machine-learning-engineer
+    source_url: https://roadmap.sh/machine-learning
+    retrieved: 2026-06-22
+  - file: mlops-engineer.json
+    role_slug: mlops-engineer
+    source_url: https://roadmap.sh/mlops
+    retrieved: 2026-06-22
+  - file: product-manager.json
+    role_slug: product-manager
+    source_url: https://roadmap.sh/product-manager
+    retrieved: 2026-06-22
+  - file: qa-engineer.json
+    role_slug: qa-engineer
+    source_url: https://roadmap.sh/qa
+    retrieved: 2026-06-22
+  - file: server-side-game-developer.json
+    role_slug: server-side-game-developer
+    source_url: https://roadmap.sh/server-side-game-developer
+    retrieved: 2026-06-22
+  - file: software-architect.json
+    role_slug: software-architect
+    source_url: https://roadmap.sh/software-architect
+    retrieved: 2026-06-22
+  - file: technical-writer.json
+    role_slug: technical-writer
+    source_url: https://roadmap.sh/technical-writer
+    retrieved: 2026-06-22
+
+# Roles in data/content/roles.yaml WITHOUT a roadmap.sh export (evidence for
+# these must come from the SWEBOK reference or other cited sources):
+# frontend-developer -> covered by frontend.json
+# missing exports: devsecops-engineer, postgresql-developer-dba, ios-developer,
+# blockchain-developer, cyber-security-engineer-analyst, ux-designer,
+# developer-relations

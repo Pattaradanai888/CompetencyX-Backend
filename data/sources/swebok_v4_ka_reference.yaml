@@ -1,0 +1,282 @@
+# SWEBOK V4 Knowledge Area reference extract.
+#
+# Purpose: the citable anchor for every `swebok:` source reference used by
+# data/content/role_dimension_relevance.yaml and the role-discovery question
+# catalog. Scope summaries and topic lists are PARAPHRASED from the public
+# chapter/topic structure of the SWEBOK Guide v4.0 — no verbatim text is
+# reproduced here and the PDF itself is not redistributable.
+#
+# dimension_key cross-links each KA to the scoring dimension registry in
+# roadmaps/questionnaire.py (SWEBOK_KNOWLEDGE_AREAS).
+
+meta:
+  citation: >-
+    IEEE Computer Society, "Guide to the Software Engineering Body of
+    Knowledge (SWEBOK Guide), Version 4.0", H. Washizaki (ed.), 2024.
+  url: https://www.computer.org/education/bodies-of-knowledge/software-engineering
+  note: Paraphrased scope summaries and topic lists only; consult the Guide for authoritative definitions.
+
+knowledge_areas:
+  - code: KA1
+    chapter: 1
+    title: Software Requirements
+    dimension_key: requirements
+    scope: >-
+      Eliciting, analyzing, specifying, validating, and managing what a
+      software product must do and the constraints it must satisfy, including
+      negotiating trade-offs with stakeholders.
+    key_topics:
+      - Requirements fundamentals (functional vs non-functional, stakeholders)
+      - Requirements elicitation
+      - Requirements analysis and negotiation
+      - Requirements specification
+      - Requirements validation
+      - Requirements management over the life cycle
+
+  - code: KA2
+    chapter: 2
+    title: Software Architecture
+    dimension_key: architecture
+    scope: >-
+      Structuring a system into components and their relationships, making and
+      documenting the significant design decisions that shape quality
+      attributes such as scalability, availability, and evolvability.
+    key_topics:
+      - Architecture fundamentals and significant decisions
+      - Architectural structures, viewpoints, and views
+      - Architecture patterns, styles, and tactics
+      - Quality-attribute analysis and trade-offs
+      - Architecture description and evaluation
+
+  - code: KA3
+    chapter: 3
+    title: Software Design
+    dimension_key: design
+    scope: >-
+      Detailed design of software elements below the architectural level:
+      interfaces, components, data, and interaction design, including user
+      interface design concerns and design quality analysis.
+    key_topics:
+      - Design fundamentals and principles
+      - Design for quality attributes
+      - Component and interface design
+      - User interface design
+      - Design notations and strategies
+      - Design quality analysis and evaluation
+
+  - code: KA4
+    chapter: 4
+    title: Software Construction
+    dimension_key: construction
+    scope: >-
+      Building working software through coding, unit verification, debugging,
+      and integration, emphasizing constructs that reduce complexity and
+      anticipate change.
+    key_topics:
+      - Construction fundamentals (minimizing complexity, anticipating change)
+      - Managing construction (models, planning, measurement)
+      - Practical considerations (coding, reuse, construction quality)
+      - Construction technologies (APIs, assertions, error handling)
+
+  - code: KA5
+    chapter: 5
+    title: Software Testing
+    dimension_key: testing
+    scope: >-
+      Dynamically verifying that software behaves as expected on selected test
+      cases, spanning test levels, techniques, measures, and the management of
+      the test process.
+    key_topics:
+      - Testing fundamentals and terminology
+      - Test levels (unit, integration, system, acceptance)
+      - Test techniques (black-box, white-box, experience-based)
+      - Test measures and evaluation
+      - Test process and automation
+
+  - code: KA6
+    chapter: 6
+    title: Software Engineering Operations
+    dimension_key: operations
+    scope: >-
+      Deploying, operating, and monitoring software in production: release and
+      deployment practices, operational control, infrastructure, and the
+      practices commonly associated with DevOps and continuous delivery.
+    key_topics:
+      - Operations fundamentals and the operations life cycle
+      - Deployment and release management
+      - Operational monitoring, logging, and incident handling
+      - Operations infrastructure and environments
+      - Continuous integration / continuous delivery practices
+
+  - code: KA7
+    chapter: 7
+    title: Software Maintenance
+    dimension_key: maintenance
+    scope: >-
+      Modifying and supporting delivered software: corrective, adaptive,
+      perfective, and preventive changes, program comprehension, and managing
+      the maintenance process.
+    key_topics:
+      - Maintenance fundamentals and categories
+      - Key issues (technical, management, cost)
+      - Maintenance process and activities
+      - Program comprehension and reengineering techniques
+
+  - code: KA8
+    chapter: 8
+    title: Software Configuration Management
+    dimension_key: configuration_management
+    scope: >-
+      Identifying, controlling, and accounting for the configuration of
+      software artifacts over time: version control, change control, build
+      management, and release management.
+    key_topics:
+      - SCM process management and planning
+      - Configuration identification
+      - Change control and configuration control
+      - Configuration status accounting and auditing
+      - Software building and release management
+
+  - code: KA9
+    chapter: 9
+    title: Software Engineering Management
+    dimension_key: management
+    scope: >-
+      Planning, coordinating, measuring, and controlling software projects and
+      teams: scope, estimation, risk, staffing, and closure, plus software
+      measurement programs.
+    key_topics:
+      - Initiation and scope definition
+      - Project planning and estimation
+      - Project enactment, monitoring, and control
+      - Risk management
+      - Review, evaluation, and closure
+      - Software engineering measurement
+
+  - code: KA10
+    chapter: 10
+    title: Software Engineering Process
+    dimension_key: process
+    scope: >-
+      Defining, assessing, and improving the software processes themselves:
+      life cycle models, process adaptation, measurement, and improvement
+      frameworks.
+    key_topics:
+      - Software process fundamentals and life cycles
+      - Process assessment and improvement
+      - Process measurement
+      - Process adaptation (plan-driven, agile, hybrid)
+
+  - code: KA11
+    chapter: 11
+    title: Software Engineering Models and Methods
+    dimension_key: models_methods
+    scope: >-
+      Modeling notations, analysis of models, and engineering methods that
+      impose structure on development, including formal, prototyping, and
+      agile methods.
+    key_topics:
+      - Modeling principles and types of models
+      - Model analysis (correctness, completeness, consistency)
+      - Software engineering methods (heuristic, formal, prototyping, agile)
+
+  - code: KA12
+    chapter: 12
+    title: Software Quality
+    dimension_key: quality
+    scope: >-
+      Defining and assuring product and process quality: quality models and
+      characteristics, quality management processes, reviews, audits, and
+      defect management.
+    key_topics:
+      - Software quality fundamentals and models
+      - Quality management processes and planning
+      - Quality assurance, reviews, and audits
+      - Defect characterization and management
+      - Quality measurement
+
+  - code: KA13
+    chapter: 13
+    title: Software Security
+    dimension_key: security
+    scope: >-
+      Engineering software that resists attack: security requirements, secure
+      design and coding, security testing, and security in operations and
+      maintenance.
+    key_topics:
+      - Security fundamentals (confidentiality, integrity, availability)
+      - Security requirements and threat modeling
+      - Secure design and secure coding practices
+      - Security verification, validation, and testing
+      - Operational security and incident response
+
+  - code: KA14
+    chapter: 14
+    title: Software Engineering Professional Practice
+    dimension_key: professional_practice
+    scope: >-
+      Practicing software engineering responsibly and effectively: ethics,
+      professionalism, communication skills, group dynamics, and interacting
+      with stakeholders.
+    key_topics:
+      - Professionalism, codes of ethics, and legal issues
+      - Group dynamics and psychology of practice
+      - Communication skills (written, oral, documentation)
+      - Dealing with uncertainty and managing expectations
+
+  - code: KA15
+    chapter: 15
+    title: Software Engineering Economics
+    dimension_key: economics
+    scope: >-
+      Making software decisions in a business context: value, cost,
+      risk-and-return analysis, and aligning engineering choices with
+      organizational goals.
+    key_topics:
+      - Economics fundamentals (value, cost, cash flow)
+      - Life-cycle economics and decision analysis
+      - Risk, uncertainty, and real options
+      - Economic analysis methods (ROI, break-even, benchmarking)
+
+  - code: KA16
+    chapter: 16
+    title: Computing Foundations
+    dimension_key: computing_ai
+    scope: >-
+      The computer-science base of software engineering: algorithms and data
+      structures, programming fundamentals, operating systems, networks,
+      databases, and artificial intelligence / machine learning foundations.
+    key_topics:
+      - Algorithms, data structures, and problem solving
+      - Programming fundamentals and abstraction
+      - Operating systems, networks, and distributed computing
+      - Database fundamentals and data management
+      - Artificial intelligence and machine learning foundations
+
+  - code: KA17
+    chapter: 17
+    title: Mathematical Foundations
+    dimension_key: math
+    scope: >-
+      The mathematics underpinning software engineering: logic, sets, graphs,
+      probability and statistics, and numerical precision.
+    key_topics:
+      - Set theory, relations, and functions
+      - Logic and proof techniques
+      - Graphs and trees
+      - Probability and statistics
+      - Numerical precision and error
+
+  - code: KA18
+    chapter: 18
+    title: Engineering Foundations
+    dimension_key: engineering
+    scope: >-
+      General engineering skills applied to software: empirical methods,
+      measurement, modeling and simulation, standards, and root-cause
+      analysis.
+    key_topics:
+      - Empirical methods and experimental techniques
+      - Statistical analysis and measurement
+      - Modeling, simulation, and prototyping
+      - Standards and root-cause analysis
