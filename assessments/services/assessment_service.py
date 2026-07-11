@@ -27,6 +27,7 @@ from .guidance_service import (
     serialize_milestones,
 )
 from .role_inference_service import (
+    get_remaining_tie_break_questions,
     get_role_inference_snapshot,
     get_selectable_role_candidates,
     has_remaining_role_questions,
@@ -247,14 +248,7 @@ def _format_dimension_scores(snapshot: dict[str, object]) -> dict[str, float]:
 def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[str, object]) -> list[str]:
     if is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
         return []
-    answered_question_ids = session.answers.values_list('question_id', flat=True)
-    remaining_tie_breaks = list(
-        Question.objects.filter(
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            is_active=True,
-        ).exclude(id__in=answered_question_ids)
-    )
+    remaining_tie_breaks = get_remaining_tie_break_questions(session)
     gates = {
         'top_role_exists': snapshot['top_role_slug'] is not None,
         'answered_core_questions': int(snapshot['answered_core_questions']) >= int(snapshot['core_question_target']),
@@ -268,41 +262,21 @@ def _update_phase(session: AssessmentSession) -> None:
     previous_phase = session.phase
     previous_status = session.status
     has_remaining_questions = has_remaining_role_questions(session)
-    if not is_role_inference_resolved(session):
-        if has_remaining_questions:
-            session.phase = AssessmentSession.Phase.ROLE_DISCOVERY
-            session.status = AssessmentSession.Status.IN_PROGRESS
-            session.completed_at = None
-        else:
-            session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
-            session.status = AssessmentSession.Status.COMPLETED
-            session.completed_at = timezone.now()
-        session.save(update_fields=['phase', 'status', 'completed_at', 'updated_at'])
-        logger.info(
-            (
-                'assessment.phase_updated session_id=%s previous_phase=%s new_phase=%s '
-                'previous_status=%s new_status=%s role_confidence=%.4f has_role_questions=%s completed_at=%s'
-            ),
-            session.id,
-            previous_phase,
-            session.phase,
-            previous_status,
-            session.status,
-            session.best_fit_confidence,
-            has_remaining_questions,
-            session.completed_at.isoformat() if session.completed_at else None,
-        )
-        return
+    is_completed = is_role_inference_resolved(session) or not has_remaining_questions
 
-    session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
-    session.status = AssessmentSession.Status.COMPLETED
-    session.completed_at = timezone.now()
-
+    if is_completed:
+        session.phase = AssessmentSession.Phase.RECOMMENDATION_READY
+        session.status = AssessmentSession.Status.COMPLETED
+        session.completed_at = timezone.now()
+    else:
+        session.phase = AssessmentSession.Phase.ROLE_DISCOVERY
+        session.status = AssessmentSession.Status.IN_PROGRESS
+        session.completed_at = None
     session.save(update_fields=['phase', 'status', 'completed_at', 'updated_at'])
     logger.info(
         (
             'assessment.phase_updated session_id=%s previous_phase=%s new_phase=%s '
-            'previous_status=%s new_status=%s role_confidence=%.4f completed_at=%s'
+            'previous_status=%s new_status=%s role_confidence=%.4f has_role_questions=%s completed_at=%s'
         ),
         session.id,
         previous_phase,
@@ -310,5 +284,6 @@ def _update_phase(session: AssessmentSession) -> None:
         previous_status,
         session.status,
         session.best_fit_confidence,
+        has_remaining_questions,
         session.completed_at.isoformat() if session.completed_at else None,
     )

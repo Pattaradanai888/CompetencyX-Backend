@@ -9,6 +9,7 @@ from assessments.models import AssessmentSession
 from recommendations.models import Recommendation, RecommendationQValue
 
 from .guidance_service import get_role_alignment_status, get_role_resolution_status
+from .q_learning import Q_VALUE_DEFAULTS, clamp_bucket, update_q_row
 
 
 logger = logging.getLogger('assessments.services')
@@ -201,9 +202,9 @@ def _build_recommendation_state_key(
         average_mastery = 0.0
         weak_topic_count = 0
 
-    mastery_bucket = min(int(average_mastery * 4), 4)
-    confidence_bucket = min(int(float(session.best_fit_confidence or 0.0) * 4), 4)
-    weak_bucket = min(weak_topic_count, 4)
+    mastery_bucket = clamp_bucket(average_mastery * 4)
+    confidence_bucket = clamp_bucket(float(session.best_fit_confidence or 0.0) * 4)
+    weak_bucket = clamp_bucket(weak_topic_count)
     return ':'.join(
         [
             role.slug,
@@ -258,26 +259,20 @@ def _select_q_learning_topic(
         path_kind=path_kind,
         role=role,
         topic=chosen_topic,
-        defaults={
-            'q_value': 0.0,
-            'reward_total': 0.0,
-            'update_count': 0,
-            'last_reward': 0.0,
-        },
+        defaults=Q_VALUE_DEFAULTS,
     )
-    current_q = float(current_q_row.q_value)
     projected_next_q = _get_projected_next_q_value(
         session,
         role=role,
         path_kind=path_kind,
         chosen_topic=chosen_topic,
     )
-    updated_q = current_q + alpha * (reward + (gamma * projected_next_q) - current_q)
-    current_q_row.q_value = updated_q
-    current_q_row.reward_total += reward
-    current_q_row.update_count += 1
-    current_q_row.last_reward = reward
-    current_q_row.save(update_fields=['q_value', 'reward_total', 'update_count', 'last_reward', 'updated_at'])
+    current_q, updated_q = update_q_row(
+        current_q_row,
+        reward=reward,
+        alpha=alpha,
+        target=reward + (gamma * projected_next_q),
+    )
 
     logger.info(
         (
@@ -366,20 +361,9 @@ def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> in
             path_kind=recommendation.path_kind,
             role=recommendation.role,
             topic=recommendation.topic,
-            defaults={
-                'q_value': 0.0,
-                'reward_total': 0.0,
-                'update_count': 0,
-                'last_reward': 0.0,
-            },
+            defaults=Q_VALUE_DEFAULTS,
         )
-        current_q = float(q_value_row.q_value)
-        updated_q = current_q + alpha * (outcome_reward - current_q)
-        q_value_row.q_value = updated_q
-        q_value_row.reward_total += outcome_reward
-        q_value_row.update_count += 1
-        q_value_row.last_reward = outcome_reward
-        q_value_row.save(update_fields=['q_value', 'reward_total', 'update_count', 'last_reward', 'updated_at'])
+        current_q, updated_q = update_q_row(q_value_row, reward=outcome_reward, alpha=alpha)
 
         recommendation.feedback_reward_applied = True
         recommendation.feedback_reward_applied_at = completed_at

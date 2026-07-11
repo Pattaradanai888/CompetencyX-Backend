@@ -23,7 +23,7 @@ def is_core_role_profile_complete(session: AssessmentSession) -> bool:
     return core_question_count > 0 and _get_answered_core_role_question_count(session) >= core_question_count
 
 
-def _answer_to_signal_dict(answer) -> dict:
+def answer_to_signal_dict(answer) -> dict:
     question = answer.question
     return {
         'agree_dimension_signals': question.agree_dimension_signals or {},
@@ -36,7 +36,7 @@ def _answer_to_signal_dict(answer) -> dict:
 def _build_role_evidence_snapshot(session: AssessmentSession) -> scoring_service.RoleEvidenceSnapshot:
     answers = session.answers.filter(question__stage=Question.Stage.ROLE).select_related('question')
     answer_dicts = [
-        _answer_to_signal_dict(answer)
+        answer_to_signal_dict(answer)
         for answer in answers
         if answer.question.question_type == Question.Type.LIKERT_5
     ]
@@ -74,14 +74,7 @@ def is_role_resolution_exhausted_with_viable_winner(
     if int(snapshot['answered_core_questions']) < int(snapshot['core_question_target']):
         return False
 
-    answered_question_ids = session.answers.values_list('question_id', flat=True)
-    remaining_tie_breaks = list(
-        Question.objects.filter(
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            is_active=True,
-        ).exclude(id__in=answered_question_ids),
-    )
+    remaining_tie_breaks = get_remaining_tie_break_questions(session)
     has_remaining_tie_breaks = bool(get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot))
     return scoring_service.is_role_resolution_exhausted_with_viable_winner(
         snapshot,
@@ -107,6 +100,17 @@ def get_role_resolution_status(session: AssessmentSession) -> str:
         best_fit_role_slug=session.best_fit_role.slug if session.best_fit_role_id else None,
         is_resolved=is_resolved,
         has_remaining_role_questions=has_remaining_questions,
+    )
+
+
+def get_remaining_tie_break_questions(session: AssessmentSession) -> list[Question]:
+    answered_question_ids = session.answers.values_list('question_id', flat=True)
+    return list(
+        Question.objects.filter(
+            stage=Question.Stage.ROLE,
+            item_group=Question.ItemGroup.TIE_BREAK,
+            is_active=True,
+        ).exclude(id__in=answered_question_ids),
     )
 
 

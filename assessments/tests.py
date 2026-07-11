@@ -16,7 +16,7 @@ from rest_framework.test import APITestCase
 
 from assessments.services import scoring_service
 from assessments.services.assessment_service import create_assessment_session, submit_answer
-from assessments.services.role_inference_service import get_role_inference_snapshot
+from assessments.services.role_inference_service import answer_to_signal_dict, get_role_inference_snapshot
 from roadmaps.models import Question, Role
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS
 from simulation.engine import LIKERT_VALUES, CatalogContext, SimulationConfig, aggregate_results, run_single_sample
@@ -158,12 +158,7 @@ class ScoringParityTests(APITestCase):
 
     def _build_session_answer_dicts(self, session):
         return [
-            {
-                'agree_dimension_signals': dict(answer.question.agree_dimension_signals or {}),
-                'disagree_dimension_signals': dict(answer.question.disagree_dimension_signals or {}),
-                'trait_positive_dimension': answer.question.trait_positive_dimension,
-                'scale_value': answer.scale_value,
-            }
+            answer_to_signal_dict(answer)
             for answer in session.answers.select_related('question')
             if answer.question.stage == Question.Stage.ROLE
         ]

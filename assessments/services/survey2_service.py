@@ -7,6 +7,7 @@ from assessments.models import AssessmentSession, Survey2Dimension, Survey2Quest
 
 from . import recommendation_service
 from .guidance_service import get_role_alignment_status, get_role_resolution_status
+from .q_learning import Q_VALUE_DEFAULTS, clamp_bucket, update_q_row
 
 
 SURVEY2_FEEDBACK_PROFILE_KEY = '_survey2_feedback_applied_question_ids'
@@ -86,8 +87,8 @@ def build_survey2_state_key(session: AssessmentSession, answers: dict[str, int])
     role_alignment = get_role_alignment_status(session)
     role_resolution = get_role_resolution_status(session)
     avg = (sum(answers.values()) / len(answers)) if answers else 3.0
-    avg_bucket = min(max(int((avg - 1.0) // 1.0), 0), 4)
-    progress_bucket = min(len(answers) // 3, 4)
+    avg_bucket = clamp_bucket((avg - 1.0) // 1.0)
+    progress_bucket = clamp_bucket(len(answers) // 3)
     return ':'.join(
         [
             role_slug,
@@ -136,19 +137,9 @@ def apply_survey2_step_feedback(session: AssessmentSession, *, before_answers: d
     q_row, _created = Survey2QuestionQValue.objects.get_or_create(
         state_key=after_state_key,
         question_id=answered_question_id,
-        defaults={
-            'q_value': 0.0,
-            'reward_total': 0.0,
-            'update_count': 0,
-            'last_reward': 0.0,
-        },
+        defaults=Q_VALUE_DEFAULTS,
     )
-    current_q = float(q_row.q_value)
-    q_row.q_value = current_q + alpha * (immediate_reward - current_q)
-    q_row.reward_total += immediate_reward
-    q_row.update_count += 1
-    q_row.last_reward = immediate_reward
-    q_row.save(update_fields=['q_value', 'reward_total', 'update_count', 'last_reward', 'updated_at'])
+    update_q_row(q_row, reward=immediate_reward, alpha=alpha)
 
 
 def get_survey2_state(session: AssessmentSession) -> dict[str, object]:
