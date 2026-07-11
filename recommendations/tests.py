@@ -13,7 +13,7 @@ from unittest import mock
 import pytest
 from django.test import TestCase, override_settings
 
-from assessments.models import AssessmentSession
+from assessments.models import AssessmentSession, Survey2Answer
 from assessments.services.recommendation_service import (
     _build_recommendation_state_key,
     _calculate_recommendation_reward,
@@ -258,15 +258,23 @@ class RecommendationServiceDbTests(TestCase):
         fields.update(overrides)
         return Recommendation.objects.create(**fields)
 
-    def _complete_survey2(self, answers):
-        self.session.profile = {'survey2': {'completed': True, 'answers': answers}}
+    def _set_survey2(self, *, completed, answers):
+        self.session.survey2_completed = completed
+        self.session.survey2_answers.all().delete()
+        Survey2Answer.objects.bulk_create(
+            Survey2Answer(session=self.session, question_id=question_id, value=value)
+            for question_id, value in answers.items()
+        )
 
-    def test_feedback_returns_zero_without_completed_survey2_profile(self):
+    def _complete_survey2(self, answers):
+        self._set_survey2(completed=True, answers=answers)
+
+    def test_feedback_returns_zero_without_completed_survey2_state(self):
         self._create_q_learning_recommendation()
 
         self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
 
-        self.session.profile = {'survey2': {'completed': False, 'answers': {'q1': 5}}}
+        self._set_survey2(completed=False, answers={'q1': 5})
         self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
 
         self._complete_survey2({})

@@ -3,14 +3,19 @@ import random
 from django.conf import settings
 from django.db import transaction
 
-from assessments.models import AssessmentSession, Survey2Dimension, Survey2Question, Survey2QuestionQValue, Survey2RoleGuidance
+from assessments.models import (
+    AssessmentSession,
+    Survey2Answer,
+    Survey2Dimension,
+    Survey2FeedbackEvent,
+    Survey2Question,
+    Survey2QuestionQValue,
+    Survey2RoleGuidance,
+)
 
 from . import recommendation_service
 from .guidance_service import get_role_alignment_status, get_role_resolution_status
 from .q_learning import Q_VALUE_DEFAULTS, clamp_bucket, update_q_row
-
-
-SURVEY2_FEEDBACK_PROFILE_KEY = '_survey2_feedback_applied_question_ids'
 
 
 def get_survey2_catalog(role_slug: str | None = None) -> dict[str, object]:
@@ -142,12 +147,26 @@ def apply_survey2_step_feedback(session: AssessmentSession, *, before_answers: d
     update_q_row(q_row, reward=immediate_reward, alpha=alpha)
 
 
+def _format_completed_at(value) -> str | None:
+    if value is None:
+        return None
+    if hasattr(value, 'isoformat'):
+        value = value.isoformat()
+    if value.endswith('+00:00'):
+        value = f'{value[:-6]}Z'
+    return value
+
+
+def get_survey2_answers(session: AssessmentSession) -> dict[str, int]:
+    return dict(session.survey2_answers.values_list('question_id', 'value'))
+
+
 def get_survey2_state(session: AssessmentSession) -> dict[str, object]:
-    profile = session.profile if isinstance(session.profile, dict) else {}
-    state = profile.get('survey2')
-    if isinstance(state, dict):
-        return state
-    return {'completed': False, 'answers': {}, 'completed_at': None}
+    return {
+        'completed': session.survey2_completed,
+        'answers': get_survey2_answers(session),
+        'completed_at': _format_completed_at(session.survey2_completed_at),
+    }
 
 
 @transaction.atomic
@@ -157,27 +176,23 @@ def save_survey2_state(*, session: AssessmentSession, state: dict[str, object]) 
     if not isinstance(answers, dict):
         answers = {}
 
-    completed_at = state.get('completed_at')
-    if hasattr(completed_at, 'isoformat'):
-        completed_at = completed_at.isoformat()
-        if completed_at.endswith('+00:00'):
-            completed_at = f'{completed_at[:-6]}Z'
-    serialized_state = {
-        'completed': bool(state.get('completed', False)),
-        'answers': dict(answers),
-        'completed_at': completed_at,
-    }
-    profile = dict(session.profile) if isinstance(session.profile, dict) else {}
-    profile['survey2'] = serialized_state
+    session.survey2_completed = bool(state.get('completed', False))
+    session.survey2_completed_at = state.get('completed_at')
+    session.save(update_fields=['survey2_completed', 'survey2_completed_at', 'updated_at'])
 
-    applied_question_ids = set(profile.get(SURVEY2_FEEDBACK_PROFILE_KEY, []))
+    session.survey2_answers.all().delete()
+    Survey2Answer.objects.bulk_create(
+        Survey2Answer(session=session, question_id=question_id, value=value) for question_id, value in answers.items()
+    )
+
+    applied_question_ids = set(session.survey2_feedback_events.values_list('question_id', flat=True))
     new_question_ids = answers.keys() - applied_question_ids
-    profile[SURVEY2_FEEDBACK_PROFILE_KEY] = sorted(applied_question_ids | set(new_question_ids))
-    session.profile = profile
-    session.save(update_fields=['profile', 'updated_at'])
+    Survey2FeedbackEvent.objects.bulk_create(
+        Survey2FeedbackEvent(session=session, question_id=question_id) for question_id in new_question_ids
+    )
 
     for question_id in new_question_ids:
         apply_survey2_step_feedback(session, before_answers=answers, answered_question_id=question_id)
-    if serialized_state['completed']:
+    if session.survey2_completed:
         recommendation_service.apply_recommendation_feedback_from_survey2(session)
-    return serialized_state
+    return get_survey2_state(session)

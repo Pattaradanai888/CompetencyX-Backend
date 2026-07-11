@@ -334,13 +334,11 @@ def _get_projected_next_q_value(
 
 
 def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> int:
-    profile = session.profile if isinstance(session.profile, dict) else {}
-    survey2_state = profile.get('survey2')
-    if not isinstance(survey2_state, dict) or not survey2_state.get('completed'):
+    if not session.survey2_completed:
         return 0
 
-    answers = survey2_state.get('answers')
-    if not isinstance(answers, dict) or not answers:
+    answers = dict(session.survey2_answers.values_list('question_id', 'value'))
+    if not answers:
         return 0
 
     applied_count = 0

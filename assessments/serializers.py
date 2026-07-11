@@ -21,7 +21,7 @@ from .services.guidance_service import (
     get_visible_role_result,
     serialize_milestones,
 )
-from .services.survey2_service import SURVEY2_FEEDBACK_PROFILE_KEY, get_survey2_question_ids, save_survey2_state
+from .services.survey2_service import get_survey2_question_ids, save_survey2_state
 
 
 # No docstrings on these mixins: drf-spectacular inherits class docstrings into
@@ -37,15 +37,6 @@ class ContextMemoMixin:
         if key not in cache:
             cache[key] = builder(obj)
         return cache[key]
-
-
-class PublicProfileField(serializers.JSONField):
-    def to_representation(self, value):
-        data = super().to_representation(value)
-        if isinstance(data, dict):
-            data = dict(data)
-            data.pop(SURVEY2_FEEDBACK_PROFILE_KEY, None)
-        return data
 
 
 class AnswerSubmitSerializer(serializers.Serializer):
@@ -180,7 +171,7 @@ class RoleInsightsSerializer(RoleInsightsFieldsMixin, serializers.ModelSerialize
 
 
 class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer):
-    profile = PublicProfileField(required=False)
+    profile = serializers.JSONField(required=False)
     preferred_role_slug = serializers.SlugRelatedField(
         source='preferred_role',
         slug_field='slug',
@@ -311,7 +302,7 @@ class AnswerHistorySerializer(serializers.ModelSerializer):
 
 
 class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
-    profile = PublicProfileField(read_only=True)
+    profile = serializers.JSONField(read_only=True)
     preferred_role = RoleSerializer(read_only=True)
     current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()

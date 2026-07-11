@@ -86,6 +86,8 @@ class AssessmentSession(models.Model):
         default=Language.EN,
     )
     profile = models.JSONField(default=dict, blank=True)
+    survey2_completed = models.BooleanField(default=False)
+    survey2_completed_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -197,6 +199,54 @@ class Survey2RoleGuidance(models.Model):
     def __str__(self) -> str:
         role_slug = self.role.slug if self.role_id else 'default'
         return f'{role_slug}:{self.display_order}'
+
+
+class Survey2Answer(models.Model):
+    """One Survey 2 self-rating per session and catalog question.
+
+    ``question_id`` is the catalog slug rather than a foreign key so answers
+    survive catalog questions being deactivated or removed.
+    """
+
+    session = models.ForeignKey(
+        AssessmentSession,
+        on_delete=models.CASCADE,
+        related_name='survey2_answers',
+    )
+    question_id = models.SlugField(max_length=64)
+    value = models.SmallIntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['question_id']
+        unique_together = [('session', 'question_id')]
+
+    def __str__(self) -> str:
+        return f'{self.session_id}:{self.question_id}={self.value}'
+
+
+class Survey2FeedbackEvent(models.Model):
+    """Append-only ledger of questions whose step feedback was already applied.
+
+    Kept separate from ``Survey2Answer`` because answers are replaced wholesale
+    on every save while feedback must be applied at most once per question,
+    even if an answer is removed and re-added.
+    """
+
+    session = models.ForeignKey(
+        AssessmentSession,
+        on_delete=models.CASCADE,
+        related_name='survey2_feedback_events',
+    )
+    question_id = models.SlugField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['question_id']
+        unique_together = [('session', 'question_id')]
+
+    def __str__(self) -> str:
+        return f'{self.session_id}:{self.question_id}'
 
 
 class Survey2QuestionQValue(models.Model):
