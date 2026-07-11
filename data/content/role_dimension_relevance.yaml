@@ -1,0 +1,423 @@
+# Role x dimension relevance mapping — the human-edited derivation input for
+# ROLE_PROFILE_WEIGHTS. Humans edit LEVELS and RATIONALES here; numbers are
+# derived by `manage.py generate_role_weights` using meta.weight_ladder.
+# See docs/scoring-methodology.md for level definitions and review workflow.
+#
+# Source reference shapes:
+#   {swebok: {ka: KA1}}                 -> data/sources/swebok_v4_ka_reference.yaml
+#   {roadmap_sh: {file: backend.json}}  -> data/upstream/roadmap_sh/manifest.yaml
+#
+# Only non-none cells are listed; an absent dimension means weight 0.
+# This initial mapping was reverse-engineered from the previous hand-typed
+# weights (rubric snap) — every cell is review.status: draft until a human
+# has checked its rationale against the cited sources.
+
+meta:
+  rubric_version: 1
+  weight_ladder:
+    ka: {core: 1.0, supporting: 0.6, peripheral: 0.3}
+    family: {primary: 1.0, secondary: 0.7}
+    specialization: {defining: 1.0, shared: 0.7}
+
+roles:
+  frontend-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      design: {level: core, rationale: "Responsive UI components and interaction flows are the daily unit of work.", sources: [{swebok: {ka: KA3}}, {roadmap_sh: {file: frontend.json}}]}
+      construction: {level: core, rationale: "Client-side application behavior is built in code every day.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: frontend.json}}]}
+      quality: {level: core, rationale: "Accessibility, performance, and UI quality attributes define acceptable frontend work.", sources: [{swebok: {ka: KA12}}, {roadmap_sh: {file: frontend.json}}]}
+      requirements: {level: supporting, rationale: "Translates UX requirements into usable features but does not own elicitation.", sources: [{swebok: {ka: KA1}}]}
+      testing: {level: supporting, rationale: "Writes unit, integration, and accessibility tests for own components.", sources: [{swebok: {ka: KA5}}, {roadmap_sh: {file: frontend.json}}]}
+      operations: {level: peripheral, rationale: "Uses CI/CD and observability tooling rather than operating it.", sources: [{swebok: {ka: KA6}}]}
+      process: {level: peripheral, rationale: "Participates in Agile delivery without owning process design.", sources: [{swebok: {ka: KA10}}]}
+      computing_ai: {level: peripheral, rationale: "Relies on CS fundamentals and AI-assisted coding as tools.", sources: [{swebok: {ka: KA16}}]}
+    families:
+      application_build: {level: primary, rationale: "Builds user-facing application features end to end.", sources: [{roadmap_sh: {file: frontend.json}}]}
+    specializations:
+      web_frontend: {level: defining, rationale: "The web frontend endpoint names this role.", sources: [{roadmap_sh: {file: frontend.json}}]}
+
+  backend-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Server-side logic, APIs, and business rules are implemented in code daily.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: backend.json}}]}
+      architecture: {level: core, rationale: "Designing services, integration patterns, and system boundaries is identity-defining.", sources: [{swebok: {ka: KA2}}, {roadmap_sh: {file: backend.json}}]}
+      operations: {level: core, rationale: "Supports deployment, monitoring, and incident fixes for own services.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: backend.json}}]}
+      design: {level: supporting, rationale: "Detailed component and data design below the service level.", sources: [{swebok: {ka: KA3}}]}
+      testing: {level: supporting, rationale: "Builds automated tests and service quality checks.", sources: [{swebok: {ka: KA5}}, {roadmap_sh: {file: backend.json}}]}
+      quality: {level: supporting, rationale: "Owns service quality attributes but not the org quality process.", sources: [{swebok: {ka: KA12}}]}
+      maintenance: {level: supporting, rationale: "Maintains and evolves long-lived services and integrations.", sources: [{swebok: {ka: KA7}}]}
+      configuration_management: {level: supporting, rationale: "Works with version control, builds, and release branches daily.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      backend_platform: {level: primary, rationale: "Server-side platform work is the role's family.", sources: [{roadmap_sh: {file: backend.json}}]}
+    specializations:
+      server_backend: {level: defining, rationale: "The server backend endpoint names this role.", sources: [{roadmap_sh: {file: backend.json}}]}
+
+  full-stack-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Builds end-to-end features across UI, API, and database layers.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: fullstack.json}}]}
+      design: {level: core, rationale: "Designs both interface flows and service internals for each feature.", sources: [{swebok: {ka: KA3}}, {roadmap_sh: {file: fullstack.json}}]}
+      operations: {level: core, rationale: "Deploys, monitors, and improves full-stack applications personally.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: fullstack.json}}]}
+      requirements: {level: supporting, rationale: "Converts user stories into working increments.", sources: [{swebok: {ka: KA1}}]}
+      process: {level: supporting, rationale: "Works across the whole delivery loop in Agile sprints.", sources: [{swebok: {ka: KA10}}]}
+      testing: {level: supporting, rationale: "Maintains tests across frontend, backend, and integration points.", sources: [{swebok: {ka: KA5}}]}
+      quality: {level: supporting, rationale: "Balances quality attributes across both halves of the stack.", sources: [{swebok: {ka: KA12}}]}
+      maintenance: {level: supporting, rationale: "Maintains features across the whole stack over time.", sources: [{swebok: {ka: KA7}}]}
+      configuration_management: {level: supporting, rationale: "Manages versioning and releases across multiple deployables.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      application_build: {level: secondary, rationale: "Half the identity is user-facing application work.", sources: [{roadmap_sh: {file: fullstack.json}}]}
+      backend_platform: {level: secondary, rationale: "The other half is server-side platform work.", sources: [{roadmap_sh: {file: fullstack.json}}]}
+    specializations:
+      web_frontend: {level: shared, rationale: "Shares the web frontend endpoint with frontend-developer.", sources: [{roadmap_sh: {file: fullstack.json}}]}
+      server_backend: {level: shared, rationale: "Shares the server backend endpoint with backend-developer.", sources: [{roadmap_sh: {file: fullstack.json}}]}
+
+  devops-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      operations: {level: core, rationale: "CI/CD pipelines, environments, monitoring, and incident response are the job.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: devops-engineer.json}}]}
+      configuration_management: {level: core, rationale: "Infrastructure as code, release automation, and build management are identity-defining.", sources: [{swebok: {ka: KA8}}, {roadmap_sh: {file: devops-engineer.json}}]}
+      process: {level: core, rationale: "Improving delivery flow, lead time, and release frequency is a primary outcome.", sources: [{swebok: {ka: KA10}}, {roadmap_sh: {file: devops-engineer.json}}]}
+      management: {level: supporting, rationale: "Coordinates delivery constraints and capacity with teams.", sources: [{swebok: {ka: KA9}}]}
+      quality: {level: supporting, rationale: "Builds quality gates and rollback safety into pipelines.", sources: [{swebok: {ka: KA12}}]}
+      construction: {level: supporting, rationale: "Writes automation and tooling code, not product features.", sources: [{swebok: {ka: KA4}}]}
+      engineering: {level: peripheral, rationale: "Applies measurement and root-cause analysis to delivery systems.", sources: [{swebok: {ka: KA18}}]}
+    families:
+      operations_security: {level: primary, rationale: "Operations is the role's home family.", sources: [{roadmap_sh: {file: devops-engineer.json}}]}
+      backend_platform: {level: secondary, rationale: "Works on and around server-side platforms.", sources: [{roadmap_sh: {file: devops-engineer.json}}]}
+
+  devsecops-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      security: {level: core, rationale: "SAST/DAST, secrets detection, and hardening are the defining additions to DevOps.", sources: [{swebok: {ka: KA13}}]}
+      operations: {level: core, rationale: "Security work happens inside CI/CD pipelines and live environments.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: core, rationale: "Hardens infrastructure, containers, and pipeline configuration.", sources: [{swebok: {ka: KA8}}]}
+      process: {level: supporting, rationale: "Automates policy checks and compliance gates into the process.", sources: [{swebok: {ka: KA10}}]}
+      quality: {level: supporting, rationale: "Compliance gates are a quality-assurance mechanism.", sources: [{swebok: {ka: KA12}}]}
+      requirements: {level: supporting, rationale: "Turns threat models into security backlog items.", sources: [{swebok: {ka: KA1}}]}
+      engineering: {level: supporting, rationale: "Applies systematic analysis to attack surfaces and controls.", sources: [{swebok: {ka: KA18}}]}
+    families:
+      operations_security: {level: primary, rationale: "Sits squarely in the operations-and-security family.", sources: [{swebok: {ka: KA13}}]}
+      backend_platform: {level: secondary, rationale: "Secures server-side platforms and their delivery.", sources: [{swebok: {ka: KA6}}]}
+
+  data-analyst:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      computing_ai: {level: core, rationale: "Querying, cleaning, and analyzing datasets is the daily work.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: data-analyst.json}}]}
+      math: {level: core, rationale: "Statistical validation underpins every analysis.", sources: [{swebok: {ka: KA17}}, {roadmap_sh: {file: data-analyst.json}}]}
+      economics: {level: core, rationale: "Dashboards and metrics exist to support business decisions.", sources: [{swebok: {ka: KA15}}, {roadmap_sh: {file: data-analyst.json}}]}
+      requirements: {level: supporting, rationale: "Translates stakeholder questions into analytical requirements.", sources: [{swebok: {ka: KA1}}]}
+      professional_practice: {level: supporting, rationale: "Communicates findings to non-technical stakeholders.", sources: [{swebok: {ka: KA14}}]}
+      quality: {level: supporting, rationale: "Validates data quality and metric consistency.", sources: [{swebok: {ka: KA12}}]}
+    families:
+      data_ai: {level: primary, rationale: "Data work is the role's home family.", sources: [{roadmap_sh: {file: data-analyst.json}}]}
+    specializations:
+      business_intelligence: {level: shared, rationale: "Shares BI tooling and outputs with the BI analyst.", sources: [{roadmap_sh: {file: data-analyst.json}}]}
+
+  ai-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      computing_ai: {level: core, rationale: "Integrating LLMs, ML models, and AI services is the defining work.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: ai-engineer.json}}]}
+      construction: {level: core, rationale: "AI features ship as production application code.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: ai-engineer.json}}]}
+      architecture: {level: core, rationale: "Designs AI system architecture, data flow, and model-serving patterns.", sources: [{swebok: {ka: KA2}}, {roadmap_sh: {file: ai-engineer.json}}]}
+      design: {level: supporting, rationale: "Detailed design of AI-enabled components and interfaces.", sources: [{swebok: {ka: KA3}}]}
+      quality: {level: supporting, rationale: "Evaluates model quality, latency, and reliability.", sources: [{swebok: {ka: KA12}}]}
+      security: {level: supporting, rationale: "Handles safety and security concerns of AI features.", sources: [{swebok: {ka: KA13}}]}
+      operations: {level: supporting, rationale: "Deploys AI features through DevOps/MLOps pipelines.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: supporting, rationale: "Versions models, prompts, and services.", sources: [{swebok: {ka: KA8}}]}
+      process: {level: supporting, rationale: "Works within iterative AI product delivery loops.", sources: [{swebok: {ka: KA10}}]}
+    families:
+      data_ai: {level: primary, rationale: "AI systems are the role's home family.", sources: [{roadmap_sh: {file: ai-engineer.json}}]}
+      backend_platform: {level: secondary, rationale: "AI services run on server-side platforms the role builds.", sources: [{roadmap_sh: {file: ai-engineer.json}}]}
+
+  ai-data-scientist:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      computing_ai: {level: core, rationale: "Exploring data and building predictive models is the daily work.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: ai-data-scientist.json}}]}
+      math: {level: core, rationale: "Feature engineering and validation rest on statistics and probability.", sources: [{swebok: {ka: KA17}}, {roadmap_sh: {file: ai-data-scientist.json}}]}
+      models_methods: {level: core, rationale: "Selecting algorithms and validating modeling assumptions is identity-defining.", sources: [{swebok: {ka: KA11}}, {roadmap_sh: {file: ai-data-scientist.json}}]}
+      quality: {level: supporting, rationale: "Evaluates model performance rigorously.", sources: [{swebok: {ka: KA12}}]}
+      professional_practice: {level: supporting, rationale: "Communicates model insights and trade-offs to stakeholders.", sources: [{swebok: {ka: KA14}}]}
+      economics: {level: supporting, rationale: "Frames models around business value and cost.", sources: [{swebok: {ka: KA15}}]}
+      construction: {level: peripheral, rationale: "Writes analysis code; engineers productionize it.", sources: [{swebok: {ka: KA4}}]}
+      operations: {level: peripheral, rationale: "Collaborates on productionizing rather than operating.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: peripheral, rationale: "Tracks experiments and datasets, not release trains.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      data_ai: {level: primary, rationale: "Modeling and data science is the home family.", sources: [{roadmap_sh: {file: ai-data-scientist.json}}]}
+
+  data-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "ETL/ELT pipelines and processing workflows are built in code daily.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: data-engineer.json}}]}
+      operations: {level: core, rationale: "Operates pipelines with orchestration, CI/CD, and monitoring.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: data-engineer.json}}]}
+      computing_ai: {level: core, rationale: "Data platforms, storage engines, and distributed processing are the substrate.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: data-engineer.json}}]}
+      architecture: {level: supporting, rationale: "Designs data models, storage layers, and integration patterns.", sources: [{swebok: {ka: KA2}}]}
+      design: {level: supporting, rationale: "Detailed design of pipeline stages and data contracts.", sources: [{swebok: {ka: KA3}}]}
+      testing: {level: supporting, rationale: "Tests data quality and pipeline behavior.", sources: [{swebok: {ka: KA5}}]}
+      quality: {level: supporting, rationale: "Ensures data reliability, lineage, and quality.", sources: [{swebok: {ka: KA12}}]}
+      configuration_management: {level: supporting, rationale: "Versions pipelines, schemas, and infrastructure.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      data_ai: {level: primary, rationale: "Data infrastructure is the home family.", sources: [{roadmap_sh: {file: data-engineer.json}}]}
+      backend_platform: {level: secondary, rationale: "Pipelines are server-side platform systems.", sources: [{roadmap_sh: {file: data-engineer.json}}]}
+
+  android-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Android screens, state management, and device integrations are coded daily.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: android-developer.json}}]}
+      design: {level: core, rationale: "Mobile UI structure and navigation design is identity-defining.", sources: [{swebok: {ka: KA3}}, {roadmap_sh: {file: android-developer.json}}]}
+      testing: {level: core, rationale: "Device compatibility, performance, and offline behavior demand heavy testing.", sources: [{swebok: {ka: KA5}}, {roadmap_sh: {file: android-developer.json}}]}
+      requirements: {level: supporting, rationale: "Translates product requirements into mobile features.", sources: [{swebok: {ka: KA1}}]}
+      quality: {level: supporting, rationale: "Owns app quality attributes like responsiveness and stability.", sources: [{swebok: {ka: KA12}}]}
+      operations: {level: peripheral, rationale: "Uses mobile CI/CD and release tooling.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: peripheral, rationale: "Follows app release management processes.", sources: [{swebok: {ka: KA8}}]}
+      computing_ai: {level: peripheral, rationale: "Uses AI-assisted coding as a tool.", sources: [{swebok: {ka: KA16}}]}
+    families:
+      application_build: {level: primary, rationale: "Builds user-facing applications.", sources: [{roadmap_sh: {file: android-developer.json}}]}
+    specializations:
+      android_platform: {level: defining, rationale: "The Android endpoint names this role.", sources: [{roadmap_sh: {file: android-developer.json}}]}
+
+  machine-learning-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      computing_ai: {level: core, rationale: "Building, training, and tuning ML models is the daily work.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: machine-learning-engineer.json}}]}
+      construction: {level: core, rationale: "Converts prototypes into production-ready ML services in code.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: machine-learning-engineer.json}}]}
+      operations: {level: core, rationale: "Deploys and monitors models in production systems.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: machine-learning-engineer.json}}]}
+      math: {level: supporting, rationale: "Model evaluation and tuning rest on statistics.", sources: [{swebok: {ka: KA17}}]}
+      testing: {level: supporting, rationale: "Creates automated model testing and validation.", sources: [{swebok: {ka: KA5}}]}
+      quality: {level: supporting, rationale: "Monitors model quality and drift.", sources: [{swebok: {ka: KA12}}]}
+      configuration_management: {level: supporting, rationale: "Manages model versioning and pipelines.", sources: [{swebok: {ka: KA8}}]}
+      process: {level: supporting, rationale: "Works within ML delivery workflows.", sources: [{swebok: {ka: KA10}}]}
+    families:
+      data_ai: {level: primary, rationale: "ML engineering is the home family.", sources: [{roadmap_sh: {file: machine-learning-engineer.json}}]}
+      backend_platform: {level: secondary, rationale: "ML services run on backend platforms.", sources: [{roadmap_sh: {file: machine-learning-engineer.json}}]}
+    specializations:
+      ml_platform: {level: shared, rationale: "Shares the ML platform endpoint with MLOps.", sources: [{roadmap_sh: {file: machine-learning-engineer.json}}]}
+
+  postgresql-developer-dba:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Schemas, queries, stored procedures, and constraints are built daily.", sources: [{swebok: {ka: KA4}}]}
+      operations: {level: core, rationale: "Backup, replication, availability, and performance operations define the DBA half.", sources: [{swebok: {ka: KA6}}]}
+      quality: {level: core, rationale: "Data integrity and database performance are quality attributes the role owns.", sources: [{swebok: {ka: KA12}}]}
+      design: {level: supporting, rationale: "Designs data models and index strategies.", sources: [{swebok: {ka: KA3}}]}
+      configuration_management: {level: supporting, rationale: "Manages database configuration and migrations under version control.", sources: [{swebok: {ka: KA8}}]}
+      maintenance: {level: supporting, rationale: "Maintains long-lived databases through upgrades and tuning.", sources: [{swebok: {ka: KA7}}]}
+      security: {level: supporting, rationale: "Supports secure data access, auditing, and compliance.", sources: [{swebok: {ka: KA13}}]}
+      professional_practice: {level: peripheral, rationale: "Advises teams on data-access practices.", sources: [{swebok: {ka: KA14}}]}
+    families:
+      backend_platform: {level: primary, rationale: "The database is a backend platform component.", sources: [{swebok: {ka: KA6}}]}
+      operations_security: {level: secondary, rationale: "DBA work includes operational reliability and access control.", sources: [{swebok: {ka: KA13}}]}
+    specializations:
+      database_postgresql: {level: defining, rationale: "The PostgreSQL endpoint names this role.", sources: [{swebok: {ka: KA16}}]}
+
+  ios-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "iOS interfaces, app logic, and platform integrations are coded daily.", sources: [{swebok: {ka: KA4}}]}
+      design: {level: core, rationale: "Mobile interface and interaction design is identity-defining.", sources: [{swebok: {ka: KA3}}]}
+      testing: {level: core, rationale: "Usability, performance, and device-compatibility testing is constant.", sources: [{swebok: {ka: KA5}}]}
+      requirements: {level: supporting, rationale: "Converts user stories into mobile features.", sources: [{swebok: {ka: KA1}}]}
+      process: {level: supporting, rationale: "Delivers through Agile iteration.", sources: [{swebok: {ka: KA10}}]}
+      quality: {level: supporting, rationale: "Owns app quality including accessibility.", sources: [{swebok: {ka: KA12}}]}
+      operations: {level: peripheral, rationale: "Manages releases and crash monitoring via tooling.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: peripheral, rationale: "Follows app release management processes.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      application_build: {level: primary, rationale: "Builds user-facing applications.", sources: [{swebok: {ka: KA4}}]}
+    specializations:
+      ios_platform: {level: defining, rationale: "The iOS endpoint names this role.", sources: [{swebok: {ka: KA4}}]}
+
+  blockchain-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Smart contracts, tokens, and dApp logic are built in code daily.", sources: [{swebok: {ka: KA4}}]}
+      security: {level: core, rationale: "Contract vulnerabilities are catastrophic; security thinking is identity-defining.", sources: [{swebok: {ka: KA13}}]}
+      architecture: {level: core, rationale: "Designs consensus-aware system behavior and transaction flows.", sources: [{swebok: {ka: KA2}}]}
+      testing: {level: supporting, rationale: "Tests contracts for vulnerabilities and edge cases.", sources: [{swebok: {ka: KA5}}]}
+      quality: {level: supporting, rationale: "Immutable deployments demand high pre-release quality.", sources: [{swebok: {ka: KA12}}]}
+      economics: {level: supporting, rationale: "Reasons about token economics and economic attack risks.", sources: [{swebok: {ka: KA15}}]}
+      operations: {level: peripheral, rationale: "Deploys through controlled release processes.", sources: [{swebok: {ka: KA6}}]}
+      configuration_management: {level: peripheral, rationale: "Manages contract versions and deployment artifacts.", sources: [{swebok: {ka: KA8}}]}
+    families:
+      backend_platform: {level: secondary, rationale: "dApps are distributed backend systems.", sources: [{swebok: {ka: KA2}}]}
+      operations_security: {level: secondary, rationale: "Security-critical operation of value-bearing systems.", sources: [{swebok: {ka: KA13}}]}
+    specializations:
+      blockchain_platform: {level: defining, rationale: "The blockchain endpoint names this role.", sources: [{swebok: {ka: KA4}}]}
+
+  qa-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      testing: {level: core, rationale: "Designing and executing tests at every level is the job.", sources: [{swebok: {ka: KA5}}, {roadmap_sh: {file: qa-engineer.json}}]}
+      quality: {level: core, rationale: "Quality assurance, defect management, and quality measurement are identity-defining.", sources: [{swebok: {ka: KA12}}, {roadmap_sh: {file: qa-engineer.json}}]}
+      process: {level: core, rationale: "Integrates testing into Agile and CI/CD workflows and improves the process.", sources: [{swebok: {ka: KA10}}, {roadmap_sh: {file: qa-engineer.json}}]}
+      requirements: {level: supporting, rationale: "Derives test plans and acceptance criteria from requirements.", sources: [{swebok: {ka: KA1}}]}
+      maintenance: {level: supporting, rationale: "Tracks defects and root causes across releases.", sources: [{swebok: {ka: KA7}}]}
+      operations: {level: peripheral, rationale: "Runs tests inside CI/CD environments.", sources: [{swebok: {ka: KA6}}]}
+      models_methods: {level: peripheral, rationale: "Applies systematic test design techniques.", sources: [{swebok: {ka: KA11}}]}
+    families:
+      leadership_process: {level: secondary, rationale: "Drives process improvement without people management.", sources: [{roadmap_sh: {file: qa-engineer.json}}]}
+
+  software-architect:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      architecture: {level: core, rationale: "Defining system structure and significant decisions is the job.", sources: [{swebok: {ka: KA2}}, {roadmap_sh: {file: software-architect.json}}]}
+      design: {level: core, rationale: "Guides design standards and integration patterns across teams.", sources: [{swebok: {ka: KA3}}, {roadmap_sh: {file: software-architect.json}}]}
+      quality: {level: core, rationale: "Trade-offs among scalability, reliability, and maintainability drive every decision.", sources: [{swebok: {ka: KA12}}, {roadmap_sh: {file: software-architect.json}}]}
+      security: {level: supporting, rationale: "Weighs security as a first-class quality attribute.", sources: [{swebok: {ka: KA13}}]}
+      economics: {level: supporting, rationale: "Evaluates cost and value trade-offs of technical choices.", sources: [{swebok: {ka: KA15}}]}
+      professional_practice: {level: supporting, rationale: "Communicates and defends architecture to teams and stakeholders.", sources: [{swebok: {ka: KA14}}]}
+      operations: {level: supporting, rationale: "Designs for DevOps-ready operability.", sources: [{swebok: {ka: KA6}}]}
+      process: {level: supporting, rationale: "Supports Agile architecture evolution.", sources: [{swebok: {ka: KA10}}]}
+      engineering: {level: supporting, rationale: "Applies systematic evaluation methods to architecture options.", sources: [{swebok: {ka: KA18}}]}
+    families:
+      leadership_process: {level: secondary, rationale: "Technical leadership without people management.", sources: [{roadmap_sh: {file: software-architect.json}}]}
+      backend_platform: {level: secondary, rationale: "Most architecture decisions land on platform systems.", sources: [{roadmap_sh: {file: software-architect.json}}]}
+
+  cyber-security-engineer-analyst:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      security: {level: core, rationale: "Threat modeling, vulnerability assessment, and risk analysis are the job.", sources: [{swebok: {ka: KA13}}]}
+      operations: {level: core, rationale: "Monitors incidents, investigates alerts, and secures live environments.", sources: [{swebok: {ka: KA6}}]}
+      quality: {level: core, rationale: "Security posture is assessed and assured like a quality attribute.", sources: [{swebok: {ka: KA12}}]}
+      maintenance: {level: supporting, rationale: "Investigates and remediates issues in deployed systems.", sources: [{swebok: {ka: KA7}}]}
+      requirements: {level: supporting, rationale: "Embeds security requirements into delivery workflows.", sources: [{swebok: {ka: KA1}}]}
+      process: {level: supporting, rationale: "Integrates security into Agile/DevSecOps processes.", sources: [{swebok: {ka: KA10}}]}
+      engineering: {level: supporting, rationale: "Applies systematic analysis to threats and controls.", sources: [{swebok: {ka: KA18}}]}
+    families:
+      operations_security: {level: primary, rationale: "Security operations is the home family.", sources: [{swebok: {ka: KA13}}]}
+
+  ux-designer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      requirements: {level: core, rationale: "Researching user needs, journeys, and pain points is elicitation work.", sources: [{swebok: {ka: KA1}}]}
+      design: {level: core, rationale: "Wireframes, prototypes, and interaction design are the daily output.", sources: [{swebok: {ka: KA3}}]}
+      quality: {level: core, rationale: "Usability and accessibility are the quality attributes the role owns.", sources: [{swebok: {ka: KA12}}]}
+      professional_practice: {level: supporting, rationale: "Collaborates with and presents to stakeholders constantly.", sources: [{swebok: {ka: KA14}}]}
+      testing: {level: supporting, rationale: "Validates designs through usability testing.", sources: [{swebok: {ka: KA5}}]}
+      process: {level: supporting, rationale: "Refines backlog items with Agile teams.", sources: [{swebok: {ka: KA10}}]}
+      economics: {level: peripheral, rationale: "Considers business impact of design choices.", sources: [{swebok: {ka: KA15}}]}
+    families:
+      people_product: {level: primary, rationale: "User-centered product work is the home family.", sources: [{swebok: {ka: KA1}}]}
+
+  technical-writer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      professional_practice: {level: core, rationale: "Written communication for diverse audiences is the craft itself.", sources: [{swebok: {ka: KA14}}, {roadmap_sh: {file: technical-writer.json}}]}
+      requirements: {level: core, rationale: "Translates technical requirements and designs into understandable documentation.", sources: [{swebok: {ka: KA1}}, {roadmap_sh: {file: technical-writer.json}}]}
+      maintenance: {level: core, rationale: "Documentation lives with the software and is maintained through releases.", sources: [{swebok: {ka: KA7}}, {roadmap_sh: {file: technical-writer.json}}]}
+      design: {level: supporting, rationale: "Documents designs and information architecture.", sources: [{swebok: {ka: KA3}}]}
+      configuration_management: {level: supporting, rationale: "Maintains docs through version control and release processes.", sources: [{swebok: {ka: KA8}}]}
+      quality: {level: supporting, rationale: "Reviews for accuracy and consistency.", sources: [{swebok: {ka: KA12}}]}
+      computing_ai: {level: peripheral, rationale: "Uses AI-assisted writing tools with governance.", sources: [{swebok: {ka: KA16}}]}
+    families:
+      documentation_practice: {level: primary, rationale: "Documentation is the home family.", sources: [{roadmap_sh: {file: technical-writer.json}}]}
+    specializations:
+      technical_documentation: {level: defining, rationale: "The documentation endpoint names this role.", sources: [{roadmap_sh: {file: technical-writer.json}}]}
+
+  game-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Gameplay mechanics, physics, and game logic are coded daily.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: game-developer.json}}]}
+      design: {level: core, rationale: "Gameplay and interaction design is identity-defining.", sources: [{swebok: {ka: KA3}}, {roadmap_sh: {file: game-developer.json}}]}
+      computing_ai: {level: core, rationale: "Engines, rendering, physics, and game AI rest on CS foundations.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: game-developer.json}}]}
+      quality: {level: supporting, rationale: "Optimizes performance and stability across devices.", sources: [{swebok: {ka: KA12}}]}
+      testing: {level: supporting, rationale: "Tests gameplay behavior, balance, and stability.", sources: [{swebok: {ka: KA5}}]}
+      operations: {level: peripheral, rationale: "Uses build pipelines for iteration.", sources: [{swebok: {ka: KA6}}]}
+      process: {level: peripheral, rationale: "Works in Agile iteration loops.", sources: [{swebok: {ka: KA10}}]}
+    families:
+      game_family: {level: primary, rationale: "Game development is the home family.", sources: [{roadmap_sh: {file: game-developer.json}}]}
+      application_build: {level: secondary, rationale: "Game clients are interactive applications.", sources: [{roadmap_sh: {file: game-developer.json}}]}
+    specializations:
+      game_client: {level: defining, rationale: "The game client endpoint names this role.", sources: [{roadmap_sh: {file: game-developer.json}}]}
+
+  server-side-game-developer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      construction: {level: core, rationale: "Multiplayer services, matchmaking, and game APIs are built in code daily.", sources: [{swebok: {ka: KA4}}, {roadmap_sh: {file: server-side-game-developer.json}}]}
+      operations: {level: core, rationale: "Live-service latency, availability, and incident response define the job.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: server-side-game-developer.json}}]}
+      architecture: {level: core, rationale: "Designs scalable real-time systems and persistent game state.", sources: [{swebok: {ka: KA2}}, {roadmap_sh: {file: server-side-game-developer.json}}]}
+      design: {level: supporting, rationale: "Detailed design of game services and protocols.", sources: [{swebok: {ka: KA3}}]}
+      quality: {level: supporting, rationale: "Monitors reliability and anti-cheat quality attributes.", sources: [{swebok: {ka: KA12}}]}
+      security: {level: supporting, rationale: "Defends against cheating and abuse.", sources: [{swebok: {ka: KA13}}]}
+      configuration_management: {level: supporting, rationale: "Manages live-game release pipelines.", sources: [{swebok: {ka: KA8}}]}
+      process: {level: supporting, rationale: "Supports DevOps release processes for live games.", sources: [{swebok: {ka: KA10}}]}
+    families:
+      game_family: {level: primary, rationale: "Game development is the home family.", sources: [{roadmap_sh: {file: server-side-game-developer.json}}]}
+      backend_platform: {level: primary, rationale: "The work itself is backend platform engineering.", sources: [{roadmap_sh: {file: server-side-game-developer.json}}]}
+    specializations:
+      game_server: {level: defining, rationale: "The game server endpoint names this role.", sources: [{roadmap_sh: {file: server-side-game-developer.json}}]}
+      server_backend: {level: shared, rationale: "Shares server backend skills with backend-developer.", sources: [{roadmap_sh: {file: server-side-game-developer.json}}]}
+
+  mlops-engineer:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      operations: {level: core, rationale: "Model training, deployment, and monitoring pipelines are the job.", sources: [{swebok: {ka: KA6}}, {roadmap_sh: {file: mlops-engineer.json}}]}
+      configuration_management: {level: core, rationale: "Model versions, datasets, and reproducibility are configuration management.", sources: [{swebok: {ka: KA8}}, {roadmap_sh: {file: mlops-engineer.json}}]}
+      computing_ai: {level: core, rationale: "The systems being operated are ML systems.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: mlops-engineer.json}}]}
+      quality: {level: supporting, rationale: "Automates validation and drift detection.", sources: [{swebok: {ka: KA12}}]}
+      testing: {level: supporting, rationale: "Builds automated validation into pipelines.", sources: [{swebok: {ka: KA5}}]}
+      process: {level: supporting, rationale: "Aligns ML delivery with Agile and governance processes.", sources: [{swebok: {ka: KA10}}]}
+      security: {level: supporting, rationale: "Applies governance and security to ML workflows.", sources: [{swebok: {ka: KA13}}]}
+      professional_practice: {level: peripheral, rationale: "Coordinates governance across teams.", sources: [{swebok: {ka: KA14}}]}
+    families:
+      operations_security: {level: primary, rationale: "Operations is the home family.", sources: [{roadmap_sh: {file: mlops-engineer.json}}]}
+      data_ai: {level: secondary, rationale: "The domain operated is ML/data systems.", sources: [{roadmap_sh: {file: mlops-engineer.json}}]}
+      backend_platform: {level: secondary, rationale: "ML infrastructure is platform engineering.", sources: [{roadmap_sh: {file: mlops-engineer.json}}]}
+    specializations:
+      ml_platform: {level: defining, rationale: "The ML platform endpoint names this role.", sources: [{roadmap_sh: {file: mlops-engineer.json}}]}
+
+  product-manager:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      requirements: {level: core, rationale: "Discovering user problems and defining requirements is the job.", sources: [{swebok: {ka: KA1}}, {roadmap_sh: {file: product-manager.json}}]}
+      economics: {level: core, rationale: "Prioritizes by business value, cost, and product impact.", sources: [{swebok: {ka: KA15}}, {roadmap_sh: {file: product-manager.json}}]}
+      management: {level: core, rationale: "Coordinates stakeholders and delivery across functions.", sources: [{swebok: {ka: KA9}}, {roadmap_sh: {file: product-manager.json}}]}
+      process: {level: supporting, rationale: "Drives backlog and delivery cadence in Agile.", sources: [{swebok: {ka: KA10}}]}
+      professional_practice: {level: supporting, rationale: "Stakeholder communication is constant.", sources: [{swebok: {ka: KA14}}]}
+      computing_ai: {level: supporting, rationale: "Guides AI-enabled features and experimentation.", sources: [{swebok: {ka: KA16}}]}
+      quality: {level: supporting, rationale: "Owns acceptance criteria and product quality bars.", sources: [{swebok: {ka: KA12}}]}
+    families:
+      people_product: {level: primary, rationale: "User and product work is the home family.", sources: [{roadmap_sh: {file: product-manager.json}}]}
+      leadership_process: {level: secondary, rationale: "Leads through process and prioritization without line management.", sources: [{roadmap_sh: {file: product-manager.json}}]}
+
+  engineering-manager:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      management: {level: core, rationale: "Delivery planning, capacity, risks, and people development are the job.", sources: [{swebok: {ka: KA9}}, {roadmap_sh: {file: engineering-manager.json}}]}
+      process: {level: core, rationale: "Improving Agile process and engineering standards is identity-defining.", sources: [{swebok: {ka: KA10}}, {roadmap_sh: {file: engineering-manager.json}}]}
+      professional_practice: {level: core, rationale: "Hiring, coaching, and performance are professional-practice work.", sources: [{swebok: {ka: KA14}}, {roadmap_sh: {file: engineering-manager.json}}]}
+      quality: {level: supporting, rationale: "Accountable for the team's technical quality.", sources: [{swebok: {ka: KA12}}]}
+      operations: {level: supporting, rationale: "Promotes DevOps maturity across the team.", sources: [{swebok: {ka: KA6}}]}
+      engineering: {level: supporting, rationale: "Uses measurement to steer team improvement.", sources: [{swebok: {ka: KA18}}]}
+      computing_ai: {level: peripheral, rationale: "Guides responsible AI tool adoption.", sources: [{swebok: {ka: KA16}}]}
+    families:
+      leadership_process: {level: primary, rationale: "Leadership is the home family.", sources: [{roadmap_sh: {file: engineering-manager.json}}]}
+
+  developer-relations:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      professional_practice: {level: core, rationale: "Community education, advocacy, and communication are the job.", sources: [{swebok: {ka: KA14}}]}
+      requirements: {level: core, rationale: "Gathers developer feedback and turns it into product requirements.", sources: [{swebok: {ka: KA1}}]}
+      construction: {level: core, rationale: "Builds sample apps, SDK examples, and demos in real code.", sources: [{swebok: {ka: KA4}}]}
+      quality: {level: supporting, rationale: "Champions API usability and onboarding quality.", sources: [{swebok: {ka: KA12}}]}
+      computing_ai: {level: supporting, rationale: "Explains AI integration and platform capabilities.", sources: [{swebok: {ka: KA16}}]}
+      operations: {level: peripheral, rationale: "Explains DevOps practices to developer audiences.", sources: [{swebok: {ka: KA6}}]}
+    families:
+      documentation_practice: {level: secondary, rationale: "Produces docs, tutorials, and guides.", sources: [{swebok: {ka: KA14}}]}
+      people_product: {level: secondary, rationale: "Community-facing, empathy-driven work.", sources: [{swebok: {ka: KA14}}]}
+    specializations:
+      developer_community: {level: defining, rationale: "The developer community endpoint names this role.", sources: [{swebok: {ka: KA14}}]}
+      technical_documentation: {level: shared, rationale: "Shares documentation work with technical writers.", sources: [{swebok: {ka: KA14}}]}
+
+  bi-analyst:
+    review: {status: draft, date: 2026-07-11}
+    ka:
+      economics: {level: core, rationale: "KPIs, dashboards, and decision support are business-value work.", sources: [{swebok: {ka: KA15}}, {roadmap_sh: {file: bi-analyst.json}}]}
+      computing_ai: {level: core, rationale: "SQL, semantic models, and BI tooling are the daily instruments.", sources: [{swebok: {ka: KA16}}, {roadmap_sh: {file: bi-analyst.json}}]}
+      math: {level: core, rationale: "Metrics and forecasting rest on statistics.", sources: [{swebok: {ka: KA17}}, {roadmap_sh: {file: bi-analyst.json}}]}
+      requirements: {level: supporting, rationale: "Defines reporting requirements with stakeholders.", sources: [{swebok: {ka: KA1}}]}
+      quality: {level: supporting, rationale: "Validates data quality and metric consistency.", sources: [{swebok: {ka: KA12}}]}
+      testing: {level: peripheral, rationale: "Checks business logic of reports.", sources: [{swebok: {ka: KA5}}]}
+    families:
+      data_ai: {level: secondary, rationale: "Works on data, closer to the business than the platform.", sources: [{roadmap_sh: {file: bi-analyst.json}}]}
+      people_product: {level: secondary, rationale: "Outputs serve business stakeholders directly.", sources: [{roadmap_sh: {file: bi-analyst.json}}]}
+    specializations:
+      business_intelligence: {level: defining, rationale: "The BI endpoint names this role.", sources: [{roadmap_sh: {file: bi-analyst.json}}]}

@@ -10,6 +10,7 @@ dependencies = [
     "djangorestframework>=3.17.1",
     "drf-spectacular>=0.28.0",
     "psycopg[binary]>=3.2.9",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]

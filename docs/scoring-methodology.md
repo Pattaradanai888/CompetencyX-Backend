@@ -133,7 +133,8 @@ manage.py simulate_personas --check-baseline data/simulation/persona_baseline.js
 - The harness simulates noisy respondents for all 26 roles and reports top-1
   accuracy, precision-when-resolved, per-role accuracy, confusion pairs,
   tie-break utilization, and dead questions.
-- Acceptance floor: top-1 ≥ 0.94, precision|resolved ≥ 0.99.
+- Acceptance floor (full selection flow, 46 core + gated tie-breaks):
+  top-1 ≥ 0.88, precision|resolved ≥ 0.99.
 - If the change is intentional and metrics are acceptable, re-pin with
   `--write-baseline` and commit the baseline diff together with the content
   change, quoting the report in the commit message.

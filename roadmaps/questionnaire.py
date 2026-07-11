@@ -59,149 +59,27 @@ CORE_ROLE_DIMENSIONS = {key for key, _label in SWEBOK_KNOWLEDGE_AREAS}
 ROLE_DIMENSION_LABELS = dict((*SWEBOK_KNOWLEDGE_AREAS, *ROLE_FAMILY_DIMENSIONS, *ROLE_SPECIALIZATION_DIMENSIONS))
 
 
-def _profile(*entries: tuple[str, float]) -> dict[str, float]:
-    return dict(entries)
-
-
-# Role weights are grounded in the user-provided SWEBOK 2024 role definitions:
-# top KAs receive stronger weights, task KAs and specialization endpoints add
-# extra separation for roles that share the same broad KA footprint.
-ROLE_PROFILE_WEIGHTS = {
-    'frontend-developer': _profile(
-        ('design', 1.0), ('construction', 1.0), ('quality', 1.0), ('requirements', 0.6), ('testing', 0.6),
-        ('operations', 0.4), ('process', 0.4), ('computing_ai', 0.4), ('web_frontend', 1.0),
-    ),
-    'backend-developer': _profile(
-        ('construction', 1.0), ('architecture', 1.0), ('operations', 1.0), ('design', 0.6), ('testing', 0.6),
-        ('quality', 0.6), ('maintenance', 0.5), ('configuration_management', 0.5), ('server_backend', 1.0),
-    ),
-    'full-stack-developer': _profile(
-        ('construction', 1.0), ('design', 1.0), ('operations', 1.0), ('requirements', 0.6), ('process', 0.6),
-        ('testing', 0.6), ('quality', 0.6), ('maintenance', 0.5), ('configuration_management', 0.5),
-        ('web_frontend', 0.7), ('server_backend', 0.7),
-    ),
-    'devops-engineer': _profile(
-        ('operations', 1.2), ('configuration_management', 1.2), ('process', 1.1), ('management', 0.7),
-        ('quality', 0.7), ('construction', 0.5), ('engineering', 0.4),
-    ),
-    'devsecops-engineer': _profile(
-        ('security', 1.0), ('operations', 1.1), ('configuration_management', 1.2), ('quality', 0.7),
-        ('requirements', 0.5), ('process', 0.8), ('engineering', 0.5),
-    ),
-    'data-analyst': _profile(
-        ('computing_ai', 1.0), ('math', 1.0), ('economics', 1.0), ('requirements', 0.6), ('professional_practice', 0.6),
-        ('quality', 0.5), ('business_intelligence', 0.6),
-    ),
-    'ai-engineer': _profile(
-        ('computing_ai', 1.0), ('construction', 1.0), ('architecture', 1.0), ('design', 0.6), ('quality', 0.7),
-        ('security', 0.5), ('operations', 0.6), ('configuration_management', 0.5), ('process', 0.5),
-    ),
-    'ai-data-scientist': _profile(
-        ('computing_ai', 1.0), ('math', 1.0), ('models_methods', 1.0), ('quality', 0.7), ('professional_practice', 0.6),
-        ('economics', 0.6), ('construction', 0.4), ('operations', 0.4), ('configuration_management', 0.4),
-    ),
-    'data-engineer': _profile(
-        ('construction', 1.0), ('operations', 1.0), ('computing_ai', 1.0), ('architecture', 0.6), ('design', 0.6),
-        ('testing', 0.5), ('quality', 0.7), ('configuration_management', 0.6),
-    ),
-    'android-developer': _profile(
-        ('construction', 1.0), ('design', 1.0), ('testing', 1.0), ('requirements', 0.6), ('quality', 0.7),
-        ('operations', 0.4), ('configuration_management', 0.4), ('computing_ai', 0.3), ('android_platform', 1.0),
-    ),
-    'machine-learning-engineer': _profile(
-        ('computing_ai', 1.0), ('construction', 1.0), ('operations', 1.0), ('math', 0.8), ('testing', 0.6),
-        ('quality', 0.7), ('configuration_management', 0.7), ('process', 0.5), ('ml_platform', 0.8),
-    ),
-    'postgresql-developer-dba': _profile(
-        ('construction', 1.0), ('operations', 1.0), ('quality', 1.0), ('design', 0.6), ('configuration_management', 0.7),
-        ('maintenance', 0.6), ('security', 0.6), ('professional_practice', 0.4), ('database_postgresql', 1.0),
-    ),
-    'ios-developer': _profile(
-        ('construction', 1.0), ('design', 1.0), ('testing', 1.0), ('requirements', 0.6), ('process', 0.5),
-        ('quality', 0.7), ('operations', 0.4), ('configuration_management', 0.4), ('ios_platform', 1.0),
-    ),
-    'blockchain-developer': _profile(
-        ('construction', 1.0), ('security', 1.0), ('architecture', 0.9), ('testing', 0.7), ('quality', 0.6),
-        ('economics', 0.7), ('operations', 0.4), ('configuration_management', 0.4), ('blockchain_platform', 1.0),
-    ),
-    'qa-engineer': _profile(
-        ('testing', 1.0), ('quality', 1.0), ('process', 1.0), ('requirements', 0.6), ('operations', 0.4),
-        ('maintenance', 0.5), ('models_methods', 0.4),
-    ),
-    'software-architect': _profile(
-        ('architecture', 1.0), ('design', 1.0), ('quality', 1.0), ('security', 0.7), ('economics', 0.6),
-        ('professional_practice', 0.6), ('operations', 0.5), ('process', 0.5), ('engineering', 0.6),
-    ),
-    'cyber-security-engineer-analyst': _profile(
-        ('security', 1.0), ('operations', 1.0), ('quality', 1.0), ('maintenance', 0.6), ('requirements', 0.5),
-        ('process', 0.5), ('engineering', 0.5),
-    ),
-    'ux-designer': _profile(
-        ('requirements', 1.0), ('design', 1.0), ('quality', 1.0), ('professional_practice', 0.7), ('testing', 0.6),
-        ('process', 0.5), ('economics', 0.3),
-    ),
-    'technical-writer': _profile(
-        ('professional_practice', 1.0), ('requirements', 1.0), ('maintenance', 1.0), ('design', 0.5),
-        ('configuration_management', 0.7), ('quality', 0.6), ('computing_ai', 0.4), ('technical_documentation', 1.0),
-    ),
-    'game-developer': _profile(
-        ('construction', 1.0), ('design', 1.0), ('computing_ai', 1.0), ('quality', 0.7), ('testing', 0.6),
-        ('operations', 0.4), ('process', 0.4), ('game_client', 1.0),
-    ),
-    'server-side-game-developer': _profile(
-        ('construction', 1.0), ('operations', 1.2), ('architecture', 1.1), ('design', 0.6), ('quality', 0.8),
-        ('security', 0.5), ('configuration_management', 0.6), ('process', 0.5), ('server_backend', 0.8), ('game_server', 1.0),
-    ),
-    'mlops-engineer': _profile(
-        ('operations', 1.0), ('configuration_management', 1.0), ('computing_ai', 1.0), ('quality', 0.7), ('testing', 0.6),
-        ('process', 0.6), ('security', 0.5), ('professional_practice', 0.4), ('ml_platform', 1.0),
-    ),
-    'product-manager': _profile(
-        ('requirements', 1.0), ('economics', 1.0), ('management', 1.0), ('process', 0.6), ('professional_practice', 0.7),
-        ('computing_ai', 0.5), ('quality', 0.5),
-    ),
-    'engineering-manager': _profile(
-        ('management', 1.0), ('process', 1.0), ('professional_practice', 1.0), ('quality', 0.7), ('operations', 0.5),
-        ('computing_ai', 0.4), ('engineering', 0.6),
-    ),
-    'developer-relations': _profile(
-        ('professional_practice', 1.0), ('requirements', 1.0), ('construction', 1.0), ('quality', 0.6),
-        ('operations', 0.4), ('computing_ai', 0.5), ('developer_community', 1.0), ('technical_documentation', 0.6),
-    ),
-    'bi-analyst': _profile(
-        ('economics', 1.0), ('computing_ai', 1.0), ('math', 1.0), ('requirements', 0.6), ('quality', 0.6),
-        ('testing', 0.4), ('business_intelligence', 1.0),
-    ),
+# Signal-strength ladder for question authoring: questions declare ordinal
+# levels (primary/secondary/contrast) and seeds.py converts them to these
+# numbers. Definitions live in docs/scoring-methodology.md.
+SIGNAL_STRENGTH_WEIGHTS = {
+    'primary': 1.0,
+    'secondary': 0.6,
+    'contrast': 0.3,
 }
 
-ROLE_FAMILY_PROFILE_WEIGHTS = {
-    'frontend-developer': _profile(('application_build', 1.0)),
-    'backend-developer': _profile(('backend_platform', 1.0)),
-    'full-stack-developer': _profile(('application_build', 0.8), ('backend_platform', 0.8)),
-    'devops-engineer': _profile(('operations_security', 1.0), ('backend_platform', 0.7)),
-    'devsecops-engineer': _profile(('operations_security', 1.2), ('backend_platform', 0.8)),
-    'data-analyst': _profile(('data_ai', 1.0), ('people_product', 0.4)),
-    'ai-engineer': _profile(('data_ai', 1.0), ('backend_platform', 0.7)),
-    'ai-data-scientist': _profile(('data_ai', 1.2)),
-    'data-engineer': _profile(('data_ai', 0.9), ('backend_platform', 0.8)),
-    'android-developer': _profile(('application_build', 1.0)),
-    'machine-learning-engineer': _profile(('data_ai', 1.0), ('backend_platform', 0.5)),
-    'postgresql-developer-dba': _profile(('backend_platform', 1.0), ('operations_security', 0.5)),
-    'ios-developer': _profile(('application_build', 1.0)),
-    'blockchain-developer': _profile(('backend_platform', 0.8), ('operations_security', 0.8)),
-    'qa-engineer': _profile(('leadership_process', 0.7), ('application_build', 0.4)),
-    'software-architect': _profile(('leadership_process', 0.8), ('backend_platform', 0.6)),
-    'cyber-security-engineer-analyst': _profile(('operations_security', 1.2)),
-    'ux-designer': _profile(('people_product', 1.2), ('application_build', 0.3)),
-    'technical-writer': _profile(('documentation_practice', 1.2), ('people_product', 0.4)),
-    'game-developer': _profile(('game_family', 1.2), ('application_build', 0.8)),
-    'server-side-game-developer': _profile(('game_family', 1.0), ('backend_platform', 1.2)),
-    'mlops-engineer': _profile(('operations_security', 0.9), ('data_ai', 0.8), ('backend_platform', 0.5)),
-    'product-manager': _profile(('people_product', 1.0), ('leadership_process', 0.8)),
-    'engineering-manager': _profile(('leadership_process', 1.2), ('people_product', 0.4)),
-    'developer-relations': _profile(('documentation_practice', 0.8), ('people_product', 0.8), ('application_build', 0.4)),
-    'bi-analyst': _profile(('data_ai', 0.8), ('people_product', 0.5)),
-}
+# ROLE_PROFILE_WEIGHTS is derived from data/content/role_dimension_relevance.yaml
+# (ordinal levels + rationale + sources) via `manage.py generate_role_weights`.
+# Never edit weights by hand — edit the mapping levels and regenerate.
+from roadmaps.role_weights_generated import ROLE_PROFILE_WEIGHTS  # noqa: E402
 
-for role_slug, family_weights in ROLE_FAMILY_PROFILE_WEIGHTS.items():
-    ROLE_PROFILE_WEIGHTS[role_slug].update(family_weights)
+
+__all__ = [
+    'CORE_ROLE_DIMENSIONS',
+    'ROLE_DIMENSIONS',
+    'ROLE_DIMENSION_LABELS',
+    'ROLE_PROFILE_WEIGHTS',
+    'SIGNAL_STRENGTH_WEIGHTS',
+    'SWEBOK_KNOWLEDGE_AREAS',
+    'SWEBOK_SOURCE_VERSION',
+]
