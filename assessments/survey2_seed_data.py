@@ -4,6 +4,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'PSP Planning',
         'track': 'psp',
         'low_score_action': 'Use a small planning log for the next 3 tasks: estimated time, actual time, variance, and one cause of delay.',
+        'translations': {
+            'th': {
+                'low_score_action': 'ลองใช้สมุดบันทึกวางแผนง่าย ๆ สำหรับ 3 งานถัดไป: เวลาที่ประมาณไว้ เวลาจริง ค่าความต่าง และสาเหตุของความล่าช้าอย่างน้อยหนึ่งสาเหตุ',
+            },
+        },
         'display_order': 1,
     },
     {
@@ -11,6 +16,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'PSP Quality Discipline',
         'track': 'psp',
         'low_score_action': 'Create a personal review checklist and record defects found before submitting work.',
+        'translations': {
+            'th': {
+                'low_score_action': 'สร้าง checklist ทบทวนงานส่วนตัวและบันทึกข้อบกพร่องที่พบก่อนส่งงานทุกครั้ง',
+            },
+        },
         'display_order': 2,
     },
     {
@@ -18,6 +28,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'Requirements Analysis',
         'track': 'sdlc',
         'low_score_action': 'Practice converting one feature idea into user need, acceptance criteria, constraints, and open questions.',
+        'translations': {
+            'th': {
+                'low_score_action': 'ฝึกเปลี่ยนแนวคิดฟีเจอร์หนึ่งอย่างเป็นความต้องการผู้ใช้ เกณฑ์การยอมรับ ข้อจำกัด และคำถามที่ยังไม่มีคำตอบ',
+            },
+        },
         'display_order': 3,
     },
     {
@@ -25,6 +40,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'System Design & Architecture',
         'track': 'sdlc',
         'low_score_action': 'Sketch components, data flow, and two tradeoffs before implementation.',
+        'translations': {
+            'th': {
+                'low_score_action': 'วาดส่วนประกอบ data flow และข้อแลกเปลี่ยนสองข้อก่อนเริ่มลงมือเขียนโค้ด',
+            },
+        },
         'display_order': 4,
     },
     {
@@ -32,6 +52,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'Development / Coding',
         'track': 'sdlc',
         'low_score_action': 'Implement a small feature following existing project conventions, then refactor one part for readability.',
+        'translations': {
+            'th': {
+                'low_score_action': 'พัฒนาฟีเจอร์เล็ก ๆ ตาม convention ของโปรเจกต์ จากนั้น refactor ส่วนใดส่วนหนึ่งให้อ่านง่ายขึ้น',
+            },
+        },
         'display_order': 5,
     },
     {
@@ -39,6 +64,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'Testing & QA',
         'track': 'sdlc',
         'low_score_action': 'Write one normal-case test and two edge-case checks for the next feature you build.',
+        'translations': {
+            'th': {
+                'low_score_action': 'เขียน test สำหรับกรณีปกติหนึ่งกรณีและทดสอบ edge case อีกสองกรณี สำหรับฟีเจอร์ถัดไปที่คุณสร้าง',
+            },
+        },
         'display_order': 6,
     },
     {
@@ -46,6 +76,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'Deployment & Release',
         'track': 'sdlc',
         'low_score_action': 'Document a release checklist: build, configuration, migration, smoke test, rollback, and owner.',
+        'translations': {
+            'th': {
+                'low_score_action': 'จัดทำ release checklist: build, configuration, migration, smoke test, rollback และผู้รับผิดชอบ',
+            },
+        },
         'display_order': 7,
     },
     {
@@ -53,6 +88,11 @@ SURVEY2_DIMENSIONS = [
         'label': 'Maintenance & Support',
         'track': 'sdlc',
         'low_score_action': 'Trace one existing bug from report to root cause, fix plan, regression check, and release note.',
+        'translations': {
+            'th': {
+                'low_score_action': 'ตามรอยบั๊กที่มีอยู่ตั้งแต่รายงานจนถึงสาเหตุที่แท้จริง วางแผนแก้ไข ตรวจสอบ regression และเขียน release note',
+            },
+        },
         'display_order': 8,
     },
 ]

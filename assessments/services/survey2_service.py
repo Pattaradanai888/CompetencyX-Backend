@@ -63,10 +63,11 @@ def list_survey2_dimensions() -> list[dict[str, object]]:
             'label': dimension['label'],
             'track': dimension['track'],
             'low_score_action': dimension['low_score_action'],
+            'translations': dimension['translations'] or {},
         }
         for dimension in Survey2Dimension.objects.filter(is_active=True)
         .order_by('display_order', 'dimension_key')
-        .values('dimension_key', 'label', 'track', 'low_score_action')
+        .values('dimension_key', 'label', 'track', 'low_score_action', 'translations')
     ]
 
 

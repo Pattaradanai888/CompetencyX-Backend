@@ -452,6 +452,7 @@ class Survey2DimensionSerializer(serializers.Serializer):
     label = serializers.CharField()
     track = serializers.ChoiceField(choices=['psp', 'sdlc'])
     low_score_action = serializers.CharField()
+    translations = serializers.DictField(required=False)
 
 
 class Survey2QuestionSerializer(serializers.Serializer):

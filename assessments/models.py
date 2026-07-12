@@ -167,6 +167,7 @@ class Survey2Dimension(models.Model):
     label = models.CharField(max_length=128)
     track = models.CharField(max_length=16, choices=Track.choices)
     low_score_action = models.TextField()
+    translations = models.JSONField(default=dict, blank=True)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

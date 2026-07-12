@@ -20,6 +20,7 @@ class Command(BaseCommand):
                     'label': dimension['label'],
                     'track': dimension['track'],
                     'low_score_action': dimension['low_score_action'],
+                    'translations': dimension.get('translations', {}),
                     'display_order': dimension['display_order'],
                     'is_active': True,
                 },
