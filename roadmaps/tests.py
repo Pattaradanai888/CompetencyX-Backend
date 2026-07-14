@@ -279,7 +279,7 @@ class SeedMvpContentTests(TestCase):
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
-    def test_question_catalog_excludes_skill_questions_from_survey1(self):
+    def test_question_catalog_excludes_skill_questions_from_role_discovery(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         assert questions_data['skill_questions'] == []

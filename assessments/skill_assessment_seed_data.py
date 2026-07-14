@@ -1,4 +1,4 @@
-SURVEY2_DIMENSIONS = [
+SKILL_ASSESSMENT_DIMENSIONS = [
     {
         'dimension_key': 'psp-planning',
         'label': 'PSP Planning',
@@ -97,7 +97,7 @@ SURVEY2_DIMENSIONS = [
     },
 ]
 
-SURVEY2_QUESTIONS = [
+SKILL_ASSESSMENT_QUESTIONS = [
     {
         'question_id': 'psp-plan-estimate',
         'prompt': 'Before building a web feature, I estimate effort, complexity, and delivery time using a repeatable method.',
@@ -221,9 +221,9 @@ SURVEY2_QUESTIONS = [
     },
 ]
 
-SURVEY2_ROLE_GUIDANCE = {
+SKILL_ASSESSMENT_ROLE_GUIDANCE = {
     None: [
-        'Use the lowest Survey 2 dimensions as execution habits to practice while working through the recommended roadmap topics.',
+        'Use the lowest Skill Assessment dimensions as execution habits to practice while working through the recommended roadmap topics.',
         'For each topic, create one small artifact that proves progress: plan, checklist, test, design note, or reflection.',
     ],
     'backend-developer': [

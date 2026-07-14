@@ -60,7 +60,7 @@ class RecommendationTests(AssessmentFlowTestCase):
         ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5,
         ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
     )
-    def test_completed_survey2_applies_delayed_feedback_to_q_learning_recommendations(self):
+    def test_completed_skill_assessment_applies_delayed_feedback_to_q_learning_recommendations(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
@@ -87,7 +87,7 @@ class RecommendationTests(AssessmentFlowTestCase):
         }
 
         save_response = self.client.post(
-            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
             feedback_payload,
             format='json',
         )
@@ -117,7 +117,7 @@ class RecommendationTests(AssessmentFlowTestCase):
         )
 
         repeat_response = self.client.post(
-            reverse('assessment-session-survey2', kwargs={'pk': session_id}),
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
             feedback_payload,
             format='json',
         )

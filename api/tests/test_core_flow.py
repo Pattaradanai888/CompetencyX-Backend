@@ -21,10 +21,10 @@ class CoreFlowTests(AssessmentFlowTestCase):
         schema_payload = json.loads(schema_response.content)
         self.assertEqual(schema_payload['info']['title'], 'CompetencyX API')
         self.assertEqual(schema_payload['openapi'], '3.0.3')
-        self.assertEqual(schema_payload['paths']['/api/health/']['get']['operationId'], 'healthCheck')
-        self.assertEqual(schema_payload['paths']['/api/catalog/roles/']['get']['operationId'], 'listCatalogRoles')
+        self.assertEqual(schema_payload['paths']['/api/v1/health/']['get']['operationId'], 'healthCheck')
+        self.assertEqual(schema_payload['paths']['/api/v1/catalog/roles/']['get']['operationId'], 'listCatalogRoles')
         self.assertEqual(
-            schema_payload['paths']['/api/assessment-sessions/{id}/answers/']['post']['operationId'],
+            schema_payload['paths']['/api/v1/assessment-sessions/{id}/answers/']['post']['operationId'],
             'submitAssessmentAnswer',
         )
         self.assertIn('AssessmentSession', schema_payload['components']['schemas'])
@@ -92,7 +92,7 @@ class CoreFlowTests(AssessmentFlowTestCase):
 
         self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
 
-    def test_survey1_finishes_without_serving_skill_questions(self):
+    def test_role_discovery_finishes_without_serving_skill_questions(self):
         create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json())
 

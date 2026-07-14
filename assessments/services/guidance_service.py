@@ -1,7 +1,7 @@
 """Role-status and learner-guidance helpers.
 
 This service is a leaf in the assessments dependency graph: it imports only the
-role-inference service and ORM models. Recommendation and Survey 2 services can
+role-inference service and ORM models. Recommendation and Skill Assessment services can
 consume it without importing assessment orchestration and creating a cycle.
 """
 
@@ -88,7 +88,7 @@ def _base_fit_message(session: AssessmentSession, *, resolution_status: str) -> 
     current_role = session.current_role
     best_fit_role = session.best_fit_role
     if resolution_status == 'low_confidence' and best_fit_role is not None:
-        return f'Your answers weakly point toward {best_fit_role.name}. Treat this as a tentative fit and validate it in Survey 2.'
+        return f'Your answers weakly point toward {best_fit_role.name}. Treat this as a tentative fit and validate it in Skill Assessment.'
     if preferred_role is None and best_fit_role is not None:
         return f'Your current answers align best with {best_fit_role.name}.'
     if get_role_alignment_status(session) == 'aligned':

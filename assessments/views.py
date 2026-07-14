@@ -18,9 +18,9 @@ from .schema import (
     RESULT_RESPONSE_EXAMPLE,
     SESSION_CREATE_REQUEST_EXAMPLE,
     SESSION_RESPONSE_EXAMPLE,
-    SURVEY2_NEXT_QUESTION_REQUEST_EXAMPLE,
-    SURVEY2_NEXT_QUESTION_RESPONSE_EXAMPLE,
-    SURVEY2_RESPONSE_EXAMPLE,
+    SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE,
+    SKILL_ASSESSMENT_NEXT_QUESTION_RESPONSE_EXAMPLE,
+    SKILL_ASSESSMENT_RESPONSE_EXAMPLE,
 )
 from .serializers import (
     AnswerSubmitSerializer,
@@ -28,12 +28,12 @@ from .serializers import (
     AssessmentResultSerializer,
     AssessmentSessionSerializer,
     RoleInsightsSerializer,
-    Survey2CatalogSerializer,
-    Survey2NextQuestionRequestSerializer,
-    Survey2NextQuestionResponseSerializer,
-    Survey2SessionStateSerializer,
+    SkillAssessmentCatalogSerializer,
+    SkillAssessmentNextQuestionRequestSerializer,
+    SkillAssessmentNextQuestionResponseSerializer,
+    SkillAssessmentSessionStateSerializer,
 )
-from .services import survey2_service
+from .services import skill_assessment_service
 
 
 @extend_schema_view(
@@ -71,10 +71,10 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
             'results': AssessmentResultSerializer,
             'history': AssessmentHistorySerializer,
             'answers': AnswerSubmitSerializer,
-            'survey2': Survey2SessionStateSerializer,
-            'update_survey2': Survey2SessionStateSerializer,
-            'survey2_catalog': Survey2CatalogSerializer,
-            'survey2_next_question': Survey2NextQuestionRequestSerializer,
+            'skill_assessment': SkillAssessmentSessionStateSerializer,
+            'update_skill_assessment': SkillAssessmentSessionStateSerializer,
+            'skill_assessment_catalog': SkillAssessmentCatalogSerializer,
+            'skill_assessment_next_question': SkillAssessmentNextQuestionRequestSerializer,
         }.get(getattr(self, 'action', None), AssessmentSessionSerializer)
 
     @extend_schema(
@@ -221,8 +221,8 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         return Response(output.data)
 
     @extend_schema(
-        operation_id='getAssessmentSurvey2Session',
-        summary='Get Survey 2 saved answers for an assessment session',
+        operation_id='getAssessmentSkillAssessmentSession',
+        summary='Get skill assessment saved answers for an assessment session',
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
@@ -234,20 +234,20 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         ],
         responses={
             200: OpenApiResponse(
-                response=Survey2SessionStateSerializer,
-                description='Saved Survey 2 state for this assessment session.',
-                examples=[OpenApiExample('Survey 2 state', value=SURVEY2_RESPONSE_EXAMPLE, response_only=True)],
+                response=SkillAssessmentSessionStateSerializer,
+                description='Saved skill assessment state for this assessment session.',
+                examples=[OpenApiExample('Skill assessment state', value=SKILL_ASSESSMENT_RESPONSE_EXAMPLE, response_only=True)],
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),
         },
     )
-    @action(detail=True, methods=['get'], url_path='survey2', url_name='survey2')
-    def survey2(self, request, *args, **kwargs):
-        return Response(self.get_serializer(survey2_service.get_survey2_state(self.get_object())).data)
+    @action(detail=True, methods=['get'], url_path='skill-assessment', url_name='skill-assessment')
+    def skill_assessment(self, request, *args, **kwargs):
+        return Response(self.get_serializer(skill_assessment_service.get_skill_assessment_state(self.get_object())).data)
 
     @extend_schema(
-        operation_id='saveAssessmentSurvey2Session',
-        summary='Save Survey 2 answers for an assessment session',
+        operation_id='saveAssessmentSkillAssessmentSession',
+        summary='Save skill assessment answers for an assessment session',
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
@@ -257,19 +257,19 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
                 description='Assessment session UUID.',
             ),
         ],
-        request=Survey2SessionStateSerializer,
+        request=SkillAssessmentSessionStateSerializer,
         responses={
             200: OpenApiResponse(
-                response=Survey2SessionStateSerializer,
-                description='Survey 2 state was saved.',
-                examples=[OpenApiExample('Saved Survey 2 state', value=SURVEY2_RESPONSE_EXAMPLE, response_only=True)],
+                response=SkillAssessmentSessionStateSerializer,
+                description='Skill assessment state was saved.',
+                examples=[OpenApiExample('Saved skill assessment state', value=SKILL_ASSESSMENT_RESPONSE_EXAMPLE, response_only=True)],
             ),
-            400: OpenApiResponse(description='Validation error in Survey 2 payload.'),
+            400: OpenApiResponse(description='Validation error in skill assessment payload.'),
             404: OpenApiResponse(description='Assessment session was not found.'),
         },
     )
-    @survey2.mapping.post
-    def update_survey2(self, request, *args, **kwargs):
+    @skill_assessment.mapping.post
+    def update_skill_assessment(self, request, *args, **kwargs):
         session = self.get_object()
         serializer = self.get_serializer(
             data=request.data,
@@ -280,8 +280,8 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         return Response(serializer.data)
 
     @extend_schema(
-        operation_id='getAssessmentSurvey2Catalog',
-        summary='Get Survey 2 PSP and SDLC questionnaire catalog for an assessment session',
+        operation_id='getAssessmentSkillAssessmentCatalog',
+        summary='Get skill assessment PSP and SDLC questionnaire catalog for an assessment session',
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
@@ -293,22 +293,22 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         ],
         responses={
             200: OpenApiResponse(
-                response=Survey2CatalogSerializer,
-                description='Survey 2 question, dimension, scale, and role guidance catalog.',
+                response=SkillAssessmentCatalogSerializer,
+                description='Skill assessment question, dimension, scale, and role guidance catalog.',
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),
         },
     )
-    @action(detail=True, methods=['get'], url_path='survey2/catalog', url_name='survey2-catalog')
-    def survey2_catalog(self, request, *args, **kwargs):
+    @action(detail=True, methods=['get'], url_path='skill-assessment/catalog', url_name='skill-assessment-catalog')
+    def skill_assessment_catalog(self, request, *args, **kwargs):
         session = self.get_object()
         target_role = session.preferred_role or session.best_fit_role
-        catalog = survey2_service.get_survey2_catalog(target_role.slug if target_role else None)
+        catalog = skill_assessment_service.get_skill_assessment_catalog(target_role.slug if target_role else None)
         return Response(self.get_serializer(catalog).data)
 
     @extend_schema(
-        operation_id='getAssessmentSurvey2NextQuestion',
-        summary='Get the next adaptive Survey 2 question',
+        operation_id='getAssessmentSkillAssessmentNextQuestion',
+        summary='Get the next adaptive skill assessment question',
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
@@ -318,26 +318,31 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
                 description='Assessment session UUID.',
             ),
         ],
-        request=Survey2NextQuestionRequestSerializer,
+        request=SkillAssessmentNextQuestionRequestSerializer,
         responses={
             200: OpenApiResponse(
-                response=Survey2NextQuestionResponseSerializer,
-                description='Next unanswered Survey 2 question selected from the current answer state, or null when complete.',
+                response=SkillAssessmentNextQuestionResponseSerializer,
+                description='Next unanswered skill assessment question selected from the current answer state, or null when complete.',
                 examples=[
-                    OpenApiExample('Next question request', value=SURVEY2_NEXT_QUESTION_REQUEST_EXAMPLE, request_only=True),
-                    OpenApiExample('Next question response', value=SURVEY2_NEXT_QUESTION_RESPONSE_EXAMPLE, response_only=True, status_codes=['200']),
+                    OpenApiExample('Next question request', value=SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE, request_only=True),
+                    OpenApiExample(
+                        'Next question response',
+                        value=SKILL_ASSESSMENT_NEXT_QUESTION_RESPONSE_EXAMPLE,
+                        response_only=True,
+                        status_codes=['200'],
+                    ),
                 ],
             ),
-            400: OpenApiResponse(description='Validation error in Survey 2 answers.'),
+            400: OpenApiResponse(description='Validation error in skill assessment answers.'),
             404: OpenApiResponse(description='Assessment session was not found.'),
         },
     )
-    @action(detail=True, methods=['post'], url_path='survey2/next-question', url_name='survey2-next-question')
-    def survey2_next_question(self, request, *args, **kwargs):
+    @action(detail=True, methods=['post'], url_path='skill-assessment/next-question', url_name='skill-assessment-next-question')
+    def skill_assessment_next_question(self, request, *args, **kwargs):
         session = self.get_object()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         answers = serializer.validated_data.get('answers', {})
-        next_question = survey2_service.select_next_survey2_question(session, answers)
-        payload = Survey2NextQuestionResponseSerializer({'next_question': next_question}).data
+        next_question = skill_assessment_service.select_next_skill_assessment_question(session, answers)
+        payload = SkillAssessmentNextQuestionResponseSerializer({'next_question': next_question}).data
         return Response(payload)

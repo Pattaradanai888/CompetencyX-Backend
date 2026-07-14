@@ -1,6 +1,6 @@
-"""Shared Q-learning primitives for the survey-2 and recommendation services.
+"""Shared Q-learning primitives for the skill assessment and recommendation services.
 
-Both services persist per-state Q-values (``Survey2QuestionQValue``,
+Both services persist per-state Q-values (``SkillAssessmentQuestionQValue``,
 ``RecommendationQValue``) with the same field layout and the same
 exponential-moving-average update rule; this module is the single home for
 that update and for the small state-key bucketing helper.

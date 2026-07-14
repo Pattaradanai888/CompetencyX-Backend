@@ -4,7 +4,7 @@ Two concerns:
 - Pure unit tests verify the reward math and policy selection in isolation (no DB).
 - DB-backed tests verify eligibility filtering, state-key bucketing, epsilon-greedy
   topic selection with exact Q-value updates, recommendation refresh orchestration,
-  and survey-2 outcome feedback application.
+  and skill assessment outcome feedback application.
 """
 
 from types import SimpleNamespace
@@ -13,14 +13,14 @@ from unittest import mock
 import pytest
 from django.test import TestCase, override_settings
 
-from assessments.models import AssessmentSession, Survey2Answer
+from assessments.models import AssessmentSession, SkillAssessmentAnswer
 from assessments.services.recommendation_service import (
     _build_recommendation_state_key,
     _calculate_recommendation_reward,
-    _calculate_survey2_outcome_reward,
+    _calculate_skill_assessment_outcome_reward,
     _get_eligible_recommendation_topics,
     _get_recommendation_policy,
-    apply_recommendation_feedback_from_survey2,
+    apply_recommendation_feedback_from_skill_assessment,
     build_recommendation_for_role,
     refresh_recommendations,
 )
@@ -32,31 +32,31 @@ def _stub_topic(*, display_order, difficulty=RoadmapTopic.Difficulty.BEGINNER):
     return SimpleNamespace(display_order=display_order, difficulty=difficulty, Difficulty=RoadmapTopic.Difficulty)
 
 
-def test_survey2_outcome_reward_all_fives_clamps_to_one():
-    assert _calculate_survey2_outcome_reward({'q1': 5, 'q2': 5, 'q3': 5}) == 1.0
+def test_skill_assessment_outcome_reward_all_fives_clamps_to_one():
+    assert _calculate_skill_assessment_outcome_reward({'q1': 5, 'q2': 5, 'q3': 5}) == 1.0
 
 
-def test_survey2_outcome_reward_all_ones_is_completion_reward_only():
-    assert _calculate_survey2_outcome_reward({'q1': 1, 'q2': 1, 'q3': 1}) == pytest.approx(0.55)
+def test_skill_assessment_outcome_reward_all_ones_is_completion_reward_only():
+    assert _calculate_skill_assessment_outcome_reward({'q1': 1, 'q2': 1, 'q3': 1}) == pytest.approx(0.55)
 
 
-def test_survey2_outcome_reward_mixed_answers_pay_spread_penalty():
+def test_skill_assessment_outcome_reward_mixed_answers_pay_spread_penalty():
     # avg=3 -> normalized 0.5, spread=(5-1)/4=1.0 -> penalty 0.1: 0.55 + 0.225 - 0.1
-    assert _calculate_survey2_outcome_reward({'q1': 1, 'q2': 5}) == pytest.approx(0.675)
+    assert _calculate_skill_assessment_outcome_reward({'q1': 1, 'q2': 5}) == pytest.approx(0.675)
 
 
-def test_survey2_outcome_reward_single_answer_has_no_spread_penalty():
-    assert _calculate_survey2_outcome_reward({'q1': 3}) == pytest.approx(0.775)
+def test_skill_assessment_outcome_reward_single_answer_has_no_spread_penalty():
+    assert _calculate_skill_assessment_outcome_reward({'q1': 3}) == pytest.approx(0.775)
 
 
-def test_survey2_outcome_reward_clamps_upper_bound():
+def test_skill_assessment_outcome_reward_clamps_upper_bound():
     # avg=9 -> normalized average clamps to 1.0 before the reward is computed.
-    assert _calculate_survey2_outcome_reward({'q1': 9}) == 1.0
+    assert _calculate_skill_assessment_outcome_reward({'q1': 9}) == 1.0
 
 
-def test_survey2_outcome_reward_clamps_lower_bound():
+def test_skill_assessment_outcome_reward_clamps_lower_bound():
     # Huge spread penalty (spread=10 -> penalty 1.0) drags the reward to the floor.
-    assert _calculate_survey2_outcome_reward({'q1': 1, 'q2': 41}) == pytest.approx(0.0, abs=1e-9)
+    assert _calculate_skill_assessment_outcome_reward({'q1': 1, 'q2': 41}) == pytest.approx(0.0, abs=1e-9)
 
 
 def test_recommendation_reward_beginner_first_topic_clamps_to_one():
@@ -258,34 +258,34 @@ class RecommendationServiceDbTests(TestCase):
         fields.update(overrides)
         return Recommendation.objects.create(**fields)
 
-    def _set_survey2(self, *, completed, answers):
-        self.session.survey2_completed = completed
-        self.session.survey2_answers.all().delete()
-        Survey2Answer.objects.bulk_create(
-            Survey2Answer(session=self.session, question_id=question_id, value=value)
+    def _set_skill_assessment(self, *, completed, answers):
+        self.session.skill_assessment_completed = completed
+        self.session.skill_assessment_answers.all().delete()
+        SkillAssessmentAnswer.objects.bulk_create(
+            SkillAssessmentAnswer(session=self.session, question_id=question_id, value=value)
             for question_id, value in answers.items()
         )
 
-    def _complete_survey2(self, answers):
-        self._set_survey2(completed=True, answers=answers)
+    def _complete_skill_assessment(self, answers):
+        self._set_skill_assessment(completed=True, answers=answers)
 
-    def test_feedback_returns_zero_without_completed_survey2_state(self):
+    def test_feedback_returns_zero_without_completed_skill_assessment_state(self):
         self._create_q_learning_recommendation()
 
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 0)
 
-        self._set_survey2(completed=False, answers={'q1': 5})
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
+        self._set_skill_assessment(completed=False, answers={'q1': 5})
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 0)
 
-        self._complete_survey2({})
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
+        self._complete_skill_assessment({})
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 0)
 
     @override_settings(ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5)
     def test_feedback_applies_exact_q_update_and_is_idempotent(self):
         recommendation = self._create_q_learning_recommendation()
-        self._complete_survey2({'q1': 5, 'q2': 5})
+        self._complete_skill_assessment({'q1': 5, 'q2': 5})
 
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 1)
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 1)
 
         q_row = RecommendationQValue.objects.get(state_key='seeded-state', path_kind='preferred', role=self.role, topic=self.topic_http)
         # outcome reward = 1.0 (all fives); q = 0 + 0.5 * (1.0 - 0)
@@ -298,7 +298,7 @@ class RecommendationServiceDbTests(TestCase):
         self.assertTrue(recommendation.feedback_reward_applied)
         self.assertIsNotNone(recommendation.feedback_reward_applied_at)
 
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 0)
         q_row.refresh_from_db()
         self.assertEqual(q_row.update_count, 1)
 
@@ -306,8 +306,8 @@ class RecommendationServiceDbTests(TestCase):
         self._create_q_learning_recommendation(policy_type=Recommendation.PolicyType.RULE_BASED, state_key='')
         self._create_q_learning_recommendation(topic=None)
         self._create_q_learning_recommendation(topic=self.topic_databases, state_key='')
-        self._complete_survey2({'q1': 5})
+        self._complete_skill_assessment({'q1': 5})
 
-        self.assertEqual(apply_recommendation_feedback_from_survey2(self.session), 0)
+        self.assertEqual(apply_recommendation_feedback_from_skill_assessment(self.session), 0)
         self.assertFalse(RecommendationQValue.objects.exists())
         self.assertFalse(Recommendation.objects.filter(feedback_reward_applied=True).exists())

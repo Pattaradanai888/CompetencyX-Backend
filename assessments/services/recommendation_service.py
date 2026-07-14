@@ -333,18 +333,18 @@ def _get_projected_next_q_value(
     return max((float(value) for value in next_q_values), default=0.0)
 
 
-def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> int:
-    if not session.survey2_completed:
+def apply_recommendation_feedback_from_skill_assessment(session: AssessmentSession) -> int:
+    if not session.skill_assessment_completed:
         return 0
 
-    answers = dict(session.survey2_answers.values_list('question_id', 'value'))
+    answers = dict(session.skill_assessment_answers.values_list('question_id', 'value'))
     if not answers:
         return 0
 
     applied_count = 0
     alpha = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_ALPHA', 0.35))
     completed_at = timezone.now()
-    outcome_reward = _calculate_survey2_outcome_reward(answers)
+    outcome_reward = _calculate_skill_assessment_outcome_reward(answers)
 
     for recommendation in session.recommendations.select_related('role', 'topic').filter(
         policy_type=Recommendation.PolicyType.Q_LEARNING,
@@ -384,7 +384,7 @@ def apply_recommendation_feedback_from_survey2(session: AssessmentSession) -> in
     return applied_count
 
 
-def _calculate_survey2_outcome_reward(answers: dict[str, int]) -> float:
+def _calculate_skill_assessment_outcome_reward(answers: dict[str, int]) -> float:
     values = [int(value) for value in answers.values()]
     completion_reward = 0.55
     average_score = sum(values) / len(values)

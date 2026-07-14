@@ -21,7 +21,7 @@ from .services.guidance_service import (
     get_visible_role_result,
     serialize_milestones,
 )
-from .services.survey2_service import get_survey2_question_ids, save_survey2_state
+from .services.skill_assessment_service import get_skill_assessment_question_ids, save_skill_assessment_state
 
 
 # No docstrings on these mixins: drf-spectacular inherits class docstrings into
@@ -407,19 +407,19 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         )
 
 
-def _validate_survey2_answer_keys(value, *, forbid_blank):
-    known_question_ids = get_survey2_question_ids()
+def _validate_skill_assessment_answer_keys(value, *, forbid_blank):
+    known_question_ids = get_skill_assessment_question_ids()
     for key in value:
         if forbid_blank and not str(key).strip():
             msg = 'Answer keys must be non-empty strings.'
             raise serializers.ValidationError(msg)
         if key not in known_question_ids:
-            msg = f'Unknown Survey 2 question id "{key}".'
+            msg = f'Unknown Skill Assessment question id "{key}".'
             raise serializers.ValidationError(msg)
     return value
 
 
-class Survey2SessionStateSerializer(serializers.Serializer):
+class SkillAssessmentSessionStateSerializer(serializers.Serializer):
     completed = serializers.BooleanField(default=False)
     answers = serializers.DictField(
         child=serializers.IntegerField(min_value=1, max_value=5),
@@ -428,26 +428,27 @@ class Survey2SessionStateSerializer(serializers.Serializer):
     completed_at = serializers.DateTimeField(required=False, allow_null=True)
 
     def validate_answers(self, value):
-        return _validate_survey2_answer_keys(value, forbid_blank=True)
+        return _validate_skill_assessment_answer_keys(value, forbid_blank=True)
 
     def validate(self, attrs):
         if attrs.get('completed', False):
-            missing_question_ids = sorted(get_survey2_question_ids() - set(attrs.get('answers', {})))
+            missing_question_ids = sorted(get_skill_assessment_question_ids() - set(attrs.get('answers', {})))
             if missing_question_ids:
-                raise serializers.ValidationError({'answers': f'Completed Survey 2 is missing answers for: {", ".join(missing_question_ids)}.'})
+                missing_answers = ', '.join(missing_question_ids)
+                raise serializers.ValidationError({'answers': f'Completed Skill Assessment is missing answers for: {missing_answers}.'})
         return attrs
 
     def create(self, validated_data):
-        return save_survey2_state(session=self.context['session'], state=validated_data)
+        return save_skill_assessment_state(session=self.context['session'], state=validated_data)
 
 
-class Survey2ScaleOptionSerializer(serializers.Serializer):
+class SkillAssessmentScaleOptionSerializer(serializers.Serializer):
     label = serializers.CharField()
     label_th = serializers.CharField(required=False)
     value = serializers.IntegerField(min_value=1, max_value=5)
 
 
-class Survey2DimensionSerializer(serializers.Serializer):
+class SkillAssessmentDimensionSerializer(serializers.Serializer):
     key = serializers.CharField()
     label = serializers.CharField()
     track = serializers.ChoiceField(choices=['psp', 'sdlc'])
@@ -455,30 +456,30 @@ class Survey2DimensionSerializer(serializers.Serializer):
     translations = serializers.DictField(required=False)
 
 
-class Survey2QuestionSerializer(serializers.Serializer):
+class SkillAssessmentQuestionSerializer(serializers.Serializer):
     id = serializers.CharField()
     prompt = serializers.CharField()
     translations = serializers.DictField(required=False)
     dimension_key = serializers.CharField()
 
 
-class Survey2CatalogSerializer(serializers.Serializer):
+class SkillAssessmentCatalogSerializer(serializers.Serializer):
     version = serializers.CharField()
-    scale = Survey2ScaleOptionSerializer(many=True)
-    dimensions = Survey2DimensionSerializer(many=True)
-    questions = Survey2QuestionSerializer(many=True)
+    scale = SkillAssessmentScaleOptionSerializer(many=True)
+    dimensions = SkillAssessmentDimensionSerializer(many=True)
+    questions = SkillAssessmentQuestionSerializer(many=True)
     role_guidance = serializers.ListField(child=serializers.CharField())
 
 
-class Survey2NextQuestionRequestSerializer(serializers.Serializer):
+class SkillAssessmentNextQuestionRequestSerializer(serializers.Serializer):
     answers = serializers.DictField(
         child=serializers.IntegerField(min_value=1, max_value=5),
         default=dict,
     )
 
     def validate_answers(self, value):
-        return _validate_survey2_answer_keys(value, forbid_blank=False)
+        return _validate_skill_assessment_answer_keys(value, forbid_blank=False)
 
 
-class Survey2NextQuestionResponseSerializer(serializers.Serializer):
-    next_question = Survey2QuestionSerializer(allow_null=True)
+class SkillAssessmentNextQuestionResponseSerializer(serializers.Serializer):
+    next_question = SkillAssessmentQuestionSerializer(allow_null=True)

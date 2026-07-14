@@ -86,8 +86,8 @@ class AssessmentSession(models.Model):
         default=Language.EN,
     )
     profile = models.JSONField(default=dict, blank=True)
-    survey2_completed = models.BooleanField(default=False)
-    survey2_completed_at = models.DateTimeField(null=True, blank=True)
+    skill_assessment_completed = models.BooleanField(default=False)
+    skill_assessment_completed_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -141,7 +141,7 @@ class Answer(models.Model):
         return f'{self.session_id}:{self.question_id}'
 
 
-class Survey2Question(models.Model):
+class SkillAssessmentQuestion(models.Model):
     question_id = models.SlugField(max_length=64, unique=True)
     prompt = models.TextField()
     translations = models.JSONField(default=dict, blank=True)
@@ -158,7 +158,7 @@ class Survey2Question(models.Model):
         return self.question_id
 
 
-class Survey2Dimension(models.Model):
+class SkillAssessmentDimension(models.Model):
     class Track(models.TextChoices):
         PSP = 'psp', 'PSP'
         SDLC = 'sdlc', 'SDLC'
@@ -180,13 +180,13 @@ class Survey2Dimension(models.Model):
         return self.dimension_key
 
 
-class Survey2RoleGuidance(models.Model):
+class SkillAssessmentRoleGuidance(models.Model):
     role = models.ForeignKey(
         Role,
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        related_name='survey2_guidance_items',
+        related_name='skill_assessment_guidance_items',
     )
     guidance = models.TextField()
     display_order = models.PositiveIntegerField(default=0)
@@ -202,8 +202,8 @@ class Survey2RoleGuidance(models.Model):
         return f'{role_slug}:{self.display_order}'
 
 
-class Survey2Answer(models.Model):
-    """One Survey 2 self-rating per session and catalog question.
+class SkillAssessmentAnswer(models.Model):
+    """One Skill Assessment self-rating per session and catalog question.
 
     ``question_id`` is the catalog slug rather than a foreign key so answers
     survive catalog questions being deactivated or removed.
@@ -212,7 +212,7 @@ class Survey2Answer(models.Model):
     session = models.ForeignKey(
         AssessmentSession,
         on_delete=models.CASCADE,
-        related_name='survey2_answers',
+        related_name='skill_assessment_answers',
     )
     question_id = models.SlugField(max_length=64)
     value = models.SmallIntegerField()
@@ -226,10 +226,10 @@ class Survey2Answer(models.Model):
         return f'{self.session_id}:{self.question_id}={self.value}'
 
 
-class Survey2FeedbackEvent(models.Model):
+class SkillAssessmentFeedbackEvent(models.Model):
     """Append-only ledger of questions whose step feedback was already applied.
 
-    Kept separate from ``Survey2Answer`` because answers are replaced wholesale
+    Kept separate from ``SkillAssessmentAnswer`` because answers are replaced wholesale
     on every save while feedback must be applied at most once per question,
     even if an answer is removed and re-added.
     """
@@ -237,7 +237,7 @@ class Survey2FeedbackEvent(models.Model):
     session = models.ForeignKey(
         AssessmentSession,
         on_delete=models.CASCADE,
-        related_name='survey2_feedback_events',
+        related_name='skill_assessment_feedback_events',
     )
     question_id = models.SlugField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -250,7 +250,7 @@ class Survey2FeedbackEvent(models.Model):
         return f'{self.session_id}:{self.question_id}'
 
 
-class Survey2QuestionQValue(models.Model):
+class SkillAssessmentQuestionQValue(models.Model):
     state_key = models.CharField(max_length=255)
     question_id = models.SlugField(max_length=64)
     q_value = models.FloatField(default=0.0)

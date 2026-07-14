@@ -2,9 +2,9 @@
 
 The top layer of the assessments service: it wires together question selection,
 role inference, phase transitions, and recommendation refresh.
-This is the only assessments service that refreshes recommendations during Survey 1.
+This is the only assessments service that refreshes recommendations during Role Discovery.
 
-Survey 1 question selection is deterministic: the next question is always the
+Role Discovery question selection is deterministic: the next question is always the
 first eligible unanswered question ordered by ``display_order``. The adaptive
 bandit / info-gain selector and the selection-event log have been removed.
 """

@@ -39,7 +39,7 @@ class AssessmentFlowTestCase(APITestCase):
         TopicPrerequisite.objects.create(topic=self.qa_release, prerequisite=self.qa_automation, required_mastery_threshold=0.7)
 
         self._add_role_questions()
-        call_command('seed_survey2_catalog')
+        call_command('seed_skill_assessment_catalog')
 
     def _add_role_questions(self):
         dimensions = [

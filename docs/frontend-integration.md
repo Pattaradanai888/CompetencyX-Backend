@@ -14,12 +14,12 @@ The backend remains the source of truth for:
 - question selection
 - role-discovery progression
 - role resolution state
-- Survey 2 (PSP/SDLC self-rating) state
+- Skill Assessment (PSP/SDLC self-rating) state
 - final recommendation output
 
 ## Main Contract Changes
 ### Lean session payloads
-`POST /api/assessment-sessions/`, `GET /api/assessment-sessions/{id}/`, and `POST /api/assessment-sessions/{id}/answers/` now return a lean session-state payload.
+`POST /api/v1/assessment-sessions/`, `GET /api/v1/assessment-sessions/{id}/`, and `POST /api/v1/assessment-sessions/{id}/answers/` now return a lean session-state payload.
 
 Fields included:
 
@@ -92,7 +92,7 @@ Role answer request:
 ```
 
 ### New insights endpoint
-`GET /api/assessment-sessions/{id}/insights/` was added for explainability-oriented UI or analytics views.
+`GET /api/v1/assessment-sessions/{id}/insights/` was added for explainability-oriented UI or analytics views.
 
 Response fields:
 
@@ -121,7 +121,7 @@ Response fields:
 - `top_supporting_pillars`
 
 ### Final results payload
-`GET /api/assessment-sessions/{id}/results/` still returns mastery and recommendation data, and now also includes:
+`GET /api/v1/assessment-sessions/{id}/results/` still returns mastery and recommendation data, and now also includes:
 
 - `pillar_profile`
 - `ranked_roles`
@@ -129,24 +129,24 @@ Response fields:
 
 This means detailed role-fit analysis is available from:
 
-- `/api/assessment-sessions/{id}/insights/`
-- `/api/assessment-sessions/{id}/results/`
+- `/api/v1/assessment-sessions/{id}/insights/`
+- `/api/v1/assessment-sessions/{id}/results/`
 
 ## Current Assessment Endpoints
 | Method | Path | Notes |
 | --- | --- | --- |
-| `POST` | `/api/assessment-sessions/` | Creates a session and returns lean session state |
-| `GET` | `/api/assessment-sessions/{id}/` | Returns lean session state for recovery or refresh |
-| `POST` | `/api/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
-| `GET` | `/api/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
-| `GET` | `/api/assessment-sessions/{id}/results/` | Returns final recommendations, mastery, and analysis after completion |
-| `GET` | `/api/assessment-sessions/{id}/history/` | Returns answer and recommendation history after completion |
-| `GET` | `/api/assessment-sessions/{id}/survey2/` | Returns saved Survey 2 state (`completed`, `answers`, `completed_at`) |
-| `POST` | `/api/assessment-sessions/{id}/survey2/` | Replaces the whole Survey 2 answer set and completion state |
-| `GET` | `/api/assessment-sessions/{id}/survey2/catalog/` | Returns the PSP/SDLC question catalog with role-aware guidance |
-| `POST` | `/api/assessment-sessions/{id}/survey2/next-question/` | Returns the adaptively selected next Survey 2 question |
+| `POST` | `/api/v1/assessment-sessions/` | Creates a session and returns lean session state |
+| `GET` | `/api/v1/assessment-sessions/{id}/` | Returns lean session state for recovery or refresh |
+| `POST` | `/api/v1/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
+| `GET` | `/api/v1/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
+| `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns final recommendations, mastery, and analysis after completion |
+| `GET` | `/api/v1/assessment-sessions/{id}/history/` | Returns answer and recommendation history after completion |
+| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Returns saved skill assessment state (`completed`, `answers`, `completed_at`) |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Replaces the whole skill assessment answer set and completion state |
+| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/catalog/` | Returns the PSP/SDLC question catalog with role-aware guidance |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/next-question/` | Returns the adaptively selected next skill assessment question |
 
-Survey 2 state is stored in dedicated tables; the session `profile` field is free-form client data only and no longer carries a `survey2` key.
+Skill Assessment state is stored in dedicated tables; the session `profile` field is free-form client data only and no longer carries a `skill_assessment` key.
 
 ## Role Discovery Notes
 Role discovery uses a static 46-question core SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before completing the session.
@@ -172,7 +172,7 @@ Important implications:
 - `role_alignment_status` remains `unknown` while the 46 core role questions are still in progress
 - the insights endpoint returns an empty `ranked_roles` list until the 46 core role questions are complete
 - after the 46th core role answer, the backend either resolves to one best-fit role or asks targeted tie-break questions
-- once role discovery completes the session enters `recommendation_ready`; Survey 2 is available at any time via its own endpoints
+- once role discovery completes the session enters `recommendation_ready`; Skill Assessment is available at any time via its own endpoints
 
 ### SWEBOK role metadata
 Catalog role objects now include:

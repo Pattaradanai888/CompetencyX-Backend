@@ -6,7 +6,7 @@
         "description": "Adaptive career-roadmap backend API for assessment sessions, role inference, and next-topic recommendations."
     },
     "paths": {
-        "/api/assessment-sessions/": {
+        "/api/v1/assessment-sessions/": {
             "post": {
                 "operationId": "createAssessmentSession",
                 "summary": "Create an assessment session",
@@ -123,9 +123,9 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/": {
+        "/api/v1/assessment-sessions/{id}/": {
             "get": {
-                "operationId": "assessment_sessions_retrieve",
+                "operationId": "v1_assessment_sessions_retrieve",
                 "parameters": [
                     {
                         "in": "path",
@@ -139,7 +139,7 @@
                     }
                 ],
                 "tags": [
-                    "assessment-sessions"
+                    "v1"
                 ],
                 "security": [
                     {
@@ -161,7 +161,7 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/answers/": {
+        "/api/v1/assessment-sessions/{id}/answers/": {
             "post": {
                 "operationId": "submitAssessmentAnswer",
                 "summary": "Submit an answer for the current question",
@@ -293,7 +293,7 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/history/": {
+        "/api/v1/assessment-sessions/{id}/history/": {
             "get": {
                 "operationId": "getAssessmentHistory",
                 "summary": "Get completed assessment history",
@@ -378,7 +378,7 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/insights/": {
+        "/api/v1/assessment-sessions/{id}/insights/": {
             "get": {
                 "operationId": "getAssessmentInsights",
                 "summary": "Get role discovery insights",
@@ -475,7 +475,7 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/results/": {
+        "/api/v1/assessment-sessions/{id}/results/": {
             "get": {
                 "operationId": "getAssessmentResults",
                 "summary": "Get final assessment results",
@@ -610,10 +610,10 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/survey2/": {
+        "/api/v1/assessment-sessions/{id}/skill-assessment/": {
             "get": {
-                "operationId": "getAssessmentSurvey2Session",
-                "summary": "Get Survey 2 saved answers for an assessment session",
+                "operationId": "getAssessmentSkillAssessmentSession",
+                "summary": "Get skill assessment saved answers for an assessment session",
                 "parameters": [
                     {
                         "in": "path",
@@ -639,10 +639,10 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Survey2SessionState"
+                                    "$ref": "#/components/schemas/SkillAssessmentSessionState"
                                 },
                                 "examples": {
-                                    "Survey2State": {
+                                    "SkillAssessmentState": {
                                         "value": {
                                             "completed": true,
                                             "answers": {
@@ -655,12 +655,12 @@
                                             },
                                             "completed_at": "2026-05-08T20:00:00Z"
                                         },
-                                        "summary": "Survey 2 state"
+                                        "summary": "Skill assessment state"
                                     }
                                 }
                             }
                         },
-                        "description": "Saved Survey 2 state for this assessment session."
+                        "description": "Saved skill assessment state for this assessment session."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -668,8 +668,8 @@
                 }
             },
             "post": {
-                "operationId": "saveAssessmentSurvey2Session",
-                "summary": "Save Survey 2 answers for an assessment session",
+                "operationId": "saveAssessmentSkillAssessmentSession",
+                "summary": "Save skill assessment answers for an assessment session",
                 "parameters": [
                     {
                         "in": "path",
@@ -688,7 +688,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Survey2SessionState"
+                                "$ref": "#/components/schemas/SkillAssessmentSessionState"
                             }
                         }
                     }
@@ -704,10 +704,10 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Survey2SessionState"
+                                    "$ref": "#/components/schemas/SkillAssessmentSessionState"
                                 },
                                 "examples": {
-                                    "SavedSurvey2State": {
+                                    "SavedSkillAssessmentState": {
                                         "value": {
                                             "completed": true,
                                             "answers": {
@@ -720,15 +720,15 @@
                                             },
                                             "completed_at": "2026-05-08T20:00:00Z"
                                         },
-                                        "summary": "Saved Survey 2 state"
+                                        "summary": "Saved skill assessment state"
                                     }
                                 }
                             }
                         },
-                        "description": "Survey 2 state was saved."
+                        "description": "Skill assessment state was saved."
                     },
                     "400": {
-                        "description": "Validation error in Survey 2 payload."
+                        "description": "Validation error in skill assessment payload."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -736,10 +736,10 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/survey2/catalog/": {
+        "/api/v1/assessment-sessions/{id}/skill-assessment/catalog/": {
             "get": {
-                "operationId": "getAssessmentSurvey2Catalog",
-                "summary": "Get Survey 2 PSP and SDLC questionnaire catalog for an assessment session",
+                "operationId": "getAssessmentSkillAssessmentCatalog",
+                "summary": "Get skill assessment PSP and SDLC questionnaire catalog for an assessment session",
                 "parameters": [
                     {
                         "in": "path",
@@ -765,11 +765,11 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Survey2Catalog"
+                                    "$ref": "#/components/schemas/SkillAssessmentCatalog"
                                 }
                             }
                         },
-                        "description": "Survey 2 question, dimension, scale, and role guidance catalog."
+                        "description": "Skill assessment question, dimension, scale, and role guidance catalog."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -777,10 +777,10 @@
                 }
             }
         },
-        "/api/assessment-sessions/{id}/survey2/next-question/": {
+        "/api/v1/assessment-sessions/{id}/skill-assessment/next-question/": {
             "post": {
-                "operationId": "getAssessmentSurvey2NextQuestion",
-                "summary": "Get the next adaptive Survey 2 question",
+                "operationId": "getAssessmentSkillAssessmentNextQuestion",
+                "summary": "Get the next adaptive skill assessment question",
                 "parameters": [
                     {
                         "in": "path",
@@ -799,7 +799,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Survey2NextQuestionRequest"
+                                "$ref": "#/components/schemas/SkillAssessmentNextQuestionRequest"
                             }
                         }
                     }
@@ -815,7 +815,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Survey2NextQuestionResponse"
+                                    "$ref": "#/components/schemas/SkillAssessmentNextQuestionResponse"
                                 },
                                 "examples": {
                                     "NextQuestionResponse": {
@@ -831,10 +831,10 @@
                                 }
                             }
                         },
-                        "description": "Next unanswered Survey 2 question selected from the current answer state, or null when complete."
+                        "description": "Next unanswered skill assessment question selected from the current answer state, or null when complete."
                     },
                     "400": {
-                        "description": "Validation error in Survey 2 answers."
+                        "description": "Validation error in skill assessment answers."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -842,7 +842,7 @@
                 }
             }
         },
-        "/api/catalog/roles/": {
+        "/api/v1/catalog/roles/": {
             "get": {
                 "operationId": "listCatalogRoles",
                 "summary": "List active roles",
@@ -872,7 +872,7 @@
                 }
             }
         },
-        "/api/catalog/roles/{slug}/topics/": {
+        "/api/v1/catalog/roles/{slug}/topics/": {
             "get": {
                 "operationId": "listRoleTopics",
                 "summary": "List topics for a role",
@@ -915,7 +915,7 @@
                 }
             }
         },
-        "/api/health/": {
+        "/api/v1/health/": {
             "get": {
                 "operationId": "healthCheck",
                 "summary": "Health check",
@@ -1661,15 +1661,7 @@
                     "role_resolution_status"
                 ]
             },
-            "StatusEnum": {
-                "enum": [
-                    "in_progress",
-                    "completed"
-                ],
-                "type": "string",
-                "description": "* `in_progress` - In Progress\n* `completed` - Completed"
-            },
-            "Survey2Catalog": {
+            "SkillAssessmentCatalog": {
                 "type": "object",
                 "properties": {
                     "version": {
@@ -1678,19 +1670,19 @@
                     "scale": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Survey2ScaleOption"
+                            "$ref": "#/components/schemas/SkillAssessmentScaleOption"
                         }
                     },
                     "dimensions": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Survey2Dimension"
+                            "$ref": "#/components/schemas/SkillAssessmentDimension"
                         }
                     },
                     "questions": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/Survey2Question"
+                            "$ref": "#/components/schemas/SkillAssessmentQuestion"
                         }
                     },
                     "role_guidance": {
@@ -1708,7 +1700,7 @@
                     "version"
                 ]
             },
-            "Survey2Dimension": {
+            "SkillAssessmentDimension": {
                 "type": "object",
                 "properties": {
                     "key": {
@@ -1722,6 +1714,10 @@
                     },
                     "low_score_action": {
                         "type": "string"
+                    },
+                    "translations": {
+                        "type": "object",
+                        "additionalProperties": {}
                     }
                 },
                 "required": [
@@ -1731,7 +1727,7 @@
                     "track"
                 ]
             },
-            "Survey2NextQuestionRequest": {
+            "SkillAssessmentNextQuestionRequest": {
                 "type": "object",
                 "properties": {
                     "answers": {
@@ -1744,13 +1740,13 @@
                     }
                 }
             },
-            "Survey2NextQuestionResponse": {
+            "SkillAssessmentNextQuestionResponse": {
                 "type": "object",
                 "properties": {
                     "next_question": {
                         "allOf": [
                             {
-                                "$ref": "#/components/schemas/Survey2Question"
+                                "$ref": "#/components/schemas/SkillAssessmentQuestion"
                             }
                         ],
                         "nullable": true
@@ -1760,7 +1756,7 @@
                     "next_question"
                 ]
             },
-            "Survey2Question": {
+            "SkillAssessmentQuestion": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -1783,7 +1779,7 @@
                     "prompt"
                 ]
             },
-            "Survey2ScaleOption": {
+            "SkillAssessmentScaleOption": {
                 "type": "object",
                 "properties": {
                     "label": {
@@ -1803,7 +1799,7 @@
                     "value"
                 ]
             },
-            "Survey2SessionState": {
+            "SkillAssessmentSessionState": {
                 "type": "object",
                 "properties": {
                     "completed": {
@@ -1824,6 +1820,14 @@
                         "nullable": true
                     }
                 }
+            },
+            "StatusEnum": {
+                "enum": [
+                    "in_progress",
+                    "completed"
+                ],
+                "type": "string",
+                "description": "* `in_progress` - In Progress\n* `completed` - Completed"
             },
             "TopicPrerequisite": {
                 "type": "object",

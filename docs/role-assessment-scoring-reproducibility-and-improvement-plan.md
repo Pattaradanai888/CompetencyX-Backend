@@ -9,7 +9,7 @@ are as of the current `main` checkout — re-anchor them if the code moves.
 # CompetencyX Role Assessment + Recommendation + Scoring Engine — Technical Reference
 
 > **Audience:** New engineers on the CompetencyX backend.
-> **Scope:** Survey 1 (role discovery), Survey 2 (PSP/SDLC competency), the recommendation builder, the question catalog, and the offline tuning/benchmarking harness.
+> **Scope:** Role Discovery (role discovery), Skill Assessment (PSP/SDLC competency), the recommendation builder, the question catalog, and the offline tuning/benchmarking harness.
 > **Authority note:** This document applies every correction from the verified reproducibility maps. Where the original maps and their `verify` blocks disagreed, the corrected version is used. All file:line citations below are the *corrected* ones.
 
 ---
@@ -18,16 +18,16 @@ are as of the current `main` checkout — re-anchor them if the code moves.
 
 ## A.0 The two surveys at a glance
 
-| | Survey 1 (Role Discovery) | Survey 2 (PSP/SDLC Competency) |
+| | Role Discovery (Role Discovery) | Skill Assessment (PSP/SDLC Competency) |
 |---|---|---|
 | Goal | Identify best-fit software-engineering role | Self-assess PSP/SDLC practice maturity |
 | Items | 36 core + 12 tie-break Likert-5 role questions; then SKILL questions per topic | 11 fixed Likert 1–5 questions over 8 dimensions |
-| Storage | `roadmaps.Question`/`QuestionOption`/`QuestionTopicSignal` | `assessments.Survey2Question`/`Survey2Dimension`/`Survey2RoleGuidance` |
+| Storage | `roadmaps.Question`/`QuestionOption`/`QuestionTopicSignal` | `assessments.SkillAssessmentQuestion`/`SkillAssessmentDimension`/`SkillAssessmentRoleGuidance` |
 | Selection | Entropy info-gain **or** core-sequence (ROLE); UCB1 bandit (SKILL) | Epsilon-greedy tabular Q-values |
 | Scoring output | Per-role evidence → softmax distribution → best-fit role | **No per-dimension score is computed**; raw answers feed a Q-table + one aggregate reward |
-| Mastery | `recompute_mastery` over SKILL answers → `TopicMastery` | None (Survey 2 has no mastery scoring) |
+| Mastery | `recompute_mastery` over SKILL answers → `TopicMastery` | None (Skill Assessment has no mastery scoring) |
 
-A critical, frequently-misunderstood fact: **Survey 2 does not compute a competency/mastery score per dimension.** The only mastery score in the codebase is the Survey-1 SKILL-stage `TopicMastery` (`assessments/mastery.py`). See §A.6.
+A critical, frequently-misunderstood fact: **Skill Assessment does not compute a competency/mastery score per dimension.** The only mastery score in the codebase is the Role Discovery SKILL-stage `TopicMastery` (`assessments/mastery.py`). See §A.6.
 
 ---
 
@@ -358,11 +358,11 @@ Models: `QuestionSelectionEvent` `assessments/models.py:162-210`; `QuestionBandi
 
 ---
 
-## A.6 Survey 2 Q-values + mastery scoring
+## A.6 Skill Assessment Q-values + mastery scoring
 
-Survey 2 = 8 dimensions, 11 fixed Likert 1–5 questions, seeded from `assessments/survey2_seed_data.py`. Question SELECTION is adaptive via a tabular RL Q-table; **there is no per-dimension competency score.**
+Skill Assessment = 8 dimensions, 11 fixed Likert 1–5 questions, seeded from `assessments/skill_assessment_seed_data.py`. Question SELECTION is adaptive via a tabular RL Q-table; **there is no per-dimension competency score.**
 
-### RL state key (`survey2_adaptive.py:10-25`)
+### RL state key (`skill_assessment_adaptive.py:10-25`)
 ```
 avg = mean(answer values) or 3.0
 avg_bucket      = clamp(int((avg-1.0)//1.0), 0, 4)   # avg 1→0 .. 5→4
@@ -370,28 +370,28 @@ progress_bucket = min(len(answers)//3, 4)            # 0-2→0, 3-5→1, 6-8→2
 state_key = f"{role_slug}:{role_alignment}:{role_resolution}:avg-{avg_bucket}:progress-{progress_bucket}"
 ```
 
-### Next-question (epsilon-greedy, `survey2_adaptive.py:28-54`)
+### Next-question (epsilon-greedy, `skill_assessment_adaptive.py:28-54`)
 ```
 if random() < epsilon(=0.15): random unanswered
 else: argmax over unanswered of (q_value or 0.0, -display_order, question_id)
 ```
 Tie-break: lower `display_order`, then **higher** `question_id` (max() over the tuple). Rewards are non-negative, so `q_value ∈ [0,1]`.
 
-### Per-step Q-update (`survey2_adaptive.py:57-79`, called from `views.py:638-646`)
+### Per-step Q-update (`skill_assessment_adaptive.py:57-79`, called from `views.py:638-646`)
 ```
 immediate_reward = clamp((answered_value - 1.0)/4.0, 0, 1)   # 1→0,2→.25,3→.5,4→.75,5→1
 updated_q = current_q + alpha * (immediate_reward - current_q)    # alpha=0.35, gamma UNUSED
 ```
 This is a contextual bandit (no future term) despite "Q-learning" naming.
 
-> ⚠️ **State/next-state confusion:** `apply_survey2_step_feedback` is called with `before_answers = new_answers` (the dict that **already includes** the new answer; `views.py:644`). So the credited state is the *post*-answer state.
+> ⚠️ **State/next-state confusion:** `apply_skill_assessment_step_feedback` is called with `before_answers = new_answers` (the dict that **already includes** the new answer; `views.py:644`). So the credited state is the *post*-answer state.
 
 ### Models
-`Survey2Question` `assessments/models.py:233-246`; `Survey2Dimension` `:249-267`; `Survey2RoleGuidance` `:270-289`; `Survey2QuestionQValue` `:292-306` (keyed only by `(state_key, question_id)` — **shared globally across all users/sessions**, no per-session isolation). Session state stored as JSON in `profile['survey2'] = {completed, answers:{id:1..5}, completed_at}` (`views.py:570-575` default, `:634-637` storage).
+`SkillAssessmentQuestion` `assessments/models.py:233-246`; `SkillAssessmentDimension` `:249-267`; `SkillAssessmentRoleGuidance` `:270-289`; `SkillAssessmentQuestionQValue` `:292-306` (keyed only by `(state_key, question_id)` — **shared globally across all users/sessions**, no per-session isolation). Session state stored as JSON in `profile['skill_assessment'] = {completed, answers:{id:1..5}, completed_at}` (`views.py:570-575` default, `:634-637` storage).
 
-Next-question endpoint `AssessmentSurvey2NextQuestionAPIView.post` (`views.py:713-720`) persists nothing.
+Next-question endpoint `AssessmentSkillAssessmentNextQuestionAPIView.post` (`views.py:713-720`) persists nothing.
 
-### The only real mastery: Survey-1 SKILL `recompute_mastery` (`mastery.py:16-73`)
+### The only real mastery: Role Discovery SKILL `recompute_mastery` (`mastery.py:16-73`)
 ```
 weight_i  = max(question.discrimination_score, 1.0)
 # aggregated PER SIGNAL: one answer adds its weight once per OptionTopicSignal on the chosen
@@ -433,7 +433,7 @@ updated_q = current_q + alpha*(reward + gamma*projected_next_q - current_q)   # 
 score = max(updated_q, reward, 1 - mastery(chosen))
 ```
 
-### Delayed Survey-2 feedback (`recommendation_builder.py:352-413`, called every Survey-2 save at `views.py:647`, early-returns unless completed)
+### Delayed Skill Assessment feedback (`recommendation_builder.py:352-413`, called every Skill Assessment save at `views.py:647`, early-returns unless completed)
 ```
 normalized_average = clamp01((mean(v)-1)/4)
 penalty            = 0.1*((max-min)/4) if len>1 else 0
@@ -452,7 +452,7 @@ Models: `Recommendation` `recommendations/models.py:6-54` (`policy_type` include
 
 ## A.8 Tunable hyperparameters (complete table)
 
-All Survey-1 scoring constants verified at `assessments/role_inference.py:11-26`.
+All Role Discovery scoring constants verified at `assessments/role_inference.py:11-26`.
 
 | Name | Value | Location | Purpose |
 |---|---|---|---|
@@ -468,13 +468,13 @@ All Survey-1 scoring constants verified at `assessments/role_inference.py:11-26`
 | BASELINE_DIST | {-2:.10,-1:.20,0:.40,1:.20,2:.10} | role_inference.py:20-26 | Prior Likert distribution |
 | ASSESSMENT_BANDIT_POLICY_MODE | `live_bandit` | base.py:126 | Selection policy (ROLE→CORE_SEQUENCE under default) |
 | ASSESSMENT_RECOMMENDATION_POLICY | `q_learning` | base.py:127 | Recommendation policy |
-| ASSESSMENT_RECOMMENDATION_Q_ALPHA | 0.35 | base.py:128 | Q learning rate (survey2 + recommendation) |
-| ASSESSMENT_RECOMMENDATION_Q_GAMMA | 0.8 | base.py:129 | Discount (recommendation Bellman only; survey2 unused) |
+| ASSESSMENT_RECOMMENDATION_Q_ALPHA | 0.35 | base.py:128 | Q learning rate (skill_assessment + recommendation) |
+| ASSESSMENT_RECOMMENDATION_Q_GAMMA | 0.8 | base.py:129 | Discount (recommendation Bellman only; skill_assessment unused) |
 | ASSESSMENT_RECOMMENDATION_Q_EPSILON | 0.15 | base.py:130 | Exploration rate |
 | RECOMMENDATION_MASTERY_THRESHOLD | 0.7 | recommendation_builder.py:17 | Mastered cutoff / projected mastery |
 | SKILL_QUESTION_TARGET | 3 | mastery.py:12 | Saturates topic confidence |
 | recommendation reward weights | 0.7 / 0.2 / 0.15·0.05 | recommendation_builder.py:316 | gap / order / difficulty bonus |
-| survey2 outcome reward consts | 0.55 / 0.45 / 0.1 | recommendation_builder.py:418-425 | base / avg weight / consistency penalty |
+| skill_assessment outcome reward consts | 0.55 / 0.45 / 0.1 | recommendation_builder.py:418-425 | base / avg weight / consistency penalty |
 | UCB exploration constant | 2.0 (under sqrt) | selection.py:373 | SKILL bandit |
 | MIN_TIE_BREAK_ROLE_COUNT | 2 | seeds.py:23 | tie-break validation |
 | MAX_GAP_TOPICS | 3 | guidance.py:22 | Gap topics surfaced |
@@ -504,14 +504,14 @@ Problem: an `is_active` Role absent from `ROLE_PROFILE_WEIGHTS` gets default sco
 **B1.5 — Unbounded, unnormalized signal & mastery weights.** *(M, M)*
 Problem: dimension weights only checked `>0` (`seeds.py:367-370`); `mastery_delta` unbounded (`roadmaps/models.py:177`) ⇒ `mastery_score` may be `<0`/`>1`, breaking `1−mastery` and 0.7 comparisons. Change: add upper bounds/validators and/or per-question normalization; clamp `mastery_score` to [0,1].
 
-**B1.6 — Survey 2 has no per-dimension competency score.** *(H, M)*
-Problem: answers stored raw; nothing ranks dimensions, yet guidance text references "lowest Survey 2 dimensions" (`views.py:634-637`, `roadmaps.py:4-49`). Change: implement per-dimension aggregation (e.g. mean of a dimension's answers) and wire `low_score_action`; or confirm the frontend owns this and document it.
+**B1.6 — Skill Assessment has no per-dimension competency score.** *(H, M)*
+Problem: answers stored raw; nothing ranks dimensions, yet guidance text references "lowest Skill Assessment dimensions" (`views.py:634-637`, `roadmaps.py:4-49`). Change: implement per-dimension aggregation (e.g. mean of a dimension's answers) and wire `low_score_action`; or confirm the frontend owns this and document it.
 
-**B1.7 — Survey 2 reward = self-rating → bandit prefers high-rated items.** *(M, M)*
-Problem: `immediate_reward` grows with Likert value, selection picks max-Q (`survey2_adaptive.py:47-54,60`). Why: an assessment meant to probe weaknesses surfaces strengths. Change: reward information gain / answer uncertainty instead of raw value.
+**B1.7 — Skill Assessment reward = self-rating → bandit prefers high-rated items.** *(M, M)*
+Problem: `immediate_reward` grows with Likert value, selection picks max-Q (`skill_assessment_adaptive.py:47-54,60`). Why: an assessment meant to probe weaknesses surfaces strengths. Change: reward information gain / answer uncertainty instead of raw value.
 
 **B1.8 — Recommendation Q-learning optimizes a synthetic surface.** *(M, L)*
-Problem: Bellman target uses `projected_next_q` assuming the learner reaches mastery 0.7 (`recommendation_builder.py:266-349`); only real signal is delayed Survey-2 reward. Change: treat selection-time Q-update as a heuristic prior; learn primarily from real outcomes; or drop the synthetic Bellman term.
+Problem: Bellman target uses `projected_next_q` assuming the learner reaches mastery 0.7 (`recommendation_builder.py:266-349`); only real signal is delayed Skill Assessment reward. Change: treat selection-time Q-update as a heuristic prior; learn primarily from real outcomes; or drop the synthetic Bellman term.
 
 ## Theme 2 — Reproducibility & determinism
 
@@ -552,7 +552,7 @@ Problem: `validate_curated_catalog` skips `prerequisites`; `KeyError` at `seeds.
 Problem: any `question_type` stored verbatim (`seeds.py:387-413,235`). Change: add an allowlist check.
 
 **B4.3 — Migration 0008 vs seed data divergent prompts.** *(L, S)*
-Problem: order-dependent `update_or_create` content (`migrations/0008` vs `survey2_seed_data.py`). Change: make migration data idempotent with seed file or stop seeding prompts in migrations.
+Problem: order-dependent `update_or_create` content (`migrations/0008` vs `skill_assessment_seed_data.py`). Change: make migration data idempotent with seed file or stop seeding prompts in migrations.
 
 **B4.4 — `roles.yaml` looks authoritative but holds no weights.** *(M, M)*
 Problem: all weights live in `questionnaire.py:69-207`; `top_ka_codes` can silently diverge. Change: validate `top_ka_codes` consistency with `ROLE_PROFILE_WEIGHTS`, or move weights into YAML.
@@ -568,14 +568,14 @@ Problem: `recompute_mastery` runs for `get_skill_target_role` and deletes non-ta
 **B5.2 — GET mutates the DB.** *(M, M)*
 Problem: `_ensure_selection_event` can INSERT on GET (`flow.py:70-96`, `selection.py:376-404`). Change: make selection-event creation happen only on the answer POST; GET should be read-only.
 
-**B5.3 — Survey 2 step feedback credits post-answer state.** *(M, S)*
-Problem: `before_answers = new_answers` includes the answer (`views.py:644`, `survey2_adaptive.py:57-59`). Change: pass the pre-answer dict, or rename and document the bandit semantics.
+**B5.3 — Skill Assessment step feedback credits post-answer state.** *(M, S)*
+Problem: `before_answers = new_answers` includes the answer (`views.py:644`, `skill_assessment_adaptive.py:57-59`). Change: pass the pre-answer dict, or rename and document the bandit semantics.
 
 **B5.4 — Q-tables shared globally, never pruned.** *(M, M)*
-Problem: `Survey2QuestionQValue` (`models.py:292-306`) and `RecommendationQValue` (`recommendations/models.py:57-87`) have no session/user scoping, `get_or_create` without locking. Change: decide cross-user learning intent; add write locking / periodic pruning / TTL.
+Problem: `SkillAssessmentQuestionQValue` (`models.py:292-306`) and `RecommendationQValue` (`recommendations/models.py:57-87`) have no session/user scoping, `get_or_create` without locking. Change: decide cross-user learning intent; add write locking / periodic pruning / TTL.
 
 **B5.5 — `.data` vs `.validated_data` written to JSON profile.** *(L, S)*
-Problem: rendered `serializer.data` (e.g. serialized `completed_at` string) written into `profile['survey2']` then re-parsed (`views.py:632-637`). Change: store `validated_data`.
+Problem: rendered `serializer.data` (e.g. serialized `completed_at` string) written into `profile['skill_assessment']` then re-parsed (`views.py:632-637`). Change: store `validated_data`.
 
 **B5.6 — IDOR by design.** *(H, M — product decision)*
 Problem: `AllowAny`, no per-session authz (`base.py:105-107`). Change: bind sessions to a user/token; add object-level permission.
@@ -583,7 +583,7 @@ Problem: `AllowAny`, no per-session authz (`base.py:105-107`). Change: bind sess
 ## Theme 6 — Testing
 
 **B6.1 — No golden-vector tests for scoring math.** *(H, M)*
-Problem: tuner/sim numerics are unverified by the suite; survey2 test only checks a Q-row exists. Change: add fixed-input → expected-output tests (see below).
+Problem: tuner/sim numerics are unverified by the suite; skill_assessment test only checks a Q-row exists. Change: add fixed-input → expected-output tests (see below).
 
 **B6.2 — Sim is a hand-maintained copy of production.** *(H, L)*
 Problem: `simulate_multiprocess_inmemory.py:143-297` re-implements `role_inference.py:281-399`/`selection.py`. Change: add a parity test asserting sim == production scoring on shared vectors; ideally have the sim import production functions.
@@ -614,7 +614,7 @@ flowchart LR
       B6[B5.2 read-only GET]
     end
     subgraph STR["Strategic (L)"]
-      C1[B1.6 survey2 dimension scoring]
+      C1[B1.6 skill_assessment dimension scoring]
       C2[B1.7/B1.8 reward redesign]
       C3[B6.2 sim/production parity]
       C4[B5.6 auth/IDOR]

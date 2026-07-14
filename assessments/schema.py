@@ -255,7 +255,7 @@ HISTORY_RESPONSE_EXAMPLE = {
     ],
 }
 
-SURVEY2_RESPONSE_EXAMPLE = {
+SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
     'completed': True,
     'answers': {
         'q-req': 4,
@@ -268,14 +268,14 @@ SURVEY2_RESPONSE_EXAMPLE = {
     'completed_at': '2026-05-08T20:00:00Z',
 }
 
-SURVEY2_NEXT_QUESTION_REQUEST_EXAMPLE = {
+SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE = {
     'answers': {
         'q-req': 4,
         'q-design': 5,
     },
 }
 
-SURVEY2_NEXT_QUESTION_RESPONSE_EXAMPLE = {
+SKILL_ASSESSMENT_NEXT_QUESTION_RESPONSE_EXAMPLE = {
     'next_question': {
         'id': 'q-dev',
         'prompt': 'I can implement features using clear design and coding practices.',
