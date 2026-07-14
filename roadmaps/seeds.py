@@ -25,10 +25,6 @@ SUPPORTED_TRANSLATION_LANGUAGES = {'en', 'th'}
 QUESTION_TRANSLATION_FIELDS = {'prompt', 'help_text'}
 
 
-def seed_mvp_content(*, stdout=None):
-    load_curated_content(stdout=stdout)
-
-
 def load_curated_content(*, stdout=None):
     roles_data, topics_data, questions_data = load_curated_catalog()
 

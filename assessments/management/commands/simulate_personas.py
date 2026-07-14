@@ -37,7 +37,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         questions = load_questions()
         if not questions:
-            msg = 'No active ROLE-stage questions found. Run seed_mvp_content first.'
+            msg = 'No active ROLE-stage questions found. Run sync_content first.'
             raise CommandError(msg)
         active_role_slugs, role_names = load_roles()
         catalog = CatalogContext(

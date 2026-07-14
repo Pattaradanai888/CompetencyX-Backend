@@ -9,6 +9,7 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.test import TestCase
 
+from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
 from roadmaps.models import (
     Question,
     QuestionOption,
@@ -20,18 +21,18 @@ from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_PROFILE_WEIGHTS, S
 from roadmaps.seeds import _sync_questions, load_curated_catalog, validate_curated_catalog
 
 
-class SeedMvpContentTests(TestCase):
+class SyncContentTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command('seed_mvp_content')
+        call_command('sync_content')
 
-    def test_seed_command_creates_catalog_and_is_idempotent(self):
+    def test_sync_command_creates_all_catalogs_and_is_idempotent(self):
         out = StringIO()
         _roles_data, _topics_data, questions_data = load_curated_catalog()
         expected_question_count = len(questions_data['role_questions'])
         expected_option_count = 0
 
-        call_command('seed_mvp_content', stdout=out)
+        call_command('sync_content', stdout=out)
 
         expected_role_count = len(load_curated_catalog()[0]['roles'])
         expected_topic_count = len(load_curated_catalog()[1]['topics'])
@@ -41,6 +42,9 @@ class SeedMvpContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
+        assert SkillAssessmentDimension.objects.count() == 8
+        assert SkillAssessmentQuestion.objects.count() == 11
+        assert SkillAssessmentRoleGuidance.objects.count() == 14
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
         assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()
 
@@ -59,12 +63,12 @@ class SeedMvpContentTests(TestCase):
     def test_role_question_bank_covers_all_seeded_roles(self):
         assert set(ROLE_PROFILE_WEIGHTS) == set(Role.objects.values_list('slug', flat=True))
 
-    def test_seed_command_is_idempotent(self):
+    def test_sync_command_is_idempotent(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
         expected_question_count = len(questions_data['role_questions'])
         expected_option_count = 0
 
-        call_command('seed_mvp_content')
+        call_command('sync_content')
 
         expected_role_count = len(load_curated_catalog()[0]['roles'])
         expected_topic_count = len(load_curated_catalog()[1]['topics'])
@@ -74,6 +78,20 @@ class SeedMvpContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
+
+    def test_sync_command_rolls_back_all_catalogs_on_failure(self):
+        role = Role.objects.get(slug='backend-developer')
+        role.name = 'Temporary Backend Name'
+        role.save(update_fields=['name'])
+
+        with (
+            patch('api.management.commands.sync_content.sync_skill_assessment_catalog', side_effect=RuntimeError('sync failed')),
+            self.assertRaisesMessage(RuntimeError, 'sync failed'),
+        ):
+            call_command('sync_content')
+
+        role.refresh_from_db()
+        assert role.name == 'Temporary Backend Name'
 
     def test_load_curated_content_removes_stale_questions(self):
         stale_question = Question.objects.create(
@@ -90,7 +108,7 @@ class SeedMvpContentTests(TestCase):
             display_order=1,
         )
 
-        call_command('load_curated_content')
+        call_command('sync_content')
 
         assert not Question.objects.filter(code='stale-question').exists()
 
@@ -188,8 +206,8 @@ class SeedMvpContentTests(TestCase):
         assert len(questions_data['role_questions']) == 1
         assert len(questions_data['skill_questions']) == 0
 
-    def test_load_curated_content_command_populates_swebok_role_metadata(self):
-        call_command('load_curated_content')
+    def test_sync_content_command_populates_swebok_role_metadata(self):
+        call_command('sync_content')
 
         role = Role.objects.get(slug='backend-developer')
         assert role.swebok_source_version == 'SWEBOK V4.0'
@@ -245,7 +263,7 @@ class SeedMvpContentTests(TestCase):
         assert not Question.objects.filter(code='legacy-skill-question').exists()
 
     def test_load_curated_content_syncs_role_question_thai_translations(self):
-        call_command('load_curated_content')
+        call_command('sync_content')
 
         role_questions = Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order')
 

@@ -117,7 +117,7 @@ flowchart LR
     SQ --> DB[("Role / RoadmapTopic / TopicPrerequisite<br/>Question / QuestionOption / QuestionTopicSignal")]
 ```
 
-Management commands: `load_curated_content` + `seed_mvp_content` (load+write); `validate_question_catalog` (validate-only).
+Management commands: `sync_content` (atomic load+write); `validate_question_catalog` (validate-only).
 
 ### Validation rules (single role question, `_validate_role_question_seed`, seeds.py:330-371)
 1. `code` globally unique across all questions.

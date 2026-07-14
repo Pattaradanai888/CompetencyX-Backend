@@ -1,8 +1,8 @@
-from django.core.management import call_command
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from assessments.services.skill_assessment_catalog_service import sync_skill_assessment_catalog
 from roadmaps.models import Question, RoadmapTopic, Role, TopicPrerequisite
 from roadmaps.questionnaire import ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
 
@@ -39,7 +39,7 @@ class AssessmentFlowTestCase(APITestCase):
         TopicPrerequisite.objects.create(topic=self.qa_release, prerequisite=self.qa_automation, required_mastery_threshold=0.7)
 
         self._add_role_questions()
-        call_command('seed_skill_assessment_catalog')
+        sync_skill_assessment_catalog()
 
     def _add_role_questions(self):
         dimensions = [

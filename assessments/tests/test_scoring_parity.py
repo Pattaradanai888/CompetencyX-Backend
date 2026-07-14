@@ -21,7 +21,7 @@ class ScoringParityTests(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        call_command('seed_mvp_content')
+        call_command('sync_content')
         cls.active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
         cls.role_names = dict(Role.objects.filter(is_active=True).values_list('slug', 'name'))
         cls.core_target = Question.objects.filter(

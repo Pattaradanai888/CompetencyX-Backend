@@ -9,8 +9,7 @@ Use `uv` for local Python workflows and Docker for the runtime stack.
 - `docker compose up --build`: start PostgreSQL and the Django app, run migrations, and seed MVP content.
 - `uv run pytest -n auto`: run the full test suite in parallel with coverage using `config.settings.test`.
 - `uv run ruff check .`: run lint checks across the repository.
-- `.venv\Scripts\python.exe manage.py seed_mvp_content`: reseed the local catalog.
-- `.venv\Scripts\python.exe manage.py load_curated_content`: load YAML-curated roles, topics, and questions.
+- `.venv\Scripts\python.exe manage.py sync_content`: synchronize all curated Role Discovery, roadmap, and Skill Assessment content.
 
 ## Coding Style & Naming Conventions
 Target Python 3.12 and follow Ruff defaults configured in `pyproject.toml`. Use 4-space indentation, single quotes, and keep lines within the configured 150-character limit. Prefer Django naming patterns: `PascalCase` for models/serializers, `snake_case` for functions and fields, and descriptive app-local module names. Do not edit generated migration files unless the change explicitly requires it.

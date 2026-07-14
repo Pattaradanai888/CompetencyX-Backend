@@ -20,13 +20,13 @@ Copy-Item .env.example .env
 
 ```powershell
 python manage.py migrate
-python manage.py seed_skill_assessment_catalog
+python manage.py sync_content
 python manage.py runserver
 ```
 
 This uses the checked-in `db.sqlite3` setup.
 
-`Skill Assessment` catalog data now lives in SQLite tables, not in hardcoded runtime Python lists. The migration seeds the default rows, and `python manage.py seed_skill_assessment_catalog` can be used any time to refresh them.
+`Skill Assessment` catalog data now lives in SQLite tables, not in hardcoded runtime Python lists. The migration seeds the default rows, and `python manage.py sync_content` can be used any time to refresh them.
 
 ## URLs
 
@@ -40,9 +40,7 @@ This uses the checked-in `db.sqlite3` setup.
 ```powershell
 uv run pytest -n auto
 uv run ruff check .
-python manage.py seed_mvp_content
-python manage.py load_curated_content
-python manage.py seed_skill_assessment_catalog
+python manage.py sync_content
 uv run python manage.py validate_question_catalog
 
 # Benchmarking & Simulation

@@ -27,7 +27,7 @@ IDEAL_SCALE_NEUTRAL_DELTA = 0.2
 class SeededMvpFlowTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        call_command('seed_mvp_content')
+        call_command('sync_content')
 
     def test_all_seeded_roles_are_exposed_in_catalog(self):
         response = self.client.get(reverse('role-list'))
