@@ -1,24 +1,24 @@
 # Scoring simulation & tuning
 
 Fast, drift-proof tooling for experimenting with the role-discovery scoring
-algorithm in `assessments/scoring.py`.
+algorithm in `assessments/services/scoring_service.py`.
 
 ## Architecture
 
-All scoring math lives in **`assessments/scoring.py`** — a pure-Python module
+All scoring math lives in **`assessments/services/scoring_service.py`** — a pure-Python module
 with no Django imports. It is the single source of truth shared by:
 
-- **Production** (`assessments/role_inference.py`) — loads Django rows, hands
-  plain dicts to `scoring.*`, writes results back to the session.
+- **Production** (`assessments/services/role_inference_service.py`) — loads Django rows,
+  hands plain dicts to `scoring_service.*`, and writes results back to the session.
 - **In-memory simulator** (`simulation/engine.py`) — runs synthetic
   sessions entirely in Python, never touching the database.
 
 Because both paths call the same functions, simulation results cannot drift
-from production. The test `assessments/tests.py::ScoringParityTests` locks
+from production. The tests in `assessments/tests/test_scoring_parity.py` lock
 this: it seeds the catalog, answers questions through the real DB flow, and
 asserts the pure path produces an identical snapshot.
 
-> **Rule:** if you change scoring math, change it in `scoring.py` only.
+> **Rule:** if you change scoring math, change it in `scoring_service.py` only.
 > Both production and the simulator pick it up automatically.
 
 ## Commands
@@ -67,15 +67,14 @@ python manage.py tune_scoring --grid data/scoring_tuning_grid.yaml \
 ```
 
 Available metrics: `resolved_rate`, `low_confidence_rate`,
-`resolved_role_coverage_rate`, `resolved_uniformity`, `ambiguous_rate`.
+`resolved_role_coverage_rate`, and `resolved_uniformity`.
 
 The grid file format:
 
 ```yaml
 grid:
-  ROLE_EVIDENCE_SCORE_SCALE: [4.0, 5.229, 6.0, 7.0]
-  ROLE_EVIDENCE_LOGISTIC_SCALE: [1.5, 1.989, 2.5]
-  ROLE_DISCOVERY_MIN_SCORE_MARGIN: [0.2, 0.25, 0.3, 0.35]
+  ROLE_DISCOVERY_MIN_SCORE_MARGIN: [1.5, 2.0, 2.5, 3.0, 3.5]
+  ROLE_CONFIDENCE_FULL_MARGIN: [4.0, 5.0, 6.0]
 ```
 
 Tunable constants are listed in `simulation/engine.py::TUNABLE_PARAM_NAMES`.
@@ -96,8 +95,8 @@ results are reproducible regardless of worker scheduling.
 
 ```bash
 # Single-sample smoke probe from the in-memory command
-python manage.py simulate_inmemory --parity-check
+python manage.py simulate_inmemory --probe
 
 # Run the parity test suite
-uv run pytest assessments/tests.py::ScoringParityTests -v
+uv run pytest assessments/tests/test_scoring_parity.py -v
 ```

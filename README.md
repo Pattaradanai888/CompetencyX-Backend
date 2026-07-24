@@ -10,23 +10,25 @@ Simple Django + Django REST Framework API for adaptive career assessments and ro
 uv sync
 ```
 
-2. Create your local env file:
+2. Create your local environment file:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
+The example contains development-only values. Customize `.env` before using it outside local development.
+
 3. Run locally with SQLite:
 
 ```powershell
-python manage.py migrate
-python manage.py sync_content
-python manage.py runserver
+uv run --env-file .env python manage.py migrate
+uv run --env-file .env python manage.py sync_content
+uv run --env-file .env python manage.py runserver
 ```
 
 This uses the checked-in `db.sqlite3` setup.
 
-`Skill Assessment` catalog data now lives in SQLite tables, not in hardcoded runtime Python lists. The migration seeds the default rows, and `python manage.py sync_content` can be used any time to refresh them.
+`Skill Assessment` catalog data now lives in SQLite tables, not in hardcoded runtime Python lists. The migration seeds the default rows, and `uv run --env-file .env python manage.py sync_content` can be used any time to refresh them.
 
 ## URLs
 
@@ -40,13 +42,13 @@ This uses the checked-in `db.sqlite3` setup.
 ```powershell
 uv run pytest -n auto
 uv run ruff check .
-python manage.py sync_content
-uv run python manage.py validate_question_catalog
+uv run --env-file .env python manage.py sync_content
+uv run --env-file .env python manage.py validate_question_catalog
 
 # Benchmarking & Simulation
-python manage.py benchmark_entropy
-uv run python simulate_multiprocess_inmemory.py --samples 1000
-uv run python tune_hyperparameters.py --mode genetic --pop-size 60 --generations 15
+uv run --env-file .env python manage.py simulate_inmemory --samples 1000
+uv run --env-file .env python manage.py tune_scoring --grid data/scoring_tuning_grid.yaml --samples 500
+uv run --env-file .env python manage.py simulate_personas --check-baseline data/simulation/persona_baseline.json
 ```
 
 ## Project Layout
@@ -58,6 +60,6 @@ uv run python tune_hyperparameters.py --mode genetic --pop-size 60 --generations
 - `config/` - Django settings and root URLs
 - `data/content/` - curated roles, topics, and questions
 - `data/upstream/` - imported source snapshots
-- `simulate_multiprocess_inmemory.py` - Monte Carlo simulation of career path distributions in memory
-- `tune_hyperparameters.py` - Hyperparameter genetic search algorithm sweep tool for scoring engine optimization
+- `simulation/` - in-memory Monte Carlo and persona-fidelity simulation engine
+- `assessments/management/commands/` - simulation, scoring-tuning, and content-management commands
 
