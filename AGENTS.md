@@ -22,3 +22,17 @@ Recent history uses concise, imperative commit messages with Conventional Commit
 
 ## Configuration & Data Notes
 Copy `.env.example` to `.env` for local runtime configuration. Runtime targets PostgreSQL in Docker, while tests use SQLite for speed. Treat files in `data/upstream/` as imported source material and keep normalized application behavior in Django models rather than raw JSON.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in this repository's GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The standard Matt Pocock triage labels are used. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repository. See `docs/agents/domain.md`.
