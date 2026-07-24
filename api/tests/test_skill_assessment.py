@@ -38,12 +38,12 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
                 'sdlc-maintain-debug': 4,
                 'sdlc-collab-blockers': 4,
             },
-            'completed_at': '2026-05-08T20:00:00Z',
+            'completed_at': '2000-01-01T00:00:00Z',
         }
         save_response = self.client.post(reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}), payload, format='json')
         self.assertEqual(save_response.status_code, status.HTTP_200_OK)
         self.assertEqual(save_response.json()['completed'], True)
-        self.assertEqual(save_response.json()['completed_at'], payload['completed_at'])
+        self.assertNotEqual(save_response.json()['completed_at'], payload['completed_at'])
         self.assertEqual(save_response.json()['answers']['sdlc-design-tradeoffs'], 5)
 
         loaded_response = self.client.get(reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}))
@@ -51,6 +51,14 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertEqual(loaded_response.json()['completed'], True)
         self.assertEqual(loaded_response.json()['answers'], payload['answers'])
         self.assertIsNotNone(loaded_response.json()['completed_at'])
+
+        reopened_response = self.client.post(
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
+            {'completed': False, 'answers': payload['answers'], 'completed_at': '2000-01-01T00:00:00Z'},
+            format='json',
+        )
+        self.assertEqual(reopened_response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(reopened_response.json()['completed_at'])
 
     def test_skill_assessment_state_rejects_invalid_answer_scale(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')

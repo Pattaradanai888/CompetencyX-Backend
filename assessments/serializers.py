@@ -425,7 +425,7 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
         child=serializers.IntegerField(min_value=1, max_value=5),
         default=dict,
     )
-    completed_at = serializers.DateTimeField(required=False, allow_null=True)
+    completed_at = serializers.DateTimeField(read_only=True, allow_null=True)
 
     def validate_answers(self, value):
         return _validate_skill_assessment_answer_keys(value, forbid_blank=True)

@@ -2,6 +2,7 @@ import random
 
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 
 from assessments.models import (
     AssessmentSession,
@@ -182,8 +183,12 @@ def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, 
     if not isinstance(answers, dict):
         answers = {}
 
+    was_completed = session.skill_assessment_completed
     session.skill_assessment_completed = bool(state.get('completed', False))
-    session.skill_assessment_completed_at = state.get('completed_at')
+    if session.skill_assessment_completed and not was_completed:
+        session.skill_assessment_completed_at = timezone.now()
+    elif not session.skill_assessment_completed:
+        session.skill_assessment_completed_at = None
     session.save(update_fields=['skill_assessment_completed', 'skill_assessment_completed_at', 'updated_at'])
 
     session.skill_assessment_answers.all().delete()
