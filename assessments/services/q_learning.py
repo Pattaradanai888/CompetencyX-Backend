@@ -6,6 +6,9 @@ exponential-moving-average update rule; this module is the single home for
 that update and for the small state-key bucketing helper.
 """
 
+from django.db import transaction
+
+
 Q_VALUE_DEFAULTS = {
     'q_value': 0.0,
     'reward_total': 0.0,
@@ -28,10 +31,17 @@ def update_q_row(q_row, *, reward: float, alpha: float, target: float | None = N
     """
     if target is None:
         target = reward
-    q_before = float(q_row.q_value)
-    q_row.q_value = q_before + alpha * (target - q_before)
-    q_row.reward_total += reward
-    q_row.update_count += 1
-    q_row.last_reward = reward
-    q_row.save(update_fields=['q_value', 'reward_total', 'update_count', 'last_reward', 'updated_at'])
-    return q_before, float(q_row.q_value)
+    with transaction.atomic():
+        locked_row = type(q_row).objects.select_for_update().get(pk=q_row.pk)
+        q_before = float(locked_row.q_value)
+        locked_row.q_value = q_before + alpha * (target - q_before)
+        locked_row.reward_total += reward
+        locked_row.update_count += 1
+        locked_row.last_reward = reward
+        locked_row.save(update_fields=['q_value', 'reward_total', 'update_count', 'last_reward', 'updated_at'])
+
+    q_row.q_value = locked_row.q_value
+    q_row.reward_total = locked_row.reward_total
+    q_row.update_count = locked_row.update_count
+    q_row.last_reward = locked_row.last_reward
+    return q_before, float(locked_row.q_value)

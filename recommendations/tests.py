@@ -14,6 +14,7 @@ import pytest
 from django.test import TestCase, override_settings
 
 from assessments.models import AssessmentSession, SkillAssessmentAnswer
+from assessments.services.q_learning import update_q_row
 from assessments.services.recommendation_service import (
     _build_recommendation_state_key,
     _calculate_recommendation_reward,
@@ -86,6 +87,28 @@ def test_recommendation_policy_falls_back_to_rule_based_for_unknown_values():
         assert _get_recommendation_policy() == Recommendation.PolicyType.RULE_BASED
     with override_settings(ASSESSMENT_RECOMMENDATION_POLICY='rule_based'):
         assert _get_recommendation_policy() == Recommendation.PolicyType.RULE_BASED
+
+
+@pytest.mark.django_db
+def test_q_value_update_uses_latest_locked_database_values():
+    role = Role.objects.create(slug='q-lock-role', name='Q Lock Role')
+    topic = RoadmapTopic.objects.create(role=role, slug='q-lock-topic', title='Q Lock Topic')
+    q_row = RecommendationQValue.objects.create(
+        state_key='q-lock-state',
+        path_kind=Recommendation.PathKind.PREFERRED,
+        role=role,
+        topic=topic,
+    )
+    stale_row = RecommendationQValue.objects.get(pk=q_row.pk)
+    RecommendationQValue.objects.filter(pk=q_row.pk).update(q_value=0.5, reward_total=1.0, update_count=1)
+
+    q_before, q_after = update_q_row(stale_row, reward=1.0, alpha=0.5)
+
+    stale_row.refresh_from_db()
+    assert q_before == 0.5
+    assert q_after == 0.75
+    assert stale_row.reward_total == 2.0
+    assert stale_row.update_count == 2
 
 
 Q_LEARNING_SETTINGS = {
