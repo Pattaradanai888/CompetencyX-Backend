@@ -1,5 +1,7 @@
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 from .base import *
 
 
@@ -17,10 +19,14 @@ def _env_list(name: str, default: str) -> list[str]:
 
 DATABASES = {alias: config.copy() for alias, config in DATABASES.items()}
 
-DEBUG = _env_flag('DJANGO_DEBUG', True)
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', SECRET_KEY)
+DEBUG = _env_flag('DJANGO_DEBUG', False)
+runtime_secret_key = os.getenv('DJANGO_SECRET_KEY')
+if not runtime_secret_key and not DEBUG:
+    msg = 'DJANGO_SECRET_KEY is required when DJANGO_DEBUG is false.'
+    raise ImproperlyConfigured(msg)
+SECRET_KEY = runtime_secret_key or SECRET_KEY
 ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
-CORS_ALLOW_ALL_ORIGINS = _env_flag('DJANGO_CORS_ALLOW_ALL_ORIGINS', True)
+CORS_ALLOW_ALL_ORIGINS = _env_flag('DJANGO_CORS_ALLOW_ALL_ORIGINS', False)
 
 postgres_host = os.getenv('POSTGRES_HOST')
 if postgres_host:
