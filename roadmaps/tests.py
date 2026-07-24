@@ -9,7 +9,7 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django.test import TestCase
 
-from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
+from assessments.models import Answer, AssessmentSession, SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
 from roadmaps.models import (
     Question,
     QuestionOption,
@@ -93,7 +93,7 @@ class SyncContentTests(TestCase):
         role.refresh_from_db()
         assert role.name == 'Temporary Backend Name'
 
-    def test_load_curated_content_removes_stale_questions(self):
+    def test_sync_content_deactivates_stale_questions_without_deleting_history(self):
         stale_question = Question.objects.create(
             code='stale-question',
             stage=Question.Stage.ROLE,
@@ -101,16 +101,59 @@ class SyncContentTests(TestCase):
             prompt='Stale prompt',
             display_order=999,
         )
-        QuestionOption.objects.create(
+        stale_option = QuestionOption.objects.create(
             question=stale_question,
             key='stale-option',
             label='Stale Option',
             display_order=1,
         )
+        session = AssessmentSession.objects.create()
+        answer = Answer.objects.create(session=session, question=stale_question, selected_option=stale_option)
 
         call_command('sync_content')
 
-        assert not Question.objects.filter(code='stale-question').exists()
+        stale_question.refresh_from_db()
+        answer.refresh_from_db()
+        assert not stale_question.is_active
+        assert answer.question_id == stale_question.id
+
+    def test_sync_content_deactivates_stale_curated_topics(self):
+        role = Role.objects.get(slug='backend-developer')
+        stale_topic = RoadmapTopic.objects.create(
+            role=role,
+            slug='stale-curated-topic',
+            title='Stale curated topic',
+            display_order=999,
+        )
+
+        call_command('sync_content')
+
+        stale_topic.refresh_from_db()
+        assert not stale_topic.is_active
+
+    def test_sync_content_deactivates_stale_skill_assessment_catalog_rows(self):
+        role = Role.objects.get(slug='backend-developer')
+        stale_dimension = SkillAssessmentDimension.objects.create(
+            dimension_key='stale-dimension',
+            label='Stale dimension',
+            track=SkillAssessmentDimension.Track.PSP,
+            low_score_action='Stale action',
+        )
+        stale_question = SkillAssessmentQuestion.objects.create(
+            question_id='stale-skill-question',
+            prompt='Stale skill question',
+            dimension_key=stale_dimension.dimension_key,
+        )
+        stale_guidance = SkillAssessmentRoleGuidance.objects.create(role=role, guidance='Stale guidance', display_order=999)
+
+        call_command('sync_content')
+
+        stale_dimension.refresh_from_db()
+        stale_question.refresh_from_db()
+        stale_guidance.refresh_from_db()
+        assert not stale_dimension.is_active
+        assert not stale_question.is_active
+        assert not stale_guidance.is_active
 
     def test_load_curated_catalog_merges_role_question_fragments_only(self):
         temp_dir = Path.cwd() / '.tmp-load-curated-catalog-test'
@@ -237,7 +280,7 @@ class SyncContentTests(TestCase):
         assert imported_topic.external_source == 'roadmap.sh'
         assert imported_topic.source_version == 'sample-v1'
 
-    def test_load_curated_content_removes_legacy_skill_questions(self):
+    def test_load_curated_content_deactivates_legacy_skill_questions(self):
         role = Role.objects.get(slug='backend-developer')
         topic = RoadmapTopic.objects.filter(role=role).first()
         Question.objects.create(
@@ -260,7 +303,7 @@ class SyncContentTests(TestCase):
             topics_by_key=topics_by_key,
         )
 
-        assert not Question.objects.filter(code='legacy-skill-question').exists()
+        assert not Question.objects.get(code='legacy-skill-question').is_active
 
     def test_load_curated_content_syncs_role_question_thai_translations(self):
         call_command('sync_content')

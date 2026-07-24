@@ -4,7 +4,9 @@ from roadmaps.models import Role
 
 
 def sync_skill_assessment_catalog(*, stdout=None):
+    dimension_keys = []
     for dimension in SKILL_ASSESSMENT_DIMENSIONS:
+        dimension_keys.append(dimension['dimension_key'])
         SkillAssessmentDimension.objects.update_or_create(
             dimension_key=dimension['dimension_key'],
             defaults={
@@ -16,8 +18,11 @@ def sync_skill_assessment_catalog(*, stdout=None):
                 'is_active': True,
             },
         )
+    SkillAssessmentDimension.objects.exclude(dimension_key__in=dimension_keys).update(is_active=False)
 
+    question_ids = []
     for question in SKILL_ASSESSMENT_QUESTIONS:
+        question_ids.append(question['question_id'])
         SkillAssessmentQuestion.objects.update_or_create(
             question_id=question['question_id'],
             defaults={
@@ -28,8 +33,10 @@ def sync_skill_assessment_catalog(*, stdout=None):
                 'is_active': True,
             },
         )
+    SkillAssessmentQuestion.objects.exclude(question_id__in=question_ids).update(is_active=False)
 
     guidance_count = 0
+    guidance_ids = []
     role_slugs = [slug for slug in SKILL_ASSESSMENT_ROLE_GUIDANCE if slug]
     roles_by_slug = {role.slug: role for role in Role.objects.filter(slug__in=role_slugs)}
     for role_slug, guidance_items in SKILL_ASSESSMENT_ROLE_GUIDANCE.items():
@@ -40,12 +47,14 @@ def sync_skill_assessment_catalog(*, stdout=None):
             continue
 
         for display_order, guidance in enumerate(guidance_items, start=1):
-            SkillAssessmentRoleGuidance.objects.update_or_create(
+            guidance_item, _created = SkillAssessmentRoleGuidance.objects.update_or_create(
                 role=role,
                 display_order=display_order,
                 defaults={'guidance': guidance, 'is_active': True},
             )
+            guidance_ids.append(guidance_item.id)
             guidance_count += 1
+    SkillAssessmentRoleGuidance.objects.exclude(id__in=guidance_ids).update(is_active=False)
 
     if stdout is not None:
         stdout.write(

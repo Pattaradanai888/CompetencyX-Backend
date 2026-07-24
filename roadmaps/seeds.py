@@ -38,10 +38,10 @@ def load_curated_content(*, stdout=None):
 
     if stdout is not None:
         stdout.write(
-            f'Seeded {Role.objects.count()} roles, '
-            f'{RoadmapTopic.objects.count()} topics, '
-            f'{Question.objects.count()} questions, and '
-            f'{QuestionOption.objects.count()} options.'
+            f'Seeded {Role.objects.filter(is_active=True).count()} roles, '
+            f'{RoadmapTopic.objects.filter(is_active=True).count()} topics, '
+            f'{Question.objects.filter(is_active=True).count()} questions, and '
+            f'{QuestionOption.objects.filter(question__is_active=True).count()} options.'
         )
 
 
@@ -168,6 +168,11 @@ def _sync_topics(topic_seeds: list[dict], roles_by_slug: dict[str, Role]):
         )
         topics_by_key[(role.slug, topic.slug)] = topic
 
+    RoadmapTopic.objects.filter(
+        role_id__in=[role.id for role in roles_by_slug.values()],
+        external_source='',
+    ).exclude(id__in=[topic.id for topic in topics_by_key.values()]).update(is_active=False)
+
     TopicPrerequisite.objects.all().delete()
     for topic_seed in topic_seeds:
         role_slug = topic_seed['role_slug']
@@ -211,7 +216,7 @@ def _sync_questions(*, role_questions: list[dict], roles_by_slug, topics_by_key)
         )
         question.options.all().delete()
 
-    Question.objects.exclude(code__in=seed_codes).delete()
+    Question.objects.exclude(code__in=seed_codes).update(is_active=False)
 
 
 def _sync_question_options(question: Question, option_seeds: list[dict], *, topics_by_key):
