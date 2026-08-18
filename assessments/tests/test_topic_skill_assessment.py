@@ -22,10 +22,12 @@ from assessments.services.topic_skill_assessment_service import (
     build_topic_recommendations,
     build_topic_targets,
     get_topic_mastery,
+    is_assessable_topic_title,
     scale_value_to_mastery,
     select_assessable_topics,
     sync_topic_skill_assessment_catalog,
 )
+from roadmaps.external_roadmap import build_external_roadmap_topics
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
 
 
@@ -81,6 +83,30 @@ class TopicSkillAssessmentTests(TestCase):
         # would balloon the questionnaire without telling us anything extra.
         titles = {q['topic_title'] for q in list_skill_assessment_questions('backend-developer')}
         self.assertNotIn('Redis', titles)
+
+    def test_navigational_nodes_are_not_assessed_but_stay_on_the_roadmap(self):
+        # "I could work on Pick a Language in a real project" is not answerable;
+        # the node is still a legitimate step of the roadmap, so it is filtered
+        # here rather than dropped at import.
+        _node(self.ux, 'u3', 'pick-a-tool', 'Pick a Design Tool', 3)
+        _node(self.ux, 'u4', 'learn-figma', 'Learn Figma', 4)
+
+        sync_topic_skill_assessment_catalog()
+
+        assessed = {q['topic_title'] for q in list_skill_assessment_questions('ux-designer')}
+        self.assertNotIn('Pick a Design Tool', assessed)
+        self.assertNotIn('Learn Figma', assessed)
+        self.assertIn('User Research', assessed)
+
+        roadmap_titles = {topic['title'] for topic in build_external_roadmap_topics(self.ux)}
+        self.assertIn('Pick a Design Tool', roadmap_titles)
+
+    def test_instruction_titles_are_recognised(self):
+        self.assertFalse(is_assessable_topic_title('Pick a Language'))
+        self.assertFalse(is_assessable_topic_title('Learn SQL'))
+        self.assertFalse(is_assessable_topic_title('Visit the DevOps Roadmap'))
+        self.assertTrue(is_assessable_topic_title('Learning Management Systems'))
+        self.assertTrue(is_assessable_topic_title('Prototyping'))
 
     def test_a_role_without_an_imported_roadmap_falls_back_to_the_shared_items(self):
         self.assertEqual(select_assessable_topics(self.uncovered), [])

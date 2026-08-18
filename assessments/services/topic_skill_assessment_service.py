@@ -40,14 +40,31 @@ def scale_value_to_mastery(value) -> float:
     return max(0.0, min(1.0, normalized))
 
 
+# Roadmap graphs carry navigational nodes addressed to the reader rather than
+# named skills -- "Pick a Language", "Learn SQL", "Visit the DevOps Roadmap".
+# They belong on the roadmap, but "I could work on Pick a Language in a real
+# project" is not a question anybody can answer, so they are not assessed.
+INSTRUCTION_TITLE_PREFIXES = ('pick ', 'learn ', 'visit ', 'choose ', 'read ', 'explore ', 'go to ')
+
+
+def is_assessable_topic_title(title: str) -> bool:
+    return not title.strip().lower().startswith(INSTRUCTION_TITLE_PREFIXES)
+
+
 def select_assessable_topics(role: Role) -> list[dict]:
     """The role's top-level roadmap topics, in prerequisite order, capped.
 
-    Returns ``[]`` for a role with no imported roadmap, which is the signal to
-    fall back to the role-independent items.
+    Navigational nodes are filtered out here rather than at import, so the
+    roadmap still shows them as steps while the assessment does not ask about
+    them. Returns ``[]`` for a role with no imported roadmap, which is the
+    signal to fall back to the role-independent items.
     """
     topics = build_external_roadmap_topics(role)
-    top_level = [topic for topic in topics if topic['node_type'] == 'topic']
+    top_level = [
+        topic
+        for topic in topics
+        if topic['node_type'] == 'topic' and is_assessable_topic_title(topic['title'])
+    ]
     return top_level[:MAX_TOPIC_QUESTIONS_PER_ROLE]
 
 
