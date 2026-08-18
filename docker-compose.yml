@@ -1,37 +1,81 @@
+# Local stack for CompetencyX backend.
+#
+# รันจาก project root:
+#   docker compose up --build          # ยกทั้ง stack (db + web)
+#   docker compose down                # ปิด
+#   docker compose down -v             # ปิดและลบข้อมูลใน database ทิ้ง
+#   docker compose run --rm cli manage.py <command>   # รันคำสั่ง Django ครั้งเดียวแล้วจบ
+#
+# ประกอบด้วย services:
+#   db  – PostgreSQL 16 (persistent volume `postgres_data`)
+#   web – Gunicorn บน :8000 (docker/entrypoint.sh: migrate + sync_content + collectstatic + gunicorn)
+#   cli – profile `tools`: image เดียวกับ web ไว้ยิงคำสั่ง management ไม่ได้ start เองตอน `up`
+#
+# web กับ cli ใช้ image เดียวกัน (build จาก ./Dockerfile) และต่อ DB ผ่าน DATABASE_URL
+# ซึ่งเป็น path เดียวกับที่ Railway ใช้ตอน deploy จริง — local stack จึงทดสอบ config ชุดเดียวกัน
+#
+# ค่า credential อ่านจาก .env (ถ้ามี) ทับด้วย environment ข้างล่าง — ไฟล์ .env ไม่ commit
+
+name: competencyx
+
+# ---- config ที่ web กับ cli ใช้ร่วมกัน ----
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: competencyx_backend:local
+  env_file:
+    # required: false เพราะ dev ที่ยังไม่ได้ copy .env.example ก็ควรยก stack ได้
+    - path: .env
+      required: false
+  environment:
+    # บังคับให้ชี้ service `db` ใน compose (override ค่าใน .env ถ้ามี)
+    # หมายเหตุ: ถ้าตั้งรหัสผ่านที่มีอักขระพิเศษ ต้อง url-encode ในบรรทัดนี้เอง
+    DATABASE_URL: postgres://${POSTGRES_USER:-competencyx}:${POSTGRES_PASSWORD:-competencyx}@db:5432/${POSTGRES_DB:-competencyx}
+    DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-development-secret-key}
+    DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+    DJANGO_CORS_ALLOW_ALL_ORIGINS: ${DJANGO_CORS_ALLOW_ALL_ORIGINS:-true}
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+
 services:
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-competencyx}
       POSTGRES_USER: ${POSTGRES_USER:-competencyx}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-competencyx}
+    ports:
+      # เปิดออกมาข้างนอกเพื่อให้ต่อด้วย DBeaver/psql จากเครื่องได้
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-competencyx} -d ${POSTGRES_DB:-competencyx}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-competencyx} -d ${POSTGRES_DB:-competencyx}']
       interval: 5s
       timeout: 5s
       retries: 10
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
 
   web:
-    build: .
-    environment:
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-development-secret-key}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
-      DJANGO_CORS_ALLOW_ALL_ORIGINS: ${DJANGO_CORS_ALLOW_ALL_ORIGINS:-true}
-      POSTGRES_DB: ${POSTGRES_DB:-competencyx}
-      POSTGRES_USER: ${POSTGRES_USER:-competencyx}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-competencyx}
-      POSTGRES_HOST: db
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-    depends_on:
-      db:
-        condition: service_healthy
+    <<: *app
+    # ใช้ CMD เดิมของ image (docker/entrypoint.sh) — bootstrap แล้ว exec gunicorn
+    # ไม่แยก service `migrate` แบบ project อื่นเพราะ stack นี้มี consumer เดียว จึงไม่มี race ให้กัน
     ports:
-      - "8000:8000"
+      - '${WEB_PORT:-8000}:8000'
+
+  # ยิงคำสั่ง management ด้วย image เดียวกับ web โดยไม่ต้อง exec เข้า container ที่รันอยู่:
+  #   docker compose run --rm cli manage.py sync_content
+  #   docker compose run --rm cli manage.py simulate_personas --samples-per-role 20
+  cli:
+    <<: *app
+    profiles: ['tools']
+    entrypoint: ['uv', 'run', 'python']
+    command: ['manage.py', 'check']
+    restart: 'no'
 
 volumes:
   postgres_data:

@@ -77,9 +77,19 @@ docker compose up --build
 ```powershell
 docker compose down        # ปิด
 docker compose down -v     # ปิดและลบ volume ของ database ทิ้ง (เริ่มใหม่หมด)
+docker compose logs -f web # ดู log ของแอป
+```
+
+ยิงคำสั่ง management ด้วย image เดียวกันได้ผ่าน service `cli` (อยู่ใน profile `tools` จึงไม่ start เองตอน `up`)
+
+```powershell
+docker compose run --rm cli manage.py sync_content
+docker compose run --rm cli manage.py validate_question_catalog
 ```
 
 คอนเทนเนอร์รันด้วย **gunicorn** (ไม่ใช่ `runserver`) ตาม `docker/entrypoint.sh` ซึ่งจะ `migrate` → `sync_content` → `collectstatic` ให้ก่อนเสมอ
+และต่อ DB ผ่าน `DATABASE_URL` เหมือนที่ Railway ใช้ — stack นี้จึงทดสอบ config ชุดเดียวกับ production
+เปลี่ยนพอร์ตที่เปิดออกมาได้ด้วย `WEB_PORT` / `POSTGRES_PORT` ใน `.env`
 ถ้าอยากได้ auto-reload ตอน dev ให้ใช้ `manage.py runserver` ในหัวข้อ 2 แทน
 
 ---
