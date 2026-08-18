@@ -49,3 +49,7 @@ research/
 .codex-pytest-tmp-*/
 .codex-python-temp/
 .ruff_cache/
+
+# Local tool artifacts (code graph indexes, Playwright MCP captures)
+.codegraph/
+.playwright-mcp/
