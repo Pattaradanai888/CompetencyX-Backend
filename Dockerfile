@@ -1,23 +1,51 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_LINK_MODE=copy \
-    # `default-groups = ["dev"]` in pyproject.toml makes every `uv run` re-sync the dev
-    # group, which would re-download ruff/pytest from PyPI on each container start and
-    # undo the `--no-dev` install below. The image is already provisioned; never re-sync.
-    UV_NO_SYNC=1
-
-WORKDIR /app
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 RUN pip install --no-cache-dir uv
 
-COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+WORKDIR /build
 
-COPY . .
+# Dependencies are installed before the source is copied so that editing code does
+# not invalidate this layer. The cache mount keeps wheels across builds.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
 
-RUN chmod +x docker/entrypoint.sh
+COPY . /build
+
+# --no-dev drops the dev group that pyproject declares as a default group,
+# so pytest/ruff stay out of the runtime image.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev && \
+    chmod +x /build/docker/entrypoint.sh
+
+RUN mkdir -p /usr/src/app && \
+    cp -r /build/. /usr/src/app/
+
+
+# Runtime stage: interpreter, the prepared venv, and the app. No build tooling.
+FROM python:3.12-slim AS production
+
+ENV APPLICATION_ROOT=/usr/src/app \
+    PATH=/opt/venv/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WEB_CONCURRENCY=2 \
+    WEB_TIMEOUT=120
+
+RUN useradd --create-home --uid 1001 appuser
+
+COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+COPY --from=builder --chown=appuser:appuser /usr/src/app "$APPLICATION_ROOT"
+
+WORKDIR "$APPLICATION_ROOT"
+
+# collectstatic writes into static_root/ at boot, so the app must own its directory.
+USER appuser
 
 EXPOSE 8000
 
