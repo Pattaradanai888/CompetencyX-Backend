@@ -177,11 +177,11 @@ Assessment session (flow หลัก)
 # เปิด session (language ใส่ "th" หรือ "en")
 curl.exe -s -X POST http://localhost:8000/api/v1/assessment-sessions/ -H "Content-Type: application/json" -d '{\"language\":\"th\"}'
 
-# ตอบคำถาม (เอา question_id มาจาก current_question ใน response ก่อนหน้า)
-curl.exe -s -X POST http://localhost:8000/api/v1/assessment-sessions/1/answers/ -H "Content-Type: application/json" -d '{\"question_id\":1,\"scale_value\":4}'
+# ตอบคำถาม (session id เป็น UUID จาก response ก่อนหน้า, question_id มาจาก current_question)
+curl.exe -s -X POST http://localhost:8000/api/v1/assessment-sessions/<session-id>/answers/ -H "Content-Type: application/json" -d '{\"question_id\":1,\"scale_value\":4}'
 
 # ดูผลลัพธ์
-curl.exe -s http://localhost:8000/api/v1/assessment-sessions/1/results/
+curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/results/
 ```
 
 ทำซ้ำขั้นตอน "ตอบคำถาม" ไปเรื่อย ๆ จนกว่า `current_question` จะเป็น `null` — backend เป็นคนเลือกคำถามถัดไปให้เอง ฝั่ง frontend ไม่ต้องตัดสินใจ

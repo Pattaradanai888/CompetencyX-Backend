@@ -11,3 +11,22 @@ coverage
 db.sqlite3
 pytest-cache-files-xhmvejqh
 static_root
+
+# Local scratch/tool dirs (some are unreadable, which aborts the build context)
+.codex-pytest-basetemp
+.codex-pytest-tmp
+.codex-pytest-tmp-*
+.codex-python-temp
+.pytest-fix-*
+.pytest-review-*
+.pytest_cache
+.mypy_cache
+.tmp
+.tokensave
+.codegraph
+.playwright-mcp
+.serena
+.claude
+.agents
+.antigravitycli
+test_db.sqlite3
