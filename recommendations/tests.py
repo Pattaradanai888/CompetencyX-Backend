@@ -7,6 +7,7 @@ Two concerns:
   and skill assessment outcome feedback application.
 """
 
+import random
 from types import SimpleNamespace
 from unittest import mock
 
@@ -17,6 +18,7 @@ from assessments.models import AssessmentSession, SkillAssessmentAnswer
 from assessments.services.q_learning import update_q_row
 from assessments.services.recommendation_service import (
     _build_recommendation_state_key,
+    _build_session_rng,
     _calculate_recommendation_reward,
     _calculate_skill_assessment_outcome_reward,
     _get_eligible_recommendation_topics,
@@ -132,8 +134,8 @@ class RecommendationServiceDbTests(TestCase):
         cls.other_topic = RoadmapTopic.objects.create(role=cls.other_role, slug='test-design', title='Test Design', display_order=1)
 
         cls.gated_role = Role.objects.create(slug='frontend-developer', name='Frontend Developer')
-        gated_topic = RoadmapTopic.objects.create(role=cls.gated_role, slug='react', title='React', display_order=1)
-        TopicPrerequisite.objects.create(topic=gated_topic, prerequisite=cls.topic_http, required_mastery_threshold=0.7)
+        cls.gated_topic = RoadmapTopic.objects.create(role=cls.gated_role, slug='react', title='React', display_order=1)
+        TopicPrerequisite.objects.create(topic=cls.gated_topic, prerequisite=cls.topic_http, required_mastery_threshold=0.7)
 
         cls.session = AssessmentSession.objects.create(
             phase=AssessmentSession.Phase.RECOMMENDATION_READY,
@@ -150,9 +152,19 @@ class RecommendationServiceDbTests(TestCase):
             mastery_overrides=mastery_overrides,
         )
 
-    def test_eligible_topics_exclude_prerequisite_gated_topic(self):
+    def test_prerequisite_gated_topics_stay_eligible_without_a_mastery_source(self):
+        # The skill stage that produced mastery was removed, so gating against absent
+        # mastery would make every topic with a real prerequisite unrecommendable.
+        # topic_apis is gated behind topic_http and must still be offered, in roadmap order.
         eligible = _get_eligible_recommendation_topics(self.session, role=self.role)
-        self.assertEqual([topic.id for topic in eligible], [self.topic_http.id, self.topic_databases.id])
+        self.assertEqual(
+            [topic.id for topic in eligible],
+            [self.topic_http.id, self.topic_databases.id, self.topic_apis.id],
+        )
+
+    def test_eligible_topics_are_ordered_by_display_order(self):
+        eligible = _get_eligible_recommendation_topics(self.session, role=self.role)
+        self.assertEqual([topic.display_order for topic in eligible], sorted(topic.display_order for topic in eligible))
 
     def test_state_key_confidence_bucket_boundaries(self):
         expectations = {0.0: 'confidence-0', 0.5: 'confidence-2', 1.0: 'confidence-4'}
@@ -216,13 +228,48 @@ class RecommendationServiceDbTests(TestCase):
         self.assertAlmostEqual(q_row.q_value, 0.675)
 
     @override_settings(**{**Q_LEARNING_SETTINGS, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON': 1.0})
-    def test_exploration_branch_uses_random_choice(self):
-        with mock.patch('assessments.services.recommendation_service.random.choice', return_value=self.topic_databases) as mocked_choice:
-            recommendation = build_recommendation_for_role(self.session, role=self.role, path_kind=Recommendation.PathKind.PREFERRED)
+    def test_exploration_branch_uses_the_injected_rng(self):
+        rng = mock.Mock(spec=random.Random)
+        rng.random.return_value = 0.0
+        rng.choice.side_effect = lambda topics: self.topic_databases
 
-        mocked_choice.assert_called_once()
+        recommendation = build_recommendation_for_role(
+            self.session,
+            role=self.role,
+            path_kind=Recommendation.PathKind.PREFERRED,
+            rng=rng,
+        )
+
+        rng.choice.assert_called_once()
         self.assertEqual(recommendation.topic, self.topic_databases)
         self.assertTrue(RecommendationQValue.objects.filter(state_key=recommendation.state_key, topic=self.topic_databases).exists())
+
+    @override_settings(**{**Q_LEARNING_SETTINGS, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON': 1.0})
+    def test_exploration_is_deterministic_for_the_same_session_state(self):
+        # Pure exploration (epsilon=1.0) is the branch that used the unseeded module RNG,
+        # so the same session state used to yield a different topic on every refresh.
+        first = [(item.role_id, item.path_kind, item.topic_id) for item in refresh_recommendations(self.session)]
+        second = [(item.role_id, item.path_kind, item.topic_id) for item in refresh_recommendations(self.session)]
+        third = [(item.role_id, item.path_kind, item.topic_id) for item in refresh_recommendations(self.session)]
+
+        self.assertEqual(first, second)
+        self.assertEqual(second, third)
+        self.assertTrue(all(topic_id is not None for _role_id, _path_kind, topic_id in first))
+
+    @override_settings(**{**Q_LEARNING_SETTINGS, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON': 1.0})
+    def test_exploration_differs_across_sessions(self):
+        # Determinism must not collapse into "every respondent gets the same topic".
+        other_session = AssessmentSession.objects.create(
+            phase=AssessmentSession.Phase.RECOMMENDATION_READY,
+            preferred_role=self.role,
+            best_fit_role=self.role,
+            best_fit_confidence=0.5,
+        )
+        seeds = {
+            _build_session_rng(session, state_key='backend-developer:preferred').random()
+            for session in (self.session, other_session)
+        }
+        self.assertEqual(len(seeds), 2)
 
     @override_settings(ASSESSMENT_RECOMMENDATION_POLICY='rule_based')
     def test_refresh_skips_and_clears_when_phase_is_not_recommendation_ready(self):
@@ -255,9 +302,22 @@ class RecommendationServiceDbTests(TestCase):
         self.assertEqual(recommendations[0].topic, self.topic_http)
 
     @override_settings(ASSESSMENT_RECOMMENDATION_POLICY='rule_based')
+    def test_refresh_recommends_a_gated_role_whose_only_topic_has_a_prerequisite(self):
+        # Regression guard: this role used to produce a topicless recommendation
+        # because its only topic is gated behind a prerequisite with no mastery source.
+        self.session.preferred_role = self.gated_role
+        self.session.best_fit_role = self.gated_role
+
+        recommendations = refresh_recommendations(self.session)
+
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0].topic, self.gated_topic)
+
+    @override_settings(ASSESSMENT_RECOMMENDATION_POLICY='rule_based')
     def test_refresh_creates_topicless_rule_based_recommendation_when_nothing_is_eligible(self):
         self.session.preferred_role = self.gated_role
         self.session.best_fit_role = self.gated_role
+        RoadmapTopic.objects.filter(role=self.gated_role).update(is_active=False)
 
         recommendations = refresh_recommendations(self.session)
 

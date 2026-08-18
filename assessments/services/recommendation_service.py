@@ -20,7 +20,7 @@ RECOMMENDATION_POLICY_RULE_BASED = Recommendation.PolicyType.RULE_BASED
 RECOMMENDATION_POLICY_Q_LEARNING = Recommendation.PolicyType.Q_LEARNING
 
 
-def refresh_recommendations(session: AssessmentSession):
+def refresh_recommendations(session: AssessmentSession, *, rng: random.Random | None = None):
     Recommendation.objects.filter(session=session).delete()
     if session.phase != AssessmentSession.Phase.RECOMMENDATION_READY:
         logger.info(
@@ -40,6 +40,7 @@ def refresh_recommendations(session: AssessmentSession):
             session,
             role=preferred_role,
             path_kind=Recommendation.PathKind.PREFERRED,
+            rng=rng,
         )
         if recommendation is not None:
             recommendations.append(recommendation)
@@ -49,6 +50,7 @@ def refresh_recommendations(session: AssessmentSession):
             session,
             role=best_fit_role,
             path_kind=Recommendation.PathKind.BEST_FIT,
+            rng=rng,
         )
         if recommendation is not None:
             recommendations.append(recommendation)
@@ -58,6 +60,7 @@ def refresh_recommendations(session: AssessmentSession):
             session,
             role=best_fit_role,
             path_kind=Recommendation.PathKind.PREFERRED,
+            rng=rng,
         )
         if recommendation is not None:
             recommendations.append(recommendation)
@@ -72,7 +75,13 @@ def refresh_recommendations(session: AssessmentSession):
     return recommendations
 
 
-def build_recommendation_for_role(session: AssessmentSession, *, role, path_kind: str):
+def build_recommendation_for_role(
+    session: AssessmentSession,
+    *,
+    role,
+    path_kind: str,
+    rng: random.Random | None = None,
+):
     eligible_topics = _get_eligible_recommendation_topics(session, role=role)
     recommendation_policy = _get_recommendation_policy()
 
@@ -82,6 +91,7 @@ def build_recommendation_for_role(session: AssessmentSession, *, role, path_kind
             role=role,
             path_kind=path_kind,
             eligible_topics=eligible_topics,
+            rng=rng,
         )
 
     return _build_rule_based_recommendation_for_role(
@@ -99,13 +109,55 @@ def _get_recommendation_policy() -> str:
     return RECOMMENDATION_POLICY_RULE_BASED
 
 
+def _mastery_gating_enabled() -> bool:
+    """Whether prerequisite gating has a mastery source to gate against.
+
+    The skill stage that populated ``TopicMastery`` was removed, so no per-topic
+    mastery exists today. Gating against absent mastery made every topic with a
+    real prerequisite permanently unrecommendable, so gating stays off until a
+    mastery source returns; roadmap order is still respected through
+    ``display_order``. Flip this to ``True`` when mastery comes back.
+    """
+    return False
+
+
+def _prerequisites_satisfied(topic, mastery_scores: dict[int, float]) -> bool:
+    if not _mastery_gating_enabled():
+        return True
+    prerequisites = getattr(topic, 'prefetched_prerequisites', None)
+    if prerequisites is None:
+        prerequisites = list(topic.prerequisites.all())
+    return all(
+        mastery_scores.get(prerequisite.prerequisite_id, 0.0) >= prerequisite.required_mastery_threshold
+        for prerequisite in prerequisites
+    )
+
+
 def _get_eligible_recommendation_topics(session: AssessmentSession, *, role) -> list:
-    eligible_topics = []
-    for topic in role.topics.filter(is_active=True).prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites')):
-        prerequisites = getattr(topic, 'prefetched_prerequisites', [])
-        if all(prerequisite.required_mastery_threshold <= 0.0 for prerequisite in prerequisites):
-            eligible_topics.append(topic)
-    return eligible_topics
+    mastery_scores: dict[int, float] = {}
+    topics = (
+        role.topics.filter(is_active=True)
+        .prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites'))
+        .order_by('display_order', 'id')
+    )
+    return [
+        topic
+        for topic in topics
+        if mastery_scores.get(topic.id, 0.0) < RECOMMENDATION_MASTERY_THRESHOLD
+        and _prerequisites_satisfied(topic, mastery_scores)
+    ]
+
+
+def _build_session_rng(session: AssessmentSession, *, state_key: str) -> random.Random:
+    """Deterministic per-(session, state) RNG for epsilon-greedy exploration.
+
+    ``refresh_recommendations`` re-runs on every answer submission and on every
+    results read, so an unseeded RNG produced a different recommended topic for
+    the same session state on each call. Seeding from the session id and the
+    state key keeps exploration varied across sessions and states while making
+    repeated calls for one state reproducible.
+    """
+    return random.Random(f'{session.id}:{state_key}')  # noqa: S311 - selection policy, not a security primitive
 
 
 def _build_rule_based_recommendation_for_role(
@@ -146,6 +198,7 @@ def _build_q_learning_recommendation_for_role(
     role,
     path_kind: str,
     eligible_topics: list,
+    rng: random.Random | None = None,
 ):
     state_key = _build_recommendation_state_key(session, role=role, path_kind=path_kind)
 
@@ -167,6 +220,7 @@ def _build_q_learning_recommendation_for_role(
         path_kind=path_kind,
         state_key=state_key,
         eligible_topics=eligible_topics,
+        rng=rng,
     )
     return Recommendation.objects.create(
         session=session,
@@ -218,14 +272,17 @@ def _build_recommendation_state_key(
     )
 
 
-def _select_q_learning_topic(
+def _select_q_learning_topic(  # noqa: PLR0913 - keyword-only selection inputs
     session: AssessmentSession,
     *,
     role,
     path_kind: str,
     state_key: str,
     eligible_topics: list,
+    rng: random.Random | None = None,
 ) -> tuple[object, float, float]:
+    if rng is None:
+        rng = _build_session_rng(session, state_key=state_key)
     epsilon = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON', 0.15))
     alpha = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_ALPHA', 0.35))
     gamma = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_GAMMA', 0.8))
@@ -240,8 +297,8 @@ def _select_q_learning_topic(
         )
     }
 
-    if random.random() < epsilon:  # noqa: S311
-        chosen_topic = random.choice(eligible_topics)  # noqa: S311
+    if rng.random() < epsilon:
+        chosen_topic = rng.choice(eligible_topics)
     else:
         chosen_topic = max(
             eligible_topics,
@@ -313,13 +370,17 @@ def _get_projected_next_q_value(
         mastery_overrides=mastery_overrides,
     )
 
-    projected_eligible_topics = []
-    for topic in role.topics.filter(is_active=True).prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites')):
-        if mastery_overrides.get(topic.id, 0.0) >= RECOMMENDATION_MASTERY_THRESHOLD:
-            continue
-        prerequisites = getattr(topic, 'prefetched_prerequisites', [])
-        if all(mastery_overrides.get(prerequisite.prerequisite_id, 0.0) >= prerequisite.required_mastery_threshold for prerequisite in prerequisites):
-            projected_eligible_topics.append(topic)
+    projected_topics = (
+        role.topics.filter(is_active=True)
+        .prefetch_related(Prefetch('prerequisites', to_attr='prefetched_prerequisites'))
+        .order_by('display_order', 'id')
+    )
+    projected_eligible_topics = [
+        topic
+        for topic in projected_topics
+        if mastery_overrides.get(topic.id, 0.0) < RECOMMENDATION_MASTERY_THRESHOLD
+        and _prerequisites_satisfied(topic, mastery_overrides)
+    ]
 
     if not projected_eligible_topics:
         return 0.0
