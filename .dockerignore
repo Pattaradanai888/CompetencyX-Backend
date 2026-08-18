@@ -10,3 +10,4 @@ __pycache__
 coverage
 db.sqlite3
 pytest-cache-files-xhmvejqh
+static_root
