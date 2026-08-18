@@ -85,6 +85,58 @@ class RoadmapTopicSerializer(serializers.ModelSerializer):
         )
 
 
+class RoadmapPrerequisiteEdgeSerializer(serializers.Serializer):
+    """One prerequisite edge of a role's roadmap graph.
+
+    ``prerequisite`` may point at a topic owned by another role, so a client
+    rendering the graph should tolerate an edge whose endpoint is not in the
+    ``topics`` list.
+    """
+
+    topic = serializers.SlugField(source='topic.slug', read_only=True)
+    prerequisite = serializers.SlugField(source='prerequisite.slug', read_only=True)
+    required_mastery_threshold = serializers.FloatField(read_only=True)
+    dependency_weight = serializers.FloatField(read_only=True)
+
+
+class ExternalRoadmapTopicSerializer(serializers.Serializer):
+    """One topic of the role's external roadmap, served from imported master data.
+
+    The list is already ordered so a prerequisite precedes what it unlocks;
+    ``prerequisite_titles`` / ``follow_on_titles`` / ``subtopic_titles`` are the
+    graph relationships resolved to human-readable titles.
+    """
+
+    slug = serializers.CharField(read_only=True)
+    title = serializers.CharField(read_only=True)
+    topic_group = serializers.CharField(read_only=True, allow_blank=True)
+    node_type = serializers.CharField(read_only=True)
+    display_order = serializers.IntegerField(read_only=True)
+    parent_title = serializers.CharField(read_only=True, allow_blank=True)
+    prerequisite_titles = serializers.ListField(child=serializers.CharField(), read_only=True)
+    subtopic_titles = serializers.ListField(child=serializers.CharField(), read_only=True)
+    follow_on_titles = serializers.ListField(child=serializers.CharField(), read_only=True)
+
+
+class ExternalRoadmapSourceSerializer(serializers.Serializer):
+    """Provenance of the imported third-party graph backing ``external_topics``."""
+
+    source = serializers.CharField(read_only=True)
+    source_url = serializers.CharField(read_only=True, allow_blank=True)
+    retrieved_on = serializers.DateField(read_only=True, allow_null=True)
+    node_count = serializers.IntegerField(read_only=True)
+
+
+class RoleRoadmapSerializer(serializers.Serializer):
+    """A role's full roadmap: the role, its active topics in prerequisite order, and the edges between them."""
+
+    role = RoleSerializer(read_only=True)
+    topics = RoadmapTopicSerializer(many=True, read_only=True)
+    prerequisite_edges = RoadmapPrerequisiteEdgeSerializer(many=True, read_only=True)
+    external_topics = ExternalRoadmapTopicSerializer(many=True, read_only=True)
+    external_source = ExternalRoadmapSourceSerializer(read_only=True, allow_null=True)
+
+
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption

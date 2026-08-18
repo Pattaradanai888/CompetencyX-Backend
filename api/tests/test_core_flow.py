@@ -1,10 +1,12 @@
 import json
+from pathlib import Path
 
 from django.urls import reverse
 from rest_framework import status
 
 from assessments.models import AssessmentSession
 from roadmaps.models import Question
+from roadmaps.seeds import import_external_roadmap_graph
 
 from .base import AssessmentFlowTestCase
 
@@ -38,6 +40,71 @@ class CoreFlowTests(AssessmentFlowTestCase):
         self.assertEqual(topics_response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(topics_response.json()), 3)
         self.assertEqual(topics_response.json()[1]['prerequisites'][0]['topic_id'], self.backend_http.id)
+
+    def test_role_roadmap_returns_ordered_topics_and_prerequisite_edges(self):
+        response = self.client.get(reverse('role-roadmap', kwargs={'slug': self.backend_role.slug}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = response.json()
+        self.assertEqual(payload['role']['slug'], self.backend_role.slug)
+        self.assertEqual(payload['role']['name'], self.backend_role.name)
+        self.assertEqual(
+            [topic['slug'] for topic in payload['topics']],
+            ['http', 'databases', 'apis'],
+        )
+        self.assertEqual(
+            [(edge['prerequisite'], edge['topic']) for edge in payload['prerequisite_edges']],
+            [('http', 'databases'), ('databases', 'apis')],
+        )
+        self.assertEqual(payload['prerequisite_edges'][0]['required_mastery_threshold'], 0.7)
+
+    def test_role_roadmap_excludes_inactive_topics(self):
+        self.backend_databases.is_active = False
+        self.backend_databases.save(update_fields=['is_active'])
+
+        payload = self.client.get(reverse('role-roadmap', kwargs={'slug': self.backend_role.slug})).json()
+
+        self.assertEqual([topic['slug'] for topic in payload['topics']], ['http', 'apis'])
+        # The edge from the now-inactive topic is not walked, but the edge into `apis` survives.
+        self.assertEqual([edge['topic'] for edge in payload['prerequisite_edges']], ['apis'])
+
+    def test_role_roadmap_serves_the_imported_external_graph_with_provenance(self):
+        import_external_roadmap_graph(
+            snapshot_path=Path('data/upstream/roadmap_sh/backend-engineer.sample.json'),
+            role=self.backend_role,
+            source_url='https://roadmap.sh/backend',
+        )
+
+        payload = self.client.get(reverse('role-roadmap', kwargs={'slug': self.backend_role.slug})).json()
+
+        self.assertEqual(len(payload['external_topics']), 3)
+        first = payload['external_topics'][0]
+        self.assertIn('title', first)
+        self.assertIn('prerequisite_titles', first)
+        self.assertEqual(payload['external_source']['source'], 'roadmap.sh')
+        self.assertEqual(payload['external_source']['source_url'], 'https://roadmap.sh/backend')
+        self.assertEqual(payload['external_source']['node_count'], 3)
+
+    def test_role_roadmap_without_a_snapshot_returns_an_empty_external_graph(self):
+        # A role with no vendored snapshot must degrade to its curated topics,
+        # never fail, and never reach out to a third-party host.
+        payload = self.client.get(reverse('role-roadmap', kwargs={'slug': self.qa_role.slug})).json()
+
+        self.assertEqual(payload['external_topics'], [])
+        self.assertIsNone(payload['external_source'])
+        self.assertTrue(payload['topics'])
+
+    def test_role_roadmap_unknown_slug_returns_404(self):
+        response = self.client.get(reverse('role-roadmap', kwargs={'slug': 'no-such-role'}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_role_roadmap_is_documented_in_the_openapi_schema(self):
+        schema_payload = json.loads(self.client.get(reverse('api-schema'), HTTP_ACCEPT='application/json').content)
+        operation = schema_payload['paths']['/api/v1/catalog/roles/{slug}/roadmap/']['get']
+
+        self.assertEqual(operation['operationId'], 'retrieveRoleRoadmap')
+        self.assertIn('404', operation['responses'])
+        self.assertIn('RoleRoadmap', schema_payload['components']['schemas'])
 
     def test_role_likert_question_shape_and_submission_contract(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')

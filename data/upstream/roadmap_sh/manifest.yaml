@@ -94,10 +94,40 @@ files:
     role_slug: technical-writer
     source_url: https://roadmap.sh/technical-writer
     retrieved: 2026-06-22
+  - file: blockchain.json
+    role_slug: blockchain-developer
+    source_url: https://roadmap.sh/blockchain
+    retrieved: 2026-08-18
+  - file: cyber-security.json
+    role_slug: cyber-security-engineer-analyst
+    source_url: https://roadmap.sh/cyber-security
+    retrieved: 2026-08-18
+  - file: devrel.json
+    role_slug: developer-relations
+    source_url: https://roadmap.sh/devrel
+    retrieved: 2026-08-18
+  - file: devsecops.json
+    role_slug: devsecops-engineer
+    source_url: https://roadmap.sh/devsecops
+    retrieved: 2026-08-18
+  - file: ios.json
+    role_slug: ios-developer
+    source_url: https://roadmap.sh/ios
+    retrieved: 2026-08-18
+  - file: postgresql-dba.json
+    role_slug: postgresql-developer-dba
+    source_url: https://roadmap.sh/postgresql-dba
+    retrieved: 2026-08-18
+  - file: ux-design.json
+    role_slug: ux-designer
+    source_url: https://roadmap.sh/ux-design
+    retrieved: 2026-08-18
 
-# Roles in data/content/roles.yaml WITHOUT a roadmap.sh export (evidence for
-# these must come from the SWEBOK reference or other cited sources):
-# frontend-developer -> covered by frontend.json
-# missing exports: devsecops-engineer, postgresql-developer-dba, ios-developer,
-# blockchain-developer, cyber-security-engineer-analyst, ux-designer,
-# developer-relations
+# Every role in data/content/roles.yaml now has an export.
+#
+# Retrieval note: the 2026-06-22 exports were taken from the
+# `developer-roadmap` GitHub repository, which has since restructured and no
+# longer publishes the React-Flow graph JSON at all (only topic markdown). The
+# 2026-08-18 exports were therefore taken from roadmap.sh itself, which serves
+# the same graph shape at https://roadmap.sh/<slug>.json. Use that URL when
+# refreshing a snapshot; the GitHub paths are dead.

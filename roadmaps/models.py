@@ -85,6 +85,84 @@ class TopicPrerequisite(models.Model):
         return f'{self.prerequisite} -> {self.topic}'
 
 
+class ExternalRoadmapNode(models.Model):
+    """One node of a third-party roadmap graph (roadmap.sh), held as master data.
+
+    Deliberately separate from :class:`RoadmapTopic`. ``RoadmapTopic`` is the
+    curated, weight-bearing catalog that drives scoring and recommendations
+    (a few topics per role); a single roadmap.sh export contributes hundreds of
+    nodes whose only job is to describe a role's learning map. Merging the two
+    would silently rewrite what the recommendation engine can choose from.
+
+    Rows are imported from the vendored snapshots in ``data/upstream/roadmap_sh``
+    so the graph is reproducible offline and carries its provenance.
+    """
+
+    class NodeType(models.TextChoices):
+        TOPIC = 'topic', 'Topic'
+        SUBTOPIC = 'subtopic', 'Subtopic'
+
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='external_roadmap_nodes',
+    )
+    parent = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='children',
+    )
+    external_id = models.CharField(max_length=128)
+    slug = models.SlugField(max_length=200)
+    title = models.CharField(max_length=255)
+    topic_group = models.CharField(max_length=255, blank=True, default='')
+    node_type = models.CharField(max_length=16, choices=NodeType.choices, default=NodeType.TOPIC)
+    display_order = models.PositiveIntegerField(default=0)
+    source = models.CharField(max_length=64, default='roadmap.sh')
+    source_url = models.CharField(max_length=255, blank=True, default='')
+    source_version = models.CharField(max_length=64, blank=True, default='')
+    retrieved_on = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['role__name', 'display_order', 'title']
+        unique_together = [('role', 'external_id')]
+        indexes = [models.Index(fields=['role', 'slug'])]
+
+    def __str__(self) -> str:
+        return f'{self.role.name}: {self.title} ({self.source})'
+
+
+class ExternalRoadmapEdge(models.Model):
+    """A directed prerequisite edge of an external roadmap graph (source -> target)."""
+
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='external_roadmap_edges',
+    )
+    source_node = models.ForeignKey(
+        ExternalRoadmapNode,
+        on_delete=models.CASCADE,
+        related_name='outgoing_edges',
+    )
+    target_node = models.ForeignKey(
+        ExternalRoadmapNode,
+        on_delete=models.CASCADE,
+        related_name='incoming_edges',
+    )
+
+    class Meta:
+        ordering = ['role__name', 'source_node__display_order', 'target_node__display_order']
+        unique_together = [('source_node', 'target_node')]
+
+    def __str__(self) -> str:
+        return f'{self.source_node.title} -> {self.target_node.title}'
+
+
 class Question(models.Model):
     class Stage(models.TextChoices):
         ROLE = 'role', 'Role Discovery'

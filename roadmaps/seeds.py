@@ -5,6 +5,8 @@ from types import SimpleNamespace
 import yaml
 
 from roadmaps.models import (
+    ExternalRoadmapEdge,
+    ExternalRoadmapNode,
     Question,
     QuestionOption,
     QuestionTopicSignal,
@@ -125,6 +127,165 @@ def import_roadmap_snapshot(*, snapshot_path: Path, role_slug: str, source='road
                 'dependency_weight': 1.0,
             },
         )
+
+
+EXTERNAL_ROADMAP_SOURCE = 'roadmap.sh'
+
+
+def load_external_roadmap_manifest(*, snapshot_dir: Path = UPSTREAM_SNAPSHOT_DIR) -> list[dict]:
+    """Manifest entries that describe a real role snapshot.
+
+    Entries with ``role_slug: null`` (the hand-made loader-test sample) are skipped.
+    """
+    manifest_path = snapshot_dir / 'manifest.yaml'
+    if not manifest_path.exists():
+        return []
+
+    manifest = _load_yaml(manifest_path)
+    return [entry for entry in manifest.get('files', []) if entry.get('role_slug')]
+
+
+def sync_external_roadmap_graphs(*, snapshot_dir: Path = UPSTREAM_SNAPSHOT_DIR, stdout=None) -> dict[str, int]:
+    """Import every vendored roadmap.sh snapshot into the external master-data tables.
+
+    Idempotent: re-running replaces each role's graph in place. Roles named in the
+    manifest that are not in the curated catalog, and manifest files that are
+    missing from disk, are skipped rather than raised, so a partial upstream
+    directory never blocks content sync.
+    """
+    roles_by_slug = {role.slug: role for role in Role.objects.all()}
+    imported = {}
+
+    for entry in load_external_roadmap_manifest(snapshot_dir=snapshot_dir):
+        role = roles_by_slug.get(entry['role_slug'])
+        snapshot_path = snapshot_dir / entry['file']
+        if role is None or not snapshot_path.exists():
+            continue
+        imported[role.slug] = import_external_roadmap_graph(
+            snapshot_path=snapshot_path,
+            role=role,
+            source_url=entry.get('source_url') or '',
+            retrieved_on=entry.get('retrieved'),
+        )
+
+    if stdout is not None:
+        covered = len(imported)
+        total_roles = Role.objects.filter(is_active=True).count()
+        stdout.write(
+            f'Imported {sum(imported.values())} external roadmap nodes for {covered} of {total_roles} roles '
+            f'({ExternalRoadmapEdge.objects.count()} edges).'
+        )
+    return imported
+
+
+def import_external_roadmap_graph(  # noqa: PLR0913 - snapshot identity plus its provenance fields
+    *,
+    snapshot_path: Path,
+    role: Role,
+    source: str = EXTERNAL_ROADMAP_SOURCE,
+    source_url: str = '',
+    source_version: str = '',
+    retrieved_on=None,
+) -> int:
+    """Replace ``role``'s external roadmap graph with the contents of ``snapshot_path``.
+
+    Returns the number of nodes imported.
+    """
+    snapshot = json.loads(snapshot_path.read_text(encoding='utf-8'))
+    topic_group_map = _extract_topic_group_map(snapshot)
+    nodes = _extract_snapshot_nodes(snapshot)
+    edges = _extract_snapshot_edges(snapshot)
+    nodes = _topologically_ordered_nodes(nodes, edges)
+
+    ExternalRoadmapNode.objects.filter(role=role, source=source).delete()
+
+    nodes_by_external_id: dict[str, ExternalRoadmapNode] = {}
+    for display_order, node in enumerate(nodes, start=1):
+        nodes_by_external_id[node['id']] = ExternalRoadmapNode(
+            role=role,
+            external_id=node['id'],
+            slug=node['slug'][:200],
+            title=node['title'][:255],
+            topic_group=topic_group_map.get(node['id'], '')[:255],
+            node_type=node['type'],
+            display_order=display_order,
+            source=source,
+            source_url=source_url,
+            source_version=source_version,
+            retrieved_on=retrieved_on,
+        )
+    ExternalRoadmapNode.objects.bulk_create(list(nodes_by_external_id.values()))
+
+    known_edges = [
+        (nodes_by_external_id[edge['source']], nodes_by_external_id[edge['target']])
+        for edge in edges
+        if edge['source'] in nodes_by_external_id and edge['target'] in nodes_by_external_id
+    ]
+
+    ExternalRoadmapEdge.objects.bulk_create(
+        [
+            ExternalRoadmapEdge(role=role, source_node=source_node, target_node=target_node)
+            for source_node, target_node in known_edges
+        ],
+        ignore_conflicts=True,
+    )
+
+    _assign_external_roadmap_parents(known_edges)
+    return len(nodes_by_external_id)
+
+
+def _topologically_ordered_nodes(nodes: list[dict], edges: list[dict]) -> list[dict]:
+    """Order nodes so a prerequisite always precedes what it unlocks.
+
+    Kahn's algorithm over the snapshot's own edges; ties and nodes in a cycle
+    keep their original export order, which follows the roadmap's visual layout.
+    The order is computed once at import time and stored as ``display_order``
+    so every read serves the same sequence.
+    """
+    nodes_by_id = {node['id']: node for node in nodes}
+    adjacency: dict[str, list[str]] = {node_id: [] for node_id in nodes_by_id}
+    in_degree: dict[str, int] = dict.fromkeys(nodes_by_id, 0)
+
+    for edge in edges:
+        if edge['source'] in nodes_by_id and edge['target'] in nodes_by_id:
+            adjacency[edge['source']].append(edge['target'])
+            in_degree[edge['target']] += 1
+
+    queue = [node_id for node_id in nodes_by_id if in_degree[node_id] == 0]
+    ordered: list[dict] = []
+    while queue:
+        node_id = queue.pop(0)
+        ordered.append(nodes_by_id[node_id])
+        for neighbour in adjacency[node_id]:
+            in_degree[neighbour] -= 1
+            if in_degree[neighbour] == 0:
+                queue.append(neighbour)
+
+    if len(ordered) < len(nodes):
+        placed = {node['id'] for node in ordered}
+        ordered.extend(node for node in nodes if node['id'] not in placed)
+    return ordered
+
+
+def _assign_external_roadmap_parents(known_edges: list[tuple[ExternalRoadmapNode, ExternalRoadmapNode]]) -> None:
+    """Nest subtopics under the topic that points at them.
+
+    roadmap.sh models "subtopic of" as an ordinary edge from a topic to a
+    subtopic, so an edge into a subtopic from a non-subtopic is a parent link.
+    The first such edge wins, matching the upstream layout.
+    """
+    parented: list[ExternalRoadmapNode] = []
+    for source_node, target_node in known_edges:
+        if (
+            target_node.node_type == ExternalRoadmapNode.NodeType.SUBTOPIC
+            and source_node.node_type != ExternalRoadmapNode.NodeType.SUBTOPIC
+            and target_node.parent_id is None
+        ):
+            target_node.parent = source_node
+            parented.append(target_node)
+
+    if parented:
+        ExternalRoadmapNode.objects.bulk_update(parented, ['parent'])
 
 
 def _sync_roles(role_seeds: list[dict]):

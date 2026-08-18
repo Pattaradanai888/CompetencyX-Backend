@@ -11,6 +11,8 @@ from django.test import TestCase
 
 from assessments.models import Answer, AssessmentSession, SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
 from roadmaps.models import (
+    ExternalRoadmapEdge,
+    ExternalRoadmapNode,
     Question,
     QuestionOption,
     RoadmapTopic,
@@ -18,7 +20,13 @@ from roadmaps.models import (
     TopicPrerequisite,
 )
 from roadmaps.questionnaire import CORE_ROLE_DIMENSIONS, ROLE_PROFILE_WEIGHTS, SWEBOK_KNOWLEDGE_AREAS
-from roadmaps.seeds import _sync_questions, load_curated_catalog, validate_curated_catalog
+from roadmaps.seeds import (
+    _sync_questions,
+    import_external_roadmap_graph,
+    load_curated_catalog,
+    sync_external_roadmap_graphs,
+    validate_curated_catalog,
+)
 
 
 class SyncContentTests(TestCase):
@@ -256,6 +264,51 @@ class SyncContentTests(TestCase):
         assert role.swebok_source_version == 'SWEBOK V4.0'
         assert role.top_ka_codes == ['KA4', 'KA2', 'KA6']
         assert role.core_tasks[0]['ka_codes'] == ['KA2', 'KA4']
+
+    def test_sync_content_imports_external_roadmap_graphs_from_the_manifest(self):
+        # sync_content already ran in setUpTestData.
+        backend = Role.objects.get(slug='backend-developer')
+        nodes = ExternalRoadmapNode.objects.filter(role=backend)
+
+        assert nodes.exists()
+        assert nodes.filter(node_type=ExternalRoadmapNode.NodeType.SUBTOPIC, parent__isnull=False).exists()
+        assert ExternalRoadmapEdge.objects.filter(role=backend).exists()
+
+        provenance = nodes.first()
+        assert provenance.source == 'roadmap.sh'
+        assert provenance.source_url == 'https://roadmap.sh/backend'
+        assert provenance.retrieved_on is not None
+
+    def test_external_roadmap_graphs_do_not_pollute_the_curated_topic_catalog(self):
+        # The curated catalog drives scoring and recommendations; the external graph is
+        # an order of magnitude larger and must stay out of it.
+        _roles_data, topics_data, _questions_data = load_curated_catalog()
+        assert RoadmapTopic.objects.count() == len(topics_data['topics'])
+        assert ExternalRoadmapNode.objects.count() > RoadmapTopic.objects.count()
+
+    def test_external_roadmap_import_is_idempotent(self):
+        before = (ExternalRoadmapNode.objects.count(), ExternalRoadmapEdge.objects.count())
+
+        sync_external_roadmap_graphs()
+
+        assert (ExternalRoadmapNode.objects.count(), ExternalRoadmapEdge.objects.count()) == before
+
+    def test_external_roadmap_import_orders_prerequisites_before_dependents(self):
+        role = Role.objects.get(slug='backend-developer')
+        role.external_roadmap_nodes.all().delete()
+
+        import_external_roadmap_graph(
+            snapshot_path=Path('data/upstream/roadmap_sh/backend-engineer.sample.json'),
+            role=role,
+            source_url='https://example.test/sample',
+        )
+
+        orders = {node.title: node.display_order for node in role.external_roadmap_nodes.all()}
+        assert len(orders) == 3
+        edges = ExternalRoadmapEdge.objects.filter(role=role).select_related('source_node', 'target_node')
+        assert edges.count() == 2
+        for edge in edges:
+            assert edge.source_node.display_order < edge.target_node.display_order
 
     def test_import_roadmap_snapshot_command_normalizes_raw_graph(self):
         snapshot_path = Path('data/upstream/roadmap_sh/backend-engineer.sample.json')
