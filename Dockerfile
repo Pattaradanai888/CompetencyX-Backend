@@ -10,11 +10,13 @@ WORKDIR /build
 
 # Dependencies are installed before the source is copied so that editing code does
 # not invalidate this layer. The cache mount keeps wheels across builds.
-# Railway's builder rejects a cache mount without an id, and the id must literally
-# spell out the service (s/<service id>-<target>) for the cache to be reused.
+#
+# Two constraints come from Railway's builder: a cache mount must carry an id, and
+# that id has to literally spell out s/<service id>-<target> for the cache to be
+# reused. It also supports no mount type other than cache, which is why the lock
+# files are copied in rather than bind-mounted for the install.
+COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,id=s/2ac3782d-47d9-493b-a8a8-a9796b4f5510-/root/.cache/uv,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev
 
 COPY . /build
