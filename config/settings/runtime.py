@@ -51,8 +51,14 @@ CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in _env_list('DJANGO_CSRF_TRU
 # so the host is not known when the image is built.
 platform_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
 if platform_domain:
-    if platform_domain not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(platform_domain)
+    # Railway sends its deploy healthcheck from healthcheck.railway.app and reaches the
+    # container over the private network, so neither request carries the public domain.
+    # Rejecting them fails the deploy even though the app is up.
+    platform_hosts = [platform_domain, 'healthcheck.railway.app']
+    private_domain = os.getenv('RAILWAY_PRIVATE_DOMAIN')
+    if private_domain:
+        platform_hosts.append(private_domain)
+    ALLOWED_HOSTS.extend(host for host in platform_hosts if host not in ALLOWED_HOSTS)
     platform_origin = f'https://{platform_domain}'
     if platform_origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(platform_origin)
