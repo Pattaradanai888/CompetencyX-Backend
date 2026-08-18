@@ -10,7 +10,9 @@ WORKDIR /build
 
 # Dependencies are installed before the source is copied so that editing code does
 # not invalidate this layer. The cache mount keeps wheels across builds.
-RUN --mount=type=cache,target=/root/.cache/uv \
+# Railway's builder rejects a cache mount without an id, and the id must literally
+# spell out the service (s/<service id>-<target>) for the cache to be reused.
+RUN --mount=type=cache,id=s/2ac3782d-47d9-493b-a8a8-a9796b4f5510-/root/.cache/uv,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev
@@ -19,7 +21,7 @@ COPY . /build
 
 # --no-dev drops the dev group that pyproject declares as a default group,
 # so pytest/ruff stay out of the runtime image.
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,id=s/2ac3782d-47d9-493b-a8a8-a9796b4f5510-/root/.cache/uv,target=/root/.cache/uv \
     uv sync --frozen --no-dev && \
     chmod +x /build/docker/entrypoint.sh
 
