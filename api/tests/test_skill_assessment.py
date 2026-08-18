@@ -21,7 +21,13 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertEqual(initial_state_response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             initial_state_response.json(),
-            {'completed': False, 'answers': {}, 'completed_at': None},
+            {
+                'completed': False,
+                'answers': {},
+                'completed_at': None,
+                'topic_mastery': {},
+                'recommended_topics': [],
+            },
         )
         payload = {
             'completed': True,

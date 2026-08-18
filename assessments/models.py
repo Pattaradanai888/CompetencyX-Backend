@@ -142,10 +142,28 @@ class Answer(models.Model):
 
 
 class SkillAssessmentQuestion(models.Model):
-    question_id = models.SlugField(max_length=64, unique=True)
+    """One Skill Assessment item.
+
+    An item either names a topic from a role's roadmap (``role`` and
+    ``topic_slug`` set) or is a role-independent fallback item (both empty).
+    Topic-anchored items are what make the assessment measure readiness *for a
+    role*: the object the respondent rates is the object the roadmap orders and
+    the recommendation names. See ADR-0002.
+    """
+
+    question_id = models.SlugField(max_length=128, unique=True)
+    role = models.ForeignKey(
+        'roadmaps.Role',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='skill_assessment_questions',
+    )
+    topic_slug = models.SlugField(max_length=200, blank=True, default='')
+    topic_title = models.CharField(max_length=255, blank=True, default='')
     prompt = models.TextField()
     translations = models.JSONField(default=dict, blank=True)
-    dimension_key = models.SlugField(max_length=64)
+    dimension_key = models.SlugField(max_length=128)
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -163,8 +181,15 @@ class SkillAssessmentDimension(models.Model):
         PSP = 'psp', 'PSP'
         SDLC = 'sdlc', 'SDLC'
 
-    dimension_key = models.SlugField(max_length=64, unique=True)
-    label = models.CharField(max_length=128)
+    dimension_key = models.SlugField(max_length=128, unique=True)
+    role = models.ForeignKey(
+        'roadmaps.Role',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='skill_assessment_dimensions',
+    )
+    label = models.CharField(max_length=255)
     track = models.CharField(max_length=16, choices=Track.choices)
     low_score_action = models.TextField()
     translations = models.JSONField(default=dict, blank=True)
@@ -214,7 +239,7 @@ class SkillAssessmentAnswer(models.Model):
         on_delete=models.CASCADE,
         related_name='skill_assessment_answers',
     )
-    question_id = models.SlugField(max_length=64)
+    question_id = models.SlugField(max_length=128)
     value = models.SmallIntegerField()
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -239,7 +264,7 @@ class SkillAssessmentFeedbackEvent(models.Model):
         on_delete=models.CASCADE,
         related_name='skill_assessment_feedback_events',
     )
-    question_id = models.SlugField(max_length=64)
+    question_id = models.SlugField(max_length=128)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -252,7 +277,7 @@ class SkillAssessmentFeedbackEvent(models.Model):
 
 class SkillAssessmentQuestionQValue(models.Model):
     state_key = models.CharField(max_length=255)
-    question_id = models.SlugField(max_length=64)
+    question_id = models.SlugField(max_length=128)
     q_value = models.FloatField(default=0.0)
     reward_total = models.FloatField(default=0.0)
     update_count = models.PositiveIntegerField(default=0)

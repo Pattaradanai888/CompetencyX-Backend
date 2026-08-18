@@ -50,8 +50,12 @@ class SyncContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
-        assert SkillAssessmentDimension.objects.count() == 8
-        assert SkillAssessmentQuestion.objects.count() == 11
+        # The 8 PSP/SDLC dimensions and their 11 items remain as the fallback for a
+        # role with no imported roadmap; every role that has one also gets topic-anchored
+        # items and a dimension per assessed topic (ADR-0002).
+        assert SkillAssessmentDimension.objects.filter(role__isnull=True).count() == 8
+        assert SkillAssessmentQuestion.objects.filter(role__isnull=True).count() == 11
+        assert SkillAssessmentQuestion.objects.filter(role__isnull=False).exists()
         assert SkillAssessmentRoleGuidance.objects.count() == 14
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
         assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()

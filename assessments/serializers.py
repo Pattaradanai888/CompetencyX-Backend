@@ -407,8 +407,8 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         )
 
 
-def _validate_skill_assessment_answer_keys(value, *, forbid_blank):
-    known_question_ids = get_skill_assessment_question_ids()
+def _validate_skill_assessment_answer_keys(value, *, forbid_blank, role_slug=None):
+    known_question_ids = get_skill_assessment_question_ids(role_slug)
     for key in value:
         if forbid_blank and not str(key).strip():
             msg = 'Answer keys must be non-empty strings.'
@@ -426,13 +426,22 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
         default=dict,
     )
     completed_at = serializers.DateTimeField(read_only=True, allow_null=True)
+    topic_mastery = serializers.DictField(child=serializers.FloatField(), read_only=True)
+    recommended_topics = serializers.ListField(child=serializers.DictField(), read_only=True)
+
+    def _role_slug(self):
+        # Items are role-anchored, so the valid answer keys depend on the
+        # session's role rather than on a single global set (ADR-0002).
+        session = self.context.get('session')
+        role = (session.preferred_role or session.best_fit_role) if session else None
+        return role.slug if role else None
 
     def validate_answers(self, value):
-        return _validate_skill_assessment_answer_keys(value, forbid_blank=True)
+        return _validate_skill_assessment_answer_keys(value, forbid_blank=True, role_slug=self._role_slug())
 
     def validate(self, attrs):
         if attrs.get('completed', False):
-            missing_question_ids = sorted(get_skill_assessment_question_ids() - set(attrs.get('answers', {})))
+            missing_question_ids = sorted(get_skill_assessment_question_ids(self._role_slug()) - set(attrs.get('answers', {})))
             if missing_question_ids:
                 missing_answers = ', '.join(missing_question_ids)
                 raise serializers.ValidationError({'answers': f'Completed Skill Assessment is missing answers for: {missing_answers}.'})

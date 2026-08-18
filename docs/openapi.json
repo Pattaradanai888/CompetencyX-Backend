@@ -2076,10 +2076,28 @@
                         "format": "date-time",
                         "readOnly": true,
                         "nullable": true
+                    },
+                    "topic_mastery": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "number",
+                            "format": "double"
+                        },
+                        "readOnly": true
+                    },
+                    "recommended_topics": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        },
+                        "readOnly": true
                     }
                 },
                 "required": [
-                    "completed_at"
+                    "completed_at",
+                    "recommended_topics",
+                    "topic_mastery"
                 ]
             },
             "StatusEnum": {
