@@ -439,6 +439,7 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
     completed_at = serializers.DateTimeField(read_only=True, allow_null=True)
     topic_mastery = serializers.DictField(child=serializers.FloatField(), read_only=True)
     recommended_topics = serializers.ListField(child=serializers.DictField(), read_only=True)
+    readiness = serializers.DictField(read_only=True)
 
     def _role_slug(self):
         return _session_role_slug(self.context)

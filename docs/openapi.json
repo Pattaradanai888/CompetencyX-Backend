@@ -2092,10 +2092,16 @@
                             "additionalProperties": {}
                         },
                         "readOnly": true
+                    },
+                    "readiness": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "readOnly": true
                     }
                 },
                 "required": [
                     "completed_at",
+                    "readiness",
                     "recommended_topics",
                     "topic_mastery"
                 ]

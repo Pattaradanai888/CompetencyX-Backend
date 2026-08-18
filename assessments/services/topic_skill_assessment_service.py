@@ -168,3 +168,40 @@ def build_topic_recommendations(role: Role, answers: dict[str, int]) -> list[dic
             item['reason'] = f'You rated "{item["topic_title"]}" low, and it has no unmet prerequisites.'
         del item['display_order']
     return pending
+
+
+# A topic that other topics build on has to be solid before the roadmap makes
+# sense; a terminal topic can sit lower without blocking anything. The target
+# therefore rises with how many topics depend on it, which is a property of the
+# role's own roadmap rather than a number chosen for all roles at once.
+TOPIC_TARGET_BASE = 0.6
+TOPIC_TARGET_PER_DEPENDENT = 0.1
+TOPIC_TARGET_MAX = 1.0
+
+
+def build_topic_targets(role: Role) -> dict[str, float]:
+    """The mastery each assessed topic should reach for this role."""
+    return {
+        topic['slug']: min(
+            TOPIC_TARGET_MAX,
+            TOPIC_TARGET_BASE + TOPIC_TARGET_PER_DEPENDENT * len(topic['follow_on_titles']),
+        )
+        for topic in select_assessable_topics(role)
+    }
+
+
+def build_readiness_summary(role: Role, answers: dict[str, int]) -> dict[str, object]:
+    """As-is against the role's own target, per topic and overall.
+
+    Replaces comparing every respondent of every role to one constant.
+    """
+    targets = build_topic_targets(role)
+    if not targets:
+        return {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0}
+
+    mastery = get_topic_mastery(role, answers)
+    return {
+        'targets': targets,
+        'overall_target': sum(targets.values()) / len(targets),
+        'overall_mastery': sum(mastery.get(slug, 0.0) for slug in targets) / len(targets),
+    }

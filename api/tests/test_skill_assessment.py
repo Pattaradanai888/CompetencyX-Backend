@@ -27,6 +27,7 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
                 'completed_at': None,
                 'topic_mastery': {},
                 'recommended_topics': [],
+                'readiness': {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0},
             },
         )
         payload = {

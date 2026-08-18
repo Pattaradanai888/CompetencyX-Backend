@@ -17,7 +17,7 @@ from assessments.models import (
 from . import recommendation_service
 from .guidance_service import get_role_alignment_status, get_role_resolution_status
 from .q_learning import Q_VALUE_DEFAULTS, clamp_bucket, update_q_row
-from .topic_skill_assessment_service import build_topic_recommendations, get_topic_mastery
+from .topic_skill_assessment_service import build_readiness_summary, build_topic_recommendations, get_topic_mastery
 
 
 def get_skill_assessment_catalog(role_slug: str | None = None) -> dict[str, object]:
@@ -200,6 +200,7 @@ def get_skill_assessment_state(session: AssessmentSession) -> dict[str, object]:
         # follows from what they said about this role's topics (ADR-0002).
         'topic_mastery': get_topic_mastery(role, answers) if role else {},
         'recommended_topics': build_topic_recommendations(role, answers) if role else [],
+        'readiness': build_readiness_summary(role, answers) if role else {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0},
     }
 
 
