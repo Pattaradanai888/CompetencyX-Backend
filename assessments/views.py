@@ -340,7 +340,10 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
     @action(detail=True, methods=['post'], url_path='skill-assessment/next-question', url_name='skill-assessment-next-question')
     def skill_assessment_next_question(self, request, *args, **kwargs):
         session = self.get_object()
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data,
+            context={**self.get_serializer_context(), 'session': session},
+        )
         serializer.is_valid(raise_exception=True)
         answers = serializer.validated_data.get('answers', {})
         next_question = skill_assessment_service.select_next_skill_assessment_question(session, answers)

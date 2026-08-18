@@ -407,6 +407,17 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
         )
 
 
+def _session_role_slug(context):
+    """The role whose Skill Assessment items are valid for this session.
+
+    Items are role-anchored (ADR-0002), so the set of acceptable answer keys
+    depends on the session rather than being one global set.
+    """
+    session = context.get('session')
+    role = (session.preferred_role or session.best_fit_role) if session else None
+    return role.slug if role else None
+
+
 def _validate_skill_assessment_answer_keys(value, *, forbid_blank, role_slug=None):
     known_question_ids = get_skill_assessment_question_ids(role_slug)
     for key in value:
@@ -430,11 +441,7 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
     recommended_topics = serializers.ListField(child=serializers.DictField(), read_only=True)
 
     def _role_slug(self):
-        # Items are role-anchored, so the valid answer keys depend on the
-        # session's role rather than on a single global set (ADR-0002).
-        session = self.context.get('session')
-        role = (session.preferred_role or session.best_fit_role) if session else None
-        return role.slug if role else None
+        return _session_role_slug(self.context)
 
     def validate_answers(self, value):
         return _validate_skill_assessment_answer_keys(value, forbid_blank=True, role_slug=self._role_slug())
@@ -487,7 +494,7 @@ class SkillAssessmentNextQuestionRequestSerializer(serializers.Serializer):
     )
 
     def validate_answers(self, value):
-        return _validate_skill_assessment_answer_keys(value, forbid_blank=False)
+        return _validate_skill_assessment_answer_keys(value, forbid_blank=False, role_slug=_session_role_slug(self.context))
 
 
 class SkillAssessmentNextQuestionResponseSerializer(serializers.Serializer):
