@@ -56,7 +56,7 @@ class SyncContentTests(TestCase):
         assert SkillAssessmentDimension.objects.filter(role__isnull=True).count() == 8
         assert SkillAssessmentQuestion.objects.filter(role__isnull=True).count() == 11
         assert SkillAssessmentQuestion.objects.filter(role__isnull=False).exists()
-        assert SkillAssessmentRoleGuidance.objects.count() == 14
+        assert SkillAssessmentRoleGuidance.objects.count() == 54
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
         assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()
 

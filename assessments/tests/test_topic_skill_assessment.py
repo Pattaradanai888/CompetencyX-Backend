@@ -5,13 +5,15 @@ recommendation follows from the answers, and a role without an imported
 roadmap still gets a usable assessment.
 """
 
+from django.core.management import call_command
 from django.test import TestCase
 
-from assessments.models import AssessmentSession, SkillAssessmentQuestion
+from assessments.models import AssessmentSession, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
 from assessments.services.skill_assessment_service import (
     get_skill_assessment_catalog,
     get_skill_assessment_state,
     list_skill_assessment_questions,
+    list_skill_assessment_role_guidance,
 )
 from assessments.services.topic_skill_assessment_service import (
     MAX_TOPIC_QUESTIONS_PER_ROLE,
@@ -166,3 +168,32 @@ class TopicSkillAssessmentTests(TestCase):
         self.assertEqual(state['topic_mastery']['http'], 1.0)
         self.assertNotIn('http', {item['topic_slug'] for item in state['recommended_topics']})
         self.assertTrue(state['recommended_topics'])
+
+
+class SkillAssessmentGuidanceCoverageTests(TestCase):
+    """Every active role must carry its own guidance.
+
+    Guidance used to exist for 6 of 26 roles and the other 20 fell through to
+    generic text without anything saying so, which is how the gap stayed
+    invisible. This test fails when a role is added without guidance.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        call_command('sync_content')
+
+    def test_every_active_role_has_its_own_guidance(self):
+        covered = set(
+            SkillAssessmentRoleGuidance.objects.filter(is_active=True, role__isnull=False).values_list('role__slug', flat=True),
+        )
+        active = set(Role.objects.filter(is_active=True).values_list('slug', flat=True))
+
+        self.assertEqual(sorted(active - covered), [])
+
+    def test_guidance_served_for_a_role_is_that_role_s_own(self):
+        generic = list_skill_assessment_role_guidance(None)
+
+        for slug in Role.objects.filter(is_active=True).values_list('slug', flat=True):
+            role_guidance = list_skill_assessment_role_guidance(slug)
+            self.assertTrue(role_guidance, slug)
+            self.assertNotEqual(role_guidance, generic, slug)
