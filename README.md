@@ -292,7 +292,7 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 
 | โฟลเดอร์ | หน้าที่ |
 | --- | --- |
-| `accounts/` | สมัคร / เข้าสู่ระบบ / ออกจากระบบ และ identity ของผู้ใช้ปัจจุบัน |
+| `accounts/` | user model (`AUTH_USER_MODEL`), สมัคร / เข้าสู่ระบบ / ออกจากระบบ และ identity ของผู้ใช้ปัจจุบัน |
 | `api/` | จุดเข้า API รวม, health check, และคำสั่ง `sync_content` |
 | `assessments/` | session, คำตอบ, scoring, serializers, คำสั่ง simulation |
 | `roadmaps/` | role, topic, คำถาม, seed data, logic ของ questionnaire |

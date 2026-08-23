@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
@@ -130,6 +132,13 @@ class CurrentAccountTests(APITestCase):
 
     def _authenticate(self):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token}')
+
+    def test_an_account_is_identified_by_a_uuid(self):
+        self._authenticate()
+
+        identity = self.client.get(self.me_url).json()
+
+        self.assertEqual(uuid.UUID(identity['id']), get_user_model().objects.get(email='respondent@example.com').id)
 
     def test_a_signed_in_respondent_receives_their_own_identity(self):
         self._authenticate()

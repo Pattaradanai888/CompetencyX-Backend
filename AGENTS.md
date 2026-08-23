@@ -12,7 +12,7 @@ Use `uv` for local Python workflows and Docker for the runtime stack.
 - `.venv\Scripts\python.exe manage.py sync_content`: synchronize all curated Role Discovery, roadmap, and Skill Assessment content.
 
 ## Coding Style & Naming Conventions
-Target Python 3.12 and follow Ruff defaults configured in `pyproject.toml`. Use 4-space indentation, single quotes, and keep lines within the configured 150-character limit. Prefer Django naming patterns: `PascalCase` for models/serializers, `snake_case` for functions and fields, and descriptive app-local module names. Do not edit generated migration files unless the change explicitly requires it.
+Target Python 3.12 and follow Ruff defaults configured in `pyproject.toml`. Use 4-space indentation, single quotes, and keep lines within the configured 150-character limit. Prefer Django naming patterns: `PascalCase` for models/serializers, `snake_case` for functions and fields, and descriptive app-local module names. Do not edit generated migration files unless the change explicitly requires it. The project user model is `accounts.User` (`AUTH_USER_MODEL`); reference it through `settings.AUTH_USER_MODEL` or `get_user_model()`, never `django.contrib.auth.models.User`.
 
 ## Testing Guidelines
 Pytest is the test runner, with discovery enabled for `tests.py` and `test_*.py` inside `accounts`, `api`, `roadmaps`, `assessments`, `recommendations`, and `config`. Add tests alongside the app they cover. Favor API and service-level tests that exercise seeded flows and serializer behavior. Run tests with `-n auto` (for example, `uv run pytest -n auto`) before opening a PR; coverage XML is generated at `coverage/coverage.xml`.

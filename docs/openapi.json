@@ -1284,7 +1284,8 @@
                 "description": "The identity a signed-in respondent gets back when they ask who they are.",
                 "properties": {
                     "id": {
-                        "type": "integer",
+                        "type": "string",
+                        "format": "uuid",
                         "readOnly": true
                     },
                     "email": {

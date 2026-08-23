@@ -150,6 +150,8 @@ are not built.
 | `POST` | `/api/v1/accounts/sign-out/` | Deletes the credential; returns `204`, after which the token no longer authenticates |
 | `GET` | `/api/v1/accounts/me/` | Returns `{id, email}` for the signed-in respondent, `401` when signed out |
 
+The account `id` is a UUID, so it discloses neither how many accounts exist nor the order they were created in.
+
 ### Session ownership
 A session created while signed in belongs to that account, and every session-scoped endpoint below answers `404`
 for anyone else — a second account or an unauthenticated caller holding the identifier. Sessions created signed
