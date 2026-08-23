@@ -11,6 +11,7 @@ the assessment never comes back empty.
 """
 
 from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion
+from assessments.services.assessable_topic_set_service import build_set_key, select_assessable_topic_sets
 from roadmaps.external_roadmap import build_external_roadmap_topics
 from roadmaps.models import Role
 
@@ -68,9 +69,25 @@ def select_assessable_topics(role: Role) -> list[dict]:
     return top_level[:MAX_TOPIC_QUESTIONS_PER_ROLE]
 
 
+def select_assessable_units(role: Role) -> list[dict]:
+    """What this role is assessed on: its authored sets, or its derived topics.
+
+    Authored Assessable Topic Sets are the unit ADR-0003 settled on, and they
+    win wherever they exist. A role whose sets have not been authored yet keeps
+    the items derived from its imported roadmap, so no role loses its
+    topic-anchored assessment while the content is being written.
+    """
+    return select_assessable_topic_sets(role) or select_assessable_topics(role)
+
+
 def build_question_id(role: Role, topic_slug: str) -> str:
-    question_id = f'{role.slug}--{topic_slug}'
-    return question_id[:128]
+    """The catalog key for a role's item.
+
+    Composed by :func:`build_set_key`, so an item generated from an Assessable
+    Topic Set is keyed by that set's own ``set_key`` rather than by a second
+    string that happens to match it.
+    """
+    return build_set_key(role.slug, topic_slug)
 
 
 def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
@@ -85,12 +102,18 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
     live_dimension_keys: list[str] = []
 
     for role in Role.objects.filter(is_active=True).order_by('slug'):
-        topics = select_assessable_topics(role)
+        topics = select_assessable_units(role)
         if not topics:
             continue
 
         for display_order, topic in enumerate(topics, start=1):
             question_id = build_question_id(role, topic['slug'])
+            # An authored set carries its own Canonical Thai wording, and a set
+            # without reviewed wording gets no Thai prompt: English inside a
+            # Thai sentence would read as reviewed when it is not. A derived
+            # topic has no authored wording either way, so its own title stands
+            # in as it did before.
+            thai_topic = topic['title_th'] if 'title_th' in topic else topic['title']
             dimension_key = question_id
             live_question_ids.append(question_id)
             live_dimension_keys.append(dimension_key)
@@ -114,7 +137,7 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
                     'topic_slug': topic['slug'][:200],
                     'topic_title': topic['title'][:255],
                     'prompt': PROMPT_TEMPLATE.format(topic=topic['title']),
-                    'translations': {'th': {'prompt': PROMPT_TEMPLATE_TH.format(topic=topic['title'])}},
+                    'translations': {'th': {'prompt': PROMPT_TEMPLATE_TH.format(topic=thai_topic)}} if thai_topic else {},
                     'dimension_key': dimension_key,
                     'display_order': display_order,
                     'is_active': True,
@@ -127,10 +150,9 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
     SkillAssessmentDimension.objects.filter(role__isnull=False).exclude(dimension_key__in=live_dimension_keys).update(is_active=False)
 
     if stdout is not None:
-        stdout.write(
-            f'Synced topic Skill Assessment items for {len(synced)} roles '
-            f'({sum(synced.values())} questions, cap {MAX_TOPIC_QUESTIONS_PER_ROLE} per role).'
-        )
+        # No cap is reported: the cap applies to topics derived from a roadmap,
+        # not to a role's authored sets.
+        stdout.write(f'Synced topic Skill Assessment items for {len(synced)} roles ({sum(synced.values())} questions).')
     return synced
 
 
@@ -157,7 +179,7 @@ def build_topic_recommendations(role: Role, answers: dict[str, int]) -> list[dic
     get different topics. Topics rated at or above the threshold are treated as
     already held and drop out.
     """
-    assessed = {topic['slug']: topic for topic in select_assessable_topics(role)}
+    assessed = {topic['slug']: topic for topic in select_assessable_units(role)}
     if not assessed:
         return []
 
@@ -197,13 +219,19 @@ TOPIC_TARGET_MAX = 1.0
 
 
 def build_topic_targets(role: Role) -> dict[str, float]:
-    """The mastery each assessed topic should reach for this role."""
+    """The mastery each assessed unit should reach for this role.
+
+    An Assessable Topic Set counts its dependents in sets rather than in node
+    titles: a set covering a handful of connected nodes inherits dozens of
+    follow-on titles, which would pin every target at the maximum and say
+    nothing about which unit the roadmap actually leans on.
+    """
     return {
         topic['slug']: min(
             TOPIC_TARGET_MAX,
-            TOPIC_TARGET_BASE + TOPIC_TARGET_PER_DEPENDENT * len(topic['follow_on_titles']),
+            TOPIC_TARGET_BASE + TOPIC_TARGET_PER_DEPENDENT * topic.get('dependent_count', len(topic['follow_on_titles'])),
         )
-        for topic in select_assessable_topics(role)
+        for topic in select_assessable_units(role)
     }
 
 

@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Answer,
+    AssessableTopicSet,
     AssessmentSession,
     SkillAssessmentDimension,
     SkillAssessmentQuestion,
@@ -43,3 +44,12 @@ class SkillAssessmentRoleGuidanceAdmin(admin.ModelAdmin):
     list_filter = ('role', 'is_active')
     list_select_related = ('role',)
     search_fields = ('guidance', 'role__slug', 'role__name')
+
+
+@admin.register(AssessableTopicSet)
+class AssessableTopicSetAdmin(admin.ModelAdmin):
+    list_display = ('set_key', 'role', 'title', 'display_order', 'is_active', 'updated_at')
+    list_filter = ('role', 'is_active')
+    list_select_related = ('role',)
+    search_fields = ('set_key', 'title', 'title_th', 'role__slug')
+    filter_horizontal = ('nodes',)

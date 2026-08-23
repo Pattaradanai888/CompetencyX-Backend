@@ -241,3 +241,50 @@ class SkillAssessmentAnswer(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.question_id}={self.value}'
+
+
+class AssessableTopicSet(models.Model):
+    """A reviewed cluster of a role's roadmap topics, rated as one question.
+
+    The assessable unit used to be read off the imported graph -- the first
+    twelve nodes whose ``node_type`` was ``topic``. That predicate is not
+    "top-level": Cyber Security Engineer/Analyst was assessed with six items
+    against 301 nodes, and Backend Developer was never asked about Git, PHP, Go
+    or JavaScript, because those nodes carry a subtopic type with no parent
+    (ADR-0003). A set is authored for the role instead, and names the group of
+    nodes a Held statement applies to.
+
+    ``key`` is the role-local key the content is authored under; ``set_key``
+    prefixes it with the role slug so it is stable and unique across the whole
+    catalog, and is what a Skill Assessment answer is recorded against.
+    ``node_slugs`` keeps the authored intent even when a slug matches no
+    imported node, so the catalog validation can report the mismatch rather
+    than lose it; ``nodes`` holds what the slugs resolved to.
+    """
+
+    set_key = models.SlugField(max_length=128, unique=True)
+    key = models.SlugField(max_length=128)
+    role = models.ForeignKey(
+        'roadmaps.Role',
+        on_delete=models.CASCADE,
+        related_name='assessable_topic_sets',
+    )
+    title = models.CharField(max_length=255)
+    title_th = models.CharField(max_length=255, blank=True, default='')
+    node_slugs = models.JSONField(default=list, blank=True)
+    nodes = models.ManyToManyField(
+        'roadmaps.ExternalRoadmapNode',
+        blank=True,
+        related_name='assessable_topic_sets',
+    )
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['role__slug', 'display_order', 'set_key']
+        unique_together = [('role', 'key')]
+
+    def __str__(self) -> str:
+        return self.set_key

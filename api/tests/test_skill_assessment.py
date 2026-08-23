@@ -2,10 +2,13 @@ from django.urls import reverse
 from rest_framework import status
 
 from assessments.models import (
+    AssessableTopicSet,
     SkillAssessmentDimension,
     SkillAssessmentQuestion,
     SkillAssessmentRoleGuidance,
 )
+from assessments.services.topic_skill_assessment_service import sync_topic_skill_assessment_catalog
+from roadmaps.models import ExternalRoadmapNode
 
 from .base import AssessmentFlowTestCase
 
@@ -178,3 +181,59 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertNotIn('_skill_assessment_feedback_applied_question_ids', response.json())
         session_response = self.client.get(reverse('assessment-session-detail', kwargs={'pk': session_id}))
         self.assertNotIn('_skill_assessment_feedback_applied_question_ids', session_response.json()['profile'])
+
+
+class SkillAssessmentCatalogFromTopicSetsTests(AssessmentFlowTestCase):
+    """The catalog endpoint serves a role's authored Assessable Topic Sets.
+
+    The fallback matters as much as the sets: a role with no imported roadmap
+    must still be asked something, or the assessment comes back empty
+    (ADR-0003).
+    """
+
+    def _session_for(self, role):
+        response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': role.slug}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        return response.json()['id']
+
+    def _catalog_for(self, role):
+        response = self.client.get(reverse('assessment-session-skill-assessment-catalog', kwargs={'pk': self._session_for(role)}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return response.json()
+
+    def test_catalog_serves_the_authored_sets_for_a_role_that_has_them(self):
+        node = ExternalRoadmapNode.objects.create(
+            role=self.backend_role,
+            external_id='b1',
+            slug='http',
+            title='HTTP',
+            node_type=ExternalRoadmapNode.NodeType.TOPIC,
+            display_order=1,
+        )
+        topic_set = AssessableTopicSet.objects.create(
+            set_key='backend-developer--internet-and-web-protocols',
+            key='internet-and-web-protocols',
+            role=self.backend_role,
+            title='Internet and web protocols',
+            title_th='อินเทอร์เน็ตและโปรโตคอลเว็บ',
+            node_slugs=['http'],
+            display_order=1,
+        )
+        topic_set.nodes.set([node])
+        sync_topic_skill_assessment_catalog()
+
+        payload = self._catalog_for(self.backend_role)
+
+        self.assertEqual([question['id'] for question in payload['questions']], ['backend-developer--internet-and-web-protocols'])
+        self.assertEqual(payload['questions'][0]['topic_title'], 'Internet and web protocols')
+        self.assertIn('Internet and web protocols', payload['questions'][0]['prompt'])
+        self.assertEqual([dimension['label'] for dimension in payload['dimensions']], ['Internet and web protocols'])
+
+    def test_catalog_falls_back_to_the_role_independent_items_without_a_roadmap(self):
+        sync_topic_skill_assessment_catalog()
+
+        payload = self._catalog_for(self.qa_role)
+
+        self.assertEqual(len(payload['questions']), 11)
+        self.assertEqual(payload['questions'][0]['id'], 'psp-plan-estimate')
+        self.assertEqual({question['topic_title'] for question in payload['questions']}, {''})

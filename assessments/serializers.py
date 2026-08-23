@@ -458,6 +458,11 @@ class SkillAssessmentQuestionSerializer(serializers.Serializer):
     prompt = serializers.CharField()
     translations = serializers.DictField(required=False)
     dimension_key = serializers.CharField()
+    # What the item is about: the Assessable Topic Set's key and reviewed
+    # title, or the roadmap topic it was derived from. Empty for the
+    # role-independent fallback items, which are about no topic in particular.
+    topic_slug = serializers.CharField(allow_blank=True, required=False)
+    topic_title = serializers.CharField(allow_blank=True, required=False)
 
 
 class SkillAssessmentCatalogSerializer(serializers.Serializer):
