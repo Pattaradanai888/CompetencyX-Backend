@@ -12,18 +12,10 @@ class AssessmentSessionQuerySet(models.QuerySet):
     def with_roles(self):
         return self.select_related('preferred_role', 'current_role', 'best_fit_role')
 
-    def with_results(self):
-        return self.with_roles().prefetch_related(
-            'recommendations__role',
-            'recommendations__topic',
-        )
-
     def with_history(self):
         return self.prefetch_related(
             'answers__question__topic',
             'answers__selected_option',
-            'recommendations__role',
-            'recommendations__topic',
         )
 
 
@@ -249,44 +241,3 @@ class SkillAssessmentAnswer(models.Model):
 
     def __str__(self) -> str:
         return f'{self.session_id}:{self.question_id}={self.value}'
-
-
-class SkillAssessmentFeedbackEvent(models.Model):
-    """Append-only ledger of questions whose step feedback was already applied.
-
-    Kept separate from ``SkillAssessmentAnswer`` because answers are replaced wholesale
-    on every save while feedback must be applied at most once per question,
-    even if an answer is removed and re-added.
-    """
-
-    session = models.ForeignKey(
-        AssessmentSession,
-        on_delete=models.CASCADE,
-        related_name='skill_assessment_feedback_events',
-    )
-    question_id = models.SlugField(max_length=128)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['question_id']
-        unique_together = [('session', 'question_id')]
-
-    def __str__(self) -> str:
-        return f'{self.session_id}:{self.question_id}'
-
-
-class SkillAssessmentQuestionQValue(models.Model):
-    state_key = models.CharField(max_length=255)
-    question_id = models.SlugField(max_length=128)
-    q_value = models.FloatField(default=0.0)
-    reward_total = models.FloatField(default=0.0)
-    update_count = models.PositiveIntegerField(default=0)
-    last_reward = models.FloatField(default=0.0)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['state_key', 'question_id']
-        unique_together = [('state_key', 'question_id')]
-
-    def __str__(self) -> str:
-        return f'{self.state_key}:{self.question_id}:{self.q_value:.4f}'

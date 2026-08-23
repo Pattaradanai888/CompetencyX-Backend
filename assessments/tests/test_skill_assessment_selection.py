@@ -1,24 +1,15 @@
-"""Deterministic behavior of the adaptive Skill Assessment question selector."""
+"""Deterministic behavior of the Skill Assessment question selector.
 
-import random
+The selector used to be epsilon-greedy over a learned Q-table. Its reward was
+``(answer_value - 1) / 4``, so it learned to ask the items a respondent agrees
+with most -- the opposite of what an adaptive questionnaire needs. ADR-0003
+replaced it with authored roadmap order.
+"""
 
 import pytest
 
 from assessments.models import AssessmentSession, SkillAssessmentQuestion
 from assessments.services.skill_assessment_service import select_next_skill_assessment_question
-
-
-class _FixedRng:
-    """Stub rng with a fixed random() outcome and first-element choice()."""
-
-    def __init__(self, random_value):
-        self._random_value = random_value
-
-    def random(self):
-        return self._random_value
-
-    def choice(self, sequence):
-        return sequence[0]
 
 
 @pytest.fixture
@@ -27,8 +18,8 @@ def session_with_questions(db):
     # should be selectable.
     SkillAssessmentQuestion.objects.update(is_active=False)
     session = AssessmentSession.objects.create()
-    SkillAssessmentQuestion.objects.create(question_id='q-alpha', prompt='Alpha', dimension_key='dim-a', display_order=1)
     SkillAssessmentQuestion.objects.create(question_id='q-beta', prompt='Beta', dimension_key='dim-a', display_order=2)
+    SkillAssessmentQuestion.objects.create(question_id='q-alpha', prompt='Alpha', dimension_key='dim-a', display_order=1)
     return session
 
 
@@ -37,25 +28,20 @@ def test_returns_none_when_everything_is_answered(session_with_questions):
     assert select_next_skill_assessment_question(session_with_questions, answers) is None
 
 
-def test_greedy_path_is_deterministic(session_with_questions):
-    # random() >= epsilon forces the greedy branch; with no learned Q-values the
-    # tie-break prefers the highest question id ('q-beta' over 'q-alpha').
-    rng = _FixedRng(1.0)
-    first = select_next_skill_assessment_question(session_with_questions, {}, rng=rng)
-    second = select_next_skill_assessment_question(session_with_questions, {}, rng=rng)
-    assert first == second
-
-    remaining = select_next_skill_assessment_question(session_with_questions, {first['id']: 3}, rng=rng)
-    assert remaining['id'] != first['id']
+def test_selects_the_lowest_display_order_unanswered_question(session_with_questions):
+    assert select_next_skill_assessment_question(session_with_questions, {})['id'] == 'q-alpha'
 
 
-def test_exploration_path_uses_injected_rng(session_with_questions):
-    rng = _FixedRng(0.0)
-    chosen = select_next_skill_assessment_question(session_with_questions, {}, rng=rng)
-    assert chosen['id'] == 'q-alpha'
+def test_skips_questions_that_are_already_answered(session_with_questions):
+    assert select_next_skill_assessment_question(session_with_questions, {'q-alpha': 3})['id'] == 'q-beta'
 
 
-def test_seeded_random_instance_is_reproducible(session_with_questions):
-    picks_a = [select_next_skill_assessment_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]
-    picks_b = [select_next_skill_assessment_question(session_with_questions, {}, rng=random.Random(42))['id'] for _ in range(5)]
-    assert picks_a == picks_b
+def test_repeated_calls_for_the_same_answers_return_the_same_question(session_with_questions):
+    picks = [select_next_skill_assessment_question(session_with_questions, {})['id'] for _ in range(5)]
+    assert picks == ['q-alpha'] * 5
+
+
+def test_ties_on_display_order_break_on_question_id(session_with_questions):
+    SkillAssessmentQuestion.objects.filter(question_id='q-beta').update(display_order=1)
+
+    assert select_next_skill_assessment_question(session_with_questions, {})['id'] == 'q-alpha'

@@ -52,6 +52,26 @@ _Avoid_: Curriculum, course, syllabus
 A single learnable subject within a Roadmap, such as a concept or skill area to study, with a difficulty and a place in the prerequisite order.
 _Avoid_: Lesson, module, skill
 
+**Assessable Topic Set**:
+A reviewed cluster of Roadmap Topics for one Role, written so a respondent can place themselves against it in a single question. It is authored for the Role rather than read off the imported roadmap's own structure, and it names the group of topics a Held statement applies to.
+_Avoid_: Dimension, category, topic group, node
+
+**Recommendation Stability**:
+The point at which further Skill Assessment answers stop changing which topics the product would suggest next. It is the signal to stop asking, not a measure of how correct the suggestions are.
+_Avoid_: Convergence, accuracy, confidence
+
+**Self-placed Mastery**:
+The level at which the respondent themself states they can work on a Roadmap Topic, derived from their Skill Assessment rating. It is a claim the person makes about their own capability, not a measurement the product performed. The product never asserts it is correct.
+_Avoid_: Mastery score, test result, proficiency level, pass/fail
+
+**Held Topic**:
+A Roadmap Topic whose Self-placed Mastery has reached the threshold at which it stops being offered as something to learn next. It stays visible on the Roadmap, marked as something the respondent said they can already do. Holding a topic is the respondent's own statement, not the product certifying the skill.
+_Avoid_: Passed, completed, mastered, verified, achieved
+
+**Unassessed Topic**:
+A Roadmap Topic the respondent has neither been asked about nor marked themselves. It is distinct from a topic with low Self-placed Mastery: the product has no evidence either way, so it must not be presented as a gap or counted as absent capability.
+_Avoid_: Zero mastery, missing skill, not known
+
 **Recommendation**:
 The next Roadmap Topic the product suggests a respondent learn for a specific Role, with a reason. It is produced once Role Discovery has resolved a direction, and is built for the respondent's Role Aspiration and/or their Best-fit Role. It is a starting suggestion, not a prescription or required plan.
 _Avoid_: Prescription, assignment, mandatory step

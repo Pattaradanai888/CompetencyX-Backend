@@ -1,6 +1,3 @@
-import random
-
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
@@ -8,15 +5,10 @@ from assessments.models import (
     AssessmentSession,
     SkillAssessmentAnswer,
     SkillAssessmentDimension,
-    SkillAssessmentFeedbackEvent,
     SkillAssessmentQuestion,
-    SkillAssessmentQuestionQValue,
     SkillAssessmentRoleGuidance,
 )
 
-from . import recommendation_service
-from .guidance_service import get_role_alignment_status, get_role_resolution_status
-from .q_learning import Q_VALUE_DEFAULTS, clamp_bucket, update_q_row
 from .topic_skill_assessment_service import build_readiness_summary, build_topic_recommendations, get_topic_mastery
 
 
@@ -109,70 +101,21 @@ def list_skill_assessment_role_guidance(role_slug: str | None = None) -> list[st
     )
 
 
-def build_skill_assessment_state_key(session: AssessmentSession, answers: dict[str, int]) -> str:
-    role_slug = (session.preferred_role or session.best_fit_role).slug if (session.preferred_role or session.best_fit_role) else 'none'
-    role_alignment = get_role_alignment_status(session)
-    role_resolution = get_role_resolution_status(session)
-    avg = (sum(answers.values()) / len(answers)) if answers else 3.0
-    avg_bucket = clamp_bucket((avg - 1.0) // 1.0)
-    progress_bucket = clamp_bucket(len(answers) // 3)
-    return ':'.join(
-        [
-            role_slug,
-            role_alignment,
-            role_resolution,
-            f'avg-{avg_bucket}',
-            f'progress-{progress_bucket}',
-        ],
-    )
+def select_next_skill_assessment_question(session: AssessmentSession, answers: dict[str, int]) -> dict[str, object] | None:
+    """The next unanswered item for the session's role, in authored order.
 
-
-def select_next_skill_assessment_question(
-    session: AssessmentSession,
-    answers: dict[str, int],
-    *,
-    rng=random,  # pass a seeded random.Random for deterministic selection
-) -> dict[str, object] | None:
+    Roadmap order is the only signal here: the epsilon-greedy policy that used to
+    choose was rewarded by how strongly the respondent agreed with an item, so it
+    learned to ask the questions someone already agrees with -- the opposite of
+    what an adaptive questionnaire needs (ADR-0003).
+    """
     role = session.preferred_role or session.best_fit_role
     questions = list_skill_assessment_questions(role.slug if role else None)
     unanswered = [question for question in questions if question['id'] not in answers]
     if not unanswered:
         return None
 
-    state_key = build_skill_assessment_state_key(session, answers)
-    epsilon = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_EPSILON', 0.15))
-    if rng.random() < epsilon:
-        return rng.choice(unanswered)
-
-    q_map = {
-        row.question_id: row
-        for row in SkillAssessmentQuestionQValue.objects.filter(
-            state_key=state_key,
-            question_id__in=[question['id'] for question in unanswered],
-        )
-    }
-    return max(
-        unanswered,
-        key=lambda question: (
-            q_map.get(question['id']).q_value if q_map.get(question['id']) is not None else 0.0,
-            -int(question.get('display_order', 0) or 0),
-            question['id'],
-        ),
-    )
-
-
-def apply_skill_assessment_step_feedback(session: AssessmentSession, *, before_answers: dict[str, int], answered_question_id: str) -> None:
-    after_state_key = build_skill_assessment_state_key(session, before_answers)
-    answered_value = int(before_answers.get(answered_question_id, 3))
-    immediate_reward = max(0.0, min(1.0, (answered_value - 1.0) / 4.0))
-    alpha = float(getattr(settings, 'ASSESSMENT_RECOMMENDATION_Q_ALPHA', 0.35))
-
-    q_row, _created = SkillAssessmentQuestionQValue.objects.get_or_create(
-        state_key=after_state_key,
-        question_id=answered_question_id,
-        defaults=Q_VALUE_DEFAULTS,
-    )
-    update_q_row(q_row, reward=immediate_reward, alpha=alpha)
+    return min(unanswered, key=lambda question: (int(question.get('display_order', 0) or 0), question['id']))
 
 
 def _format_completed_at(value) -> str | None:
@@ -224,14 +167,4 @@ def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, 
         SkillAssessmentAnswer(session=session, question_id=question_id, value=value) for question_id, value in answers.items()
     )
 
-    applied_question_ids = set(session.skill_assessment_feedback_events.values_list('question_id', flat=True))
-    new_question_ids = answers.keys() - applied_question_ids
-    SkillAssessmentFeedbackEvent.objects.bulk_create(
-        SkillAssessmentFeedbackEvent(session=session, question_id=question_id) for question_id in new_question_ids
-    )
-
-    for question_id in new_question_ids:
-        apply_skill_assessment_step_feedback(session, before_answers=answers, answered_question_id=question_id)
-    if session.skill_assessment_completed:
-        recommendation_service.apply_recommendation_feedback_from_skill_assessment(session)
     return get_skill_assessment_state(session)

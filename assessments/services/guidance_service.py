@@ -1,8 +1,8 @@
 """Role-status and learner-guidance helpers.
 
 This service is a leaf in the assessments dependency graph: it imports only the
-role-inference service and ORM models. Recommendation and Skill Assessment services can
-consume it without importing assessment orchestration and creating a cycle.
+role-inference service and ORM models. The Skill Assessment service can consume it
+without importing assessment orchestration and creating a cycle.
 """
 
 from django.db.models import Count, Q

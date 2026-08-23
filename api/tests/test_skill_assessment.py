@@ -4,7 +4,6 @@ from rest_framework import status
 from assessments.models import (
     SkillAssessmentDimension,
     SkillAssessmentQuestion,
-    SkillAssessmentQuestionQValue,
     SkillAssessmentRoleGuidance,
 )
 
@@ -163,34 +162,19 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertIsNotNone(payload['next_question'])
         self.assertNotEqual(payload['next_question']['id'], 'psp-plan-estimate')
 
-    def test_skill_assessment_state_save_updates_q_value_for_new_answers(self):
-        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
-        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        session_id = create_response.json()['id']
-
-        response = self.client.post(
-            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
-            {'answers': {'psp-plan-estimate': 5}},
-            format='json',
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(SkillAssessmentQuestionQValue.objects.filter(question_id='psp-plan-estimate').exists())
-
-    def test_skill_assessment_state_save_applies_feedback_once_after_remove_and_readd(self):
+    def test_skill_assessment_state_survives_removing_and_readding_an_answer(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         url = reverse('assessment-session-skill-assessment', kwargs={'pk': session_id})
 
         self.client.post(url, {'answers': {'psp-plan-estimate': 5}}, format='json')
-        q_value = SkillAssessmentQuestionQValue.objects.get(question_id='psp-plan-estimate')
-        self.assertEqual(q_value.update_count, 1)
+        cleared_response = self.client.post(url, {'answers': {}}, format='json')
+        self.assertEqual(cleared_response.json()['answers'], {})
 
-        self.client.post(url, {'answers': {}}, format='json')
         response = self.client.post(url, {'answers': {'psp-plan-estimate': 5}}, format='json')
+        self.assertEqual(response.json()['answers'], {'psp-plan-estimate': 5})
 
-        q_value.refresh_from_db()
-        self.assertEqual(q_value.update_count, 1)
+        # No per-answer learning bookkeeping leaks into the session (ADR-0003).
         self.assertNotIn('_skill_assessment_feedback_applied_question_ids', response.json())
-
         session_response = self.client.get(reverse('assessment-session-detail', kwargs={'pk': session_id}))
         self.assertNotIn('_skill_assessment_feedback_applied_question_ids', session_response.json()['profile'])

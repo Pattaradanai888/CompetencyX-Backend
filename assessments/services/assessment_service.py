@@ -1,8 +1,7 @@
 """Assessment session orchestration.
 
 The top layer of the assessments service: it wires together question selection,
-role inference, phase transitions, and recommendation refresh.
-This is the only assessments service that refreshes recommendations during Role Discovery.
+role inference, and phase transitions.
 
 Role Discovery question selection is deterministic: the next question is always the
 first eligible unanswered question ordered by ``display_order``. The adaptive
@@ -19,7 +18,6 @@ from assessments.models import Answer, AssessmentSession
 from roadmaps.models import Question, Role
 from roadmaps.serializers import QuestionSerializer
 
-from . import recommendation_service
 from .guidance_service import (
     build_guidance_summary,
     get_role_alignment_status,
@@ -141,8 +139,6 @@ def submit_answer(  # noqa: PLR0913
     snapshot = get_role_inference_snapshot(session)
     _recompute_best_fit_role(session, snapshot=snapshot)
     _update_phase(session, snapshot=snapshot)
-    if session.phase == AssessmentSession.Phase.RECOMMENDATION_READY:
-        recommendation_service.refresh_recommendations(session)
     return answer
 
 

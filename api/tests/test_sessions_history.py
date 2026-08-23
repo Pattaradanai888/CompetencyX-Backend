@@ -25,7 +25,7 @@ class SessionHistoryTests(AssessmentFlowTestCase):
         self.assertEqual(answer_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Out-of-order submission', answer_response.json()['question_id'][0])
 
-    def test_history_returns_answers_and_recommendations_after_completion(self):
+    def test_history_returns_answers_after_completion(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         self._answer_remaining_core_questions(session_id, create_response.json())
@@ -35,7 +35,6 @@ class SessionHistoryTests(AssessmentFlowTestCase):
         self.assertEqual(history_response.json()['status'], AssessmentSession.Status.COMPLETED)
         self.assertEqual(len(history_response.json()['answers']), Question.objects.filter(stage=Question.Stage.ROLE).count())
         self.assertEqual(history_response.json()['answers'][0]['scale_value'], 0)
-        self.assertEqual(len(history_response.json()['recommendations']), 1)
 
     def test_results_and_history_require_completed_session(self):
         create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')

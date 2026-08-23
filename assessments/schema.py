@@ -203,19 +203,6 @@ RESULT_RESPONSE_EXAMPLE = {
             ],
         }
     ],
-    'preferred_path_recommendation': {
-        'id': 301,
-        'role_slug': 'backend-engineer',
-        'topic_id': 12,
-        'topic_slug': 'databases',
-        'topic_title': 'Databases',
-        'reason': 'Lowest-order topic with satisfied prerequisites and insufficient mastery.',
-        'path_kind': 'preferred',
-        'policy_type': 'rule_based',
-        'score': 0.5,
-        'created_at': '2026-04-17T04:05:00Z',
-    },
-    'best_fit_path_recommendation': None,
 }
 
 HISTORY_RESPONSE_EXAMPLE = {
@@ -237,20 +224,6 @@ HISTORY_RESPONSE_EXAMPLE = {
             'response_time_ms': 4200,
             'confidence_indicator': 'high',
             'responded_at': '2026-04-17T04:01:00Z',
-        }
-    ],
-    'recommendations': [
-        {
-            'id': 301,
-            'role_slug': 'backend-engineer',
-            'topic_id': 12,
-            'topic_slug': 'databases',
-            'topic_title': 'Databases',
-            'reason': 'Lowest-order topic with satisfied prerequisites and insufficient mastery.',
-            'path_kind': 'preferred',
-            'policy_type': 'rule_based',
-            'score': 0.5,
-            'created_at': '2026-04-17T04:05:00Z',
         }
     ],
 }

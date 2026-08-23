@@ -346,20 +346,6 @@
                                                     "confidence_indicator": "high",
                                                     "responded_at": "2026-04-17T04:01:00Z"
                                                 }
-                                            ],
-                                            "recommendations": [
-                                                {
-                                                    "id": 301,
-                                                    "role_slug": "backend-engineer",
-                                                    "topic_id": 12,
-                                                    "topic_slug": "databases",
-                                                    "topic_title": "Databases",
-                                                    "reason": "Lowest-order topic with satisfied prerequisites and insufficient mastery.",
-                                                    "path_kind": "preferred",
-                                                    "policy_type": "rule_based",
-                                                    "score": 0.5,
-                                                    "created_at": "2026-04-17T04:05:00Z"
-                                                }
                                             ]
                                         },
                                         "summary": "History response"
@@ -367,7 +353,7 @@
                                 }
                             }
                         },
-                        "description": "Completed assessment answers and recommendations."
+                        "description": "Completed assessment answers."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -579,27 +565,14 @@
                                                         }
                                                     ]
                                                 }
-                                            ],
-                                            "preferred_path_recommendation": {
-                                                "id": 301,
-                                                "role_slug": "backend-engineer",
-                                                "topic_id": 12,
-                                                "topic_slug": "databases",
-                                                "topic_title": "Databases",
-                                                "reason": "Lowest-order topic with satisfied prerequisites and insufficient mastery.",
-                                                "path_kind": "preferred",
-                                                "policy_type": "rule_based",
-                                                "score": 0.5,
-                                                "created_at": "2026-04-17T04:05:00Z"
-                                            },
-                                            "best_fit_path_recommendation": null
+                                            ]
                                         },
                                         "summary": "Results response"
                                     }
                                 }
                             }
                         },
-                        "description": "Final recommendations and gap topics."
+                        "description": "Role result, mastery, and gap topics."
                     },
                     "404": {
                         "description": "Assessment session was not found."
@@ -1172,19 +1145,11 @@
                             "$ref": "#/components/schemas/AnswerHistory"
                         },
                         "readOnly": true
-                    },
-                    "recommendations": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/Recommendation"
-                        },
-                        "readOnly": true
                     }
                 },
                 "required": [
                     "answers",
-                    "id",
-                    "recommendations"
+                    "id"
                 ]
             },
             "AssessmentResult": {
@@ -1284,36 +1249,16 @@
                             "$ref": "#/components/schemas/RoadmapTopic"
                         },
                         "readOnly": true
-                    },
-                    "preferred_path_recommendation": {
-                        "allOf": [
-                            {
-                                "$ref": "#/components/schemas/Recommendation"
-                            }
-                        ],
-                        "nullable": true,
-                        "readOnly": true
-                    },
-                    "best_fit_path_recommendation": {
-                        "allOf": [
-                            {
-                                "$ref": "#/components/schemas/Recommendation"
-                            }
-                        ],
-                        "nullable": true,
-                        "readOnly": true
                     }
                 },
                 "required": [
                     "best_fit_confidence",
-                    "best_fit_path_recommendation",
                     "best_fit_role",
                     "current_role",
                     "guidance_summary",
                     "id",
                     "milestones",
                     "pillar_profile",
-                    "preferred_path_recommendation",
                     "preferred_role",
                     "preferred_role_gap_topics",
                     "profile",
@@ -1558,14 +1503,6 @@
                 "type": "string",
                 "description": "* `en` - English\n* `th` - Thai"
             },
-            "PathKindEnum": {
-                "enum": [
-                    "preferred",
-                    "best_fit"
-                ],
-                "type": "string",
-                "description": "* `preferred` - Preferred Role Path\n* `best_fit` - Best-Fit Role Path"
-            },
             "PhaseEnum": {
                 "enum": [
                     "role_discovery",
@@ -1603,14 +1540,6 @@
                     "raw_score"
                 ]
             },
-            "PolicyTypeEnum": {
-                "enum": [
-                    "rule_based",
-                    "q_learning"
-                ],
-                "type": "string",
-                "description": "* `rule_based` - Rule Based\n* `q_learning` - Q Learning"
-            },
             "RankedRoleInsight": {
                 "type": "object",
                 "properties": {
@@ -1641,59 +1570,6 @@
                     "name",
                     "slug",
                     "top_supporting_pillars"
-                ]
-            },
-            "Recommendation": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "role_slug": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "topic_id": {
-                        "type": "integer",
-                        "nullable": true,
-                        "readOnly": true
-                    },
-                    "topic_slug": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "topic_title": {
-                        "type": "string",
-                        "readOnly": true
-                    },
-                    "reason": {
-                        "type": "string"
-                    },
-                    "path_kind": {
-                        "$ref": "#/components/schemas/PathKindEnum"
-                    },
-                    "policy_type": {
-                        "$ref": "#/components/schemas/PolicyTypeEnum"
-                    },
-                    "score": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                    }
-                },
-                "required": [
-                    "created_at",
-                    "id",
-                    "reason",
-                    "role_slug",
-                    "topic_id",
-                    "topic_slug",
-                    "topic_title"
                 ]
             },
             "RoadmapPrerequisiteEdge": {

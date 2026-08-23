@@ -59,8 +59,6 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
     serializer_class = AssessmentSessionSerializer
 
     def get_queryset(self):
-        if self.action == 'results':
-            return AssessmentSession.objects.with_results()
         if self.action == 'history':
             return AssessmentSession.objects.with_history()
         return AssessmentSession.objects.with_roles()
@@ -117,7 +115,7 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         responses={
             200: OpenApiResponse(
                 response=AssessmentResultSerializer,
-                description='Final recommendations and gap topics.',
+                description='Role result, mastery, and gap topics.',
                 examples=[OpenApiExample('Results response', value=RESULT_RESPONSE_EXAMPLE, response_only=True)],
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),
@@ -146,7 +144,7 @@ class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixi
         responses={
             200: OpenApiResponse(
                 response=AssessmentHistorySerializer,
-                description='Completed assessment answers and recommendations.',
+                description='Completed assessment answers.',
                 examples=[OpenApiExample('History response', value=HISTORY_RESPONSE_EXAMPLE, response_only=True)],
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),

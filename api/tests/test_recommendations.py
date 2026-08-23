@@ -1,18 +1,30 @@
-from django.test import override_settings
+"""The assessment produces results without any reinforcement-learning machinery.
+
+ADR-0003 removed the Q-learning policy: its reward was a function of the chosen
+topic alone, so it converged on the topic the deterministic rule already picked,
+at the cost of a database write per answer. These tests hold the surface that
+removal left behind -- the results payload no longer carries a persisted
+per-path recommendation, and no Q-table survives to be written to.
+"""
+
+from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 
 from assessments.models import AssessmentSession
-from recommendations.models import Recommendation, RecommendationQValue
 
 from .base import AssessmentFlowTestCase
 
 
-class RecommendationTests(AssessmentFlowTestCase):
-    def test_completed_results_return_dual_path_recommendations(self):
+class RecommendationRemovalTests(AssessmentFlowTestCase):
+    def _complete_role_discovery(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         session_id = create_response.json()['id']
         payload = self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
+        return session_id, payload
+
+    def test_completed_results_carry_no_persisted_path_recommendations(self):
+        session_id, payload = self._complete_role_discovery()
 
         self.assertEqual(payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
         self.assertIsNone(payload['current_question'])
@@ -20,117 +32,37 @@ class RecommendationTests(AssessmentFlowTestCase):
         results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
         self.assertEqual(results_response.status_code, status.HTTP_200_OK)
         results = results_response.json()
+
         self.assertEqual(results['preferred_role']['slug'], self.backend_role.slug)
         self.assertEqual(results['best_fit_role']['slug'], self.qa_role.slug)
         self.assertEqual(results['role_alignment_status'], 'mismatch')
-        self.assertEqual(results['preferred_path_recommendation']['role_slug'], self.backend_role.slug)
-        self.assertEqual(results['best_fit_path_recommendation']['role_slug'], self.qa_role.slug)
-        self.assertEqual(Recommendation.objects.filter(session_id=session_id).count(), 2)
+        self.assertNotIn('preferred_path_recommendation', results)
+        self.assertNotIn('best_fit_path_recommendation', results)
 
-    @override_settings(
-        ASSESSMENT_RECOMMENDATION_POLICY='q_learning',
-        ASSESSMENT_RECOMMENDATION_Q_EPSILON=0.0,
-        ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5,
-        ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
-    )
-    def test_completed_results_can_use_q_learning_recommendations(self):
-        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
-        session_id = create_response.json()['id']
-        self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
+    def test_history_carries_no_recommendations(self):
+        session_id, _payload = self._complete_role_discovery()
 
-        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
-        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
-        results = results_response.json()
+        history_response = self.client.get(reverse('assessment-session-history', kwargs={'pk': session_id}))
+        self.assertEqual(history_response.status_code, status.HTTP_200_OK)
+        self.assertNotIn('recommendations', history_response.json())
 
-        self.assertEqual(results['preferred_path_recommendation']['policy_type'], Recommendation.PolicyType.Q_LEARNING)
-        self.assertEqual(results['best_fit_path_recommendation']['policy_type'], Recommendation.PolicyType.Q_LEARNING)
-        self.assertEqual(RecommendationQValue.objects.count(), 2)
-        self.assertTrue(
-            RecommendationQValue.objects.filter(
-                role=self.backend_role,
-                path_kind=Recommendation.PathKind.PREFERRED,
-                topic=self.backend_http,
-                update_count=1,
-            ).exists(),
-        )
+    def test_a_full_assessment_leaves_no_q_learning_tables_to_write_to(self):
+        session_id, _payload = self._complete_role_discovery()
 
-    @override_settings(
-        ASSESSMENT_RECOMMENDATION_POLICY='q_learning',
-        ASSESSMENT_RECOMMENDATION_Q_EPSILON=0.0,
-        ASSESSMENT_RECOMMENDATION_Q_ALPHA=0.5,
-        ASSESSMENT_RECOMMENDATION_Q_GAMMA=0.6,
-    )
-    def test_completed_skill_assessment_applies_delayed_feedback_to_q_learning_recommendations(self):
-        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
-        session_id = create_response.json()['id']
-        self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
-
-        results_response = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id}))
-        self.assertEqual(results_response.status_code, status.HTTP_200_OK)
-
-        feedback_payload = {
-            'completed': True,
-            'answers': {
-                'psp-plan-estimate': 4,
-                'psp-plan-compare': 4,
-                'psp-quality-defects': 4,
-                'psp-quality-review': 4,
-                'sdlc-req-criteria': 4,
-                'sdlc-design-tradeoffs': 4,
-                'sdlc-dev-conventions': 4,
-                'sdlc-test-strategy': 4,
-                'sdlc-release-checklist': 4,
-                'sdlc-maintain-debug': 4,
-                'sdlc-collab-blockers': 4,
+        self.client.post(
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
+            {
+                'completed': True,
+                'answers': {'psp-plan-estimate': 4, 'psp-quality-defects': 2},
+                'completed_at': '2026-05-08T20:00:00Z',
             },
-            'completed_at': '2026-05-08T20:00:00Z',
-        }
-
-        save_response = self.client.post(
-            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
-            feedback_payload,
             format='json',
         )
-        self.assertEqual(save_response.status_code, status.HTTP_200_OK)
 
-        backend_q_value = RecommendationQValue.objects.get(
-            role=self.backend_role,
-            path_kind=Recommendation.PathKind.PREFERRED,
-            topic=self.backend_http,
-        )
-        qa_q_value = RecommendationQValue.objects.get(
-            role=self.qa_role,
-            path_kind=Recommendation.PathKind.BEST_FIT,
-            topic=self.qa_design,
-        )
-        self.assertEqual(backend_q_value.update_count, 2)
-        self.assertEqual(qa_q_value.update_count, 2)
-        self.assertTrue(backend_q_value.last_reward > 0.0)
-        self.assertTrue(qa_q_value.last_reward > 0.0)
-        self.assertEqual(
-            Recommendation.objects.filter(
-                session_id=session_id,
-                policy_type=Recommendation.PolicyType.Q_LEARNING,
-                feedback_reward_applied=True,
-            ).count(),
-            2,
-        )
+        with connection.cursor() as cursor:
+            table_names = set(connection.introspection.table_names(cursor))
 
-        repeat_response = self.client.post(
-            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
-            feedback_payload,
-            format='json',
-        )
-        self.assertEqual(repeat_response.status_code, status.HTTP_200_OK)
-        backend_q_value.refresh_from_db()
-        qa_q_value.refresh_from_db()
-        self.assertEqual(backend_q_value.update_count, 2)
-        self.assertEqual(qa_q_value.update_count, 2)
-        self.assertTrue(
-            RecommendationQValue.objects.filter(
-                role=self.qa_role,
-                path_kind=Recommendation.PathKind.BEST_FIT,
-                topic=self.qa_design,
-                update_count=2,
-            ).exists(),
-        )
+        self.assertNotIn('recommendations_recommendation', table_names)
+        self.assertNotIn('recommendations_recommendationqvalue', table_names)
+        self.assertNotIn('assessments_skillassessmentquestionqvalue', table_names)
+        self.assertNotIn('assessments_skillassessmentfeedbackevent', table_names)

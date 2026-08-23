@@ -1,7 +1,6 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from recommendations.serializers import RecommendationSerializer
 from roadmaps.models import Question, QuestionOption, Role
 from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
 
@@ -307,8 +306,6 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
     current_role = RoleSerializer(read_only=True)
     best_fit_role = serializers.SerializerMethodField()
     best_fit_confidence = serializers.SerializerMethodField()
-    preferred_path_recommendation = serializers.SerializerMethodField()
-    best_fit_path_recommendation = serializers.SerializerMethodField()
     milestones = serializers.SerializerMethodField()
     role_alignment_status = serializers.SerializerMethodField()
     role_resolution_status = serializers.SerializerMethodField()
@@ -338,19 +335,10 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
             'pillar_profile',
             'ranked_roles',
             'preferred_role_gap_topics',
-            'preferred_path_recommendation',
-            'best_fit_path_recommendation',
         )
 
     def _visible_role_result(self, obj):
         return self._memoized(obj, context_key='visible_role_result', builder=get_visible_role_result)
-
-    def _recommendations(self, obj):
-        if not hasattr(self, '_recommendation_cache'):
-            self._recommendation_cache = {}
-        if obj.pk not in self._recommendation_cache:
-            self._recommendation_cache[obj.pk] = list(obj.recommendations.all())
-        return self._recommendation_cache[obj.pk]
 
     @extend_schema_field(serializers.JSONField())
     def get_milestones(self, obj):
@@ -381,20 +369,9 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
     def get_preferred_role_gap_topics(self, obj):
         return RoadmapTopicSerializer(get_preferred_role_gap_topics(obj), many=True).data
 
-    @extend_schema_field(RecommendationSerializer(allow_null=True))
-    def get_preferred_path_recommendation(self, obj):
-        recommendation = next((item for item in self._recommendations(obj) if item.path_kind == 'preferred'), None)
-        return RecommendationSerializer(recommendation).data if recommendation else None
-
-    @extend_schema_field(RecommendationSerializer(allow_null=True))
-    def get_best_fit_path_recommendation(self, obj):
-        recommendation = next((item for item in self._recommendations(obj) if item.path_kind == 'best_fit'), None)
-        return RecommendationSerializer(recommendation).data if recommendation else None
-
 
 class AssessmentHistorySerializer(serializers.ModelSerializer):
     answers = AnswerHistorySerializer(many=True, read_only=True)
-    recommendations = RecommendationSerializer(many=True, read_only=True)
 
     class Meta:
         model = AssessmentSession
@@ -403,7 +380,6 @@ class AssessmentHistorySerializer(serializers.ModelSerializer):
             'phase',
             'status',
             'answers',
-            'recommendations',
         )
 
 

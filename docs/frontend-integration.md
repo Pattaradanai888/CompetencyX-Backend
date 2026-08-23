@@ -121,7 +121,7 @@ Response fields:
 - `top_supporting_pillars`
 
 ### Final results payload
-`GET /api/v1/assessment-sessions/{id}/results/` still returns mastery and recommendation data, and now also includes:
+`GET /api/v1/assessment-sessions/{id}/results/` returns mastery and role analysis, and now also includes:
 
 - `pillar_profile`
 - `ranked_roles`
@@ -139,14 +139,21 @@ This means detailed role-fit analysis is available from:
 | `GET` | `/api/v1/assessment-sessions/{id}/` | Returns lean session state for recovery or refresh |
 | `POST` | `/api/v1/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
 | `GET` | `/api/v1/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
-| `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns final recommendations, mastery, and analysis after completion |
-| `GET` | `/api/v1/assessment-sessions/{id}/history/` | Returns answer and recommendation history after completion |
+| `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns mastery, gap topics, and role analysis after completion |
+| `GET` | `/api/v1/assessment-sessions/{id}/history/` | Returns answer history after completion |
 | `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Returns saved skill assessment state (`completed`, `answers`, `completed_at`) |
 | `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Replaces the whole skill assessment answer set and completion state |
 | `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/catalog/` | Returns the PSP/SDLC question catalog with role-aware guidance |
-| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/next-question/` | Returns the adaptively selected next skill assessment question |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/next-question/` | Returns the next unanswered skill assessment question, in authored roadmap order |
 
 Skill Assessment state is stored in dedicated tables; the session `profile` field is free-form client data only and no longer carries a `skill_assessment` key.
+
+### Removed: persisted path recommendations (ADR-0003)
+`preferred_path_recommendation` and `best_fit_path_recommendation` are gone from the results payload, and
+`recommendations` is gone from the history payload. They were produced by a Q-learning policy whose reward was a
+function of the chosen topic alone, so it reproduced a sort by `display_order` at the cost of a database write per
+answer. The answer-derived ordering lives in `GET /api/v1/assessment-sessions/{id}/skill-assessment/` as
+`topic_mastery` and `recommended_topics`; consume those instead.
 
 ## Role Discovery Notes
 Role discovery uses a static 46-question core SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before completing the session.
