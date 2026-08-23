@@ -1,3 +1,4 @@
+from django.db.models import Q
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -7,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .exceptions import AssessmentNotCompleted
@@ -54,14 +56,47 @@ from .services import skill_assessment_service
             400: OpenApiResponse(description='Validation error, such as an unknown preferred role slug.'),
         },
     ),
+    list=extend_schema(
+        operation_id='listAssessmentSessions',
+        summary='List the sessions the signed-in respondent owns',
+        tags=['Assessment Sessions'],
+        responses={
+            200: OpenApiResponse(
+                response=AssessmentSessionSerializer(many=True),
+                description='Sessions owned by the signed-in respondent, most recently started first.',
+                examples=[OpenApiExample('Session list response', value=[SESSION_RESPONSE_EXAMPLE], response_only=True)],
+            ),
+            401: OpenApiResponse(description='Listing sessions requires an account.'),
+        },
+    ),
 )
-class AssessmentSessionViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class AssessmentSessionViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = AssessmentSessionSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        # Every other action is reachable signed out; the queryset is what keeps an
+        # owned session private. Listing has no session identifier to scope it, so it
+        # needs an account to answer "which sessions are mine".
+        if self.action == 'list':
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
-        if self.action == 'history':
-            return AssessmentSession.objects.with_history()
-        return AssessmentSession.objects.with_roles()
+        queryset = AssessmentSession.objects.with_history() if self.action == 'history' else AssessmentSession.objects.with_roles()
+        if self.action == 'list':
+            return queryset.filter(user=self.request.user)
+        # A session belongs to the account that created it, so no one else can reach it
+        # by holding its identifier. Sessions that predate accounts have no owner and
+        # stay readable rather than being reassigned to whoever asks for them.
+        if self.request.user.is_authenticated:
+            return queryset.filter(Q(user=self.request.user) | Q(user__isnull=True))
+        return queryset.filter(user__isnull=True)
 
     def get_serializer_class(self):
         return {

@@ -132,10 +132,34 @@ This means detailed role-fit analysis is available from:
 - `/api/v1/assessment-sessions/{id}/insights/`
 - `/api/v1/assessment-sessions/{id}/results/`
 
+## Accounts
+A respondent registers with an email and a password, and holds the returned credential across requests as
+`Authorization: Token <key>`. The email is the identifier; it is stored lower-cased, and a duplicate one is
+refused with `{"email": ["An account with this email already exists."]}`. A wrong password and an unknown email
+are refused identically, so the response does not disclose which accounts exist, as
+`400 {"detail": ["Email or password is incorrect."]}`.
+
+A respondent holds one credential at a time: signing in again returns the same token, and signing out revokes it
+everywhere, so a second device signs the first one out. Per-device credentials would need a token per session and
+are not built.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| `POST` | `/api/v1/accounts/register/` | Creates an account; returns `{token, user}` with `201` |
+| `POST` | `/api/v1/accounts/sign-in/` | Returns `{token, user}` |
+| `POST` | `/api/v1/accounts/sign-out/` | Deletes the credential; returns `204`, after which the token no longer authenticates |
+| `GET` | `/api/v1/accounts/me/` | Returns `{id, email}` for the signed-in respondent, `401` when signed out |
+
+### Session ownership
+A session created while signed in belongs to that account, and every session-scoped endpoint below answers `404`
+for anyone else — a second account or an unauthenticated caller holding the identifier. Sessions created signed
+out have no owner: they stay readable, and reading one never assigns it to the account that asked.
+
 ## Current Assessment Endpoints
 | Method | Path | Notes |
 | --- | --- | --- |
-| `POST` | `/api/v1/assessment-sessions/` | Creates a session and returns lean session state |
+| `POST` | `/api/v1/assessment-sessions/` | Creates a session and returns lean session state; owned by the signed-in respondent, if any |
+| `GET` | `/api/v1/assessment-sessions/` | Lists the sessions the signed-in respondent owns; `401` when signed out |
 | `GET` | `/api/v1/assessment-sessions/{id}/` | Returns lean session state for recovery or refresh |
 | `POST` | `/api/v1/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
 | `GET` | `/api/v1/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |

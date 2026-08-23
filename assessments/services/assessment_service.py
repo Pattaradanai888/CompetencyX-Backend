@@ -43,12 +43,14 @@ LOG_TOP_ROLE_COUNT = 3
 
 def create_assessment_session(
     *,
+    user=None,
     preferred_role=None,
     current_role=None,
     profile=None,
     language=AssessmentSession.Language.EN,
 ) -> AssessmentSession:
     session = AssessmentSession.objects.create(
+        user=user,
         preferred_role=preferred_role,
         current_role=current_role,
         best_fit_role=None,
@@ -58,8 +60,9 @@ def create_assessment_session(
         profile=profile or {},
     )
     logger.info(
-        'assessment.session_created session_id=%s preferred_role=%s current_role=%s language=%s profile_keys=%s',
+        'assessment.session_created session_id=%s owner=%s preferred_role=%s current_role=%s language=%s profile_keys=%s',
         session.id,
+        user.pk if user else None,
         preferred_role.slug if preferred_role else None,
         current_role.slug if current_role else None,
         language,

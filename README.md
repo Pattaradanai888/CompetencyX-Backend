@@ -167,9 +167,17 @@ Catalog (ข้อมูล role / roadmap — อ่านอย่างเด
 - `GET /api/v1/catalog/roles/{slug}/topics/` — หัวข้อทั้งหมดของ role
 - `GET /api/v1/catalog/roles/{slug}/roadmap/` — roadmap เรียงตามลำดับ prerequisite
 
+Accounts (สมัคร / เข้าสู่ระบบ)
+
+- `POST /api/v1/accounts/register/` — สมัครด้วย email + password, ได้ `token` กลับมา
+- `POST /api/v1/accounts/sign-in/` — เข้าสู่ระบบ, ได้ `token` กลับมา
+- `POST /api/v1/accounts/sign-out/` — ออกจากระบบ (token เดิมใช้ไม่ได้อีก)
+- `GET  /api/v1/accounts/me/` — ดูว่ากำลังใช้บัญชีไหนอยู่
+
 Assessment session (flow หลัก)
 
 - `POST /api/v1/assessment-sessions/` — เปิด session ใหม่
+- `GET  /api/v1/assessment-sessions/` — รายการ session ของบัญชีที่ล็อกอินอยู่
 - `GET  /api/v1/assessment-sessions/{id}/` — ดูสถานะ session + คำถามปัจจุบัน
 - `POST /api/v1/assessment-sessions/{id}/answers/` — ส่งคำตอบ
 - `GET  /api/v1/assessment-sessions/{id}/insights/` — evidence ระหว่างทาง (pillar / ranked roles)
@@ -179,7 +187,10 @@ Assessment session (flow หลัก)
 - `POST /api/v1/assessment-sessions/{id}/skill-assessment/next-question/` — ขอคำถาม Skill Assessment ถัดไป
 - `GET|POST /api/v1/assessment-sessions/{id}/skill-assessment/` — อ่าน / บันทึกผล Skill Assessment
 
-ตอนนี้ API **ยังไม่มี authentication** และรายละเอียด payload ทั้งหมดอยู่ใน [docs/frontend-integration.md](docs/frontend-integration.md)
+API ใช้ token authentication: ส่ง header `Authorization: Token <key>` ที่ได้จาก register / sign-in
+session ที่เปิดตอนล็อกอินอยู่จะเป็นของบัญชีนั้น คนอื่นเปิดด้วย id ไม่ได้ (ตอบ `404`)
+ส่วน session ที่เปิดตอนยังไม่ล็อกอินจะไม่มีเจ้าของ และจะไม่ถูกยกให้ใครภายหลัง
+รายละเอียด payload ทั้งหมดอยู่ใน [docs/frontend-integration.md](docs/frontend-integration.md)
 
 ### ลองยิง API ดูเร็ว ๆ
 
@@ -281,6 +292,7 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 
 | โฟลเดอร์ | หน้าที่ |
 | --- | --- |
+| `accounts/` | สมัคร / เข้าสู่ระบบ / ออกจากระบบ และ identity ของผู้ใช้ปัจจุบัน |
 | `api/` | จุดเข้า API รวม, health check, และคำสั่ง `sync_content` |
 | `assessments/` | session, คำตอบ, scoring, serializers, คำสั่ง simulation |
 | `roadmaps/` | role, topic, คำถาม, seed data, logic ของ questionnaire |

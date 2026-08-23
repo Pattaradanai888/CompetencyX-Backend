@@ -6,7 +6,251 @@
         "description": "Adaptive career-roadmap backend API for assessment sessions, role inference, and next-topic recommendations."
     },
     "paths": {
+        "/api/v1/accounts/me/": {
+            "get": {
+                "operationId": "getCurrentAccount",
+                "summary": "Identify the current respondent",
+                "tags": [
+                    "Accounts"
+                ],
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Account"
+                                }
+                            }
+                        },
+                        "description": "The signed-in respondent."
+                    },
+                    "401": {
+                        "description": "No credential was presented."
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/register/": {
+            "post": {
+                "operationId": "registerAccount",
+                "summary": "Register an account",
+                "tags": [
+                    "Accounts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Registration"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Account created; the response carries the credential to hold across requests."
+                    },
+                    "400": {
+                        "description": "Duplicate email or a password that fails validation."
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/sign-in/": {
+            "post": {
+                "operationId": "signIn",
+                "summary": "Sign in",
+                "tags": [
+                    "Accounts"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SignIn"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Credential for the signed-in respondent."
+                    },
+                    "400": {
+                        "description": "Email or password is incorrect."
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/sign-out/": {
+            "post": {
+                "operationId": "signOut",
+                "summary": "Sign out",
+                "tags": [
+                    "Accounts"
+                ],
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "The credential no longer authenticates."
+                    },
+                    "401": {
+                        "description": "No credential was presented."
+                    }
+                }
+            }
+        },
         "/api/v1/assessment-sessions/": {
+            "get": {
+                "operationId": "listAssessmentSessions",
+                "summary": "List the sessions the signed-in respondent owns",
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AssessmentSession"
+                                    }
+                                },
+                                "examples": {
+                                    "SessionListResponse": {
+                                        "value": [
+                                            [
+                                                {
+                                                    "id": "2b39d41d-8de9-4b9b-b2ef-2a278b3f3770",
+                                                    "status": "in_progress",
+                                                    "phase": "role_discovery",
+                                                    "language": "en",
+                                                    "best_fit_confidence": 0.0,
+                                                    "preferred_role": {
+                                                        "id": 1,
+                                                        "slug": "backend-engineer",
+                                                        "name": "Backend Engineer",
+                                                        "description": "Builds APIs and backend services."
+                                                    },
+                                                    "best_fit_role": null,
+                                                    "profile": {
+                                                        "education_level": "student",
+                                                        "current_stage": "beginner"
+                                                    },
+                                                    "started_at": "2026-04-17T04:00:00Z",
+                                                    "updated_at": "2026-04-17T04:00:00Z",
+                                                    "completed_at": null,
+                                                    "milestones": {
+                                                        "answered_role_questions": 0,
+                                                        "answered_core_role_questions": 0,
+                                                        "answered_tie_break_questions": 0
+                                                    },
+                                                    "role_alignment_status": "unknown",
+                                                    "role_resolution_status": "in_progress",
+                                                    "guidance_summary": "You want to pursue Backend Engineer. Complete the role-discovery profile to compare fit.",
+                                                    "current_question": {
+                                                        "id": 101,
+                                                        "code": "role-likert-build-working-parts",
+                                                        "stage": "role",
+                                                        "question_type": "likert_5",
+                                                        "prompt": "I enjoy turning an idea into a working technical part.",
+                                                        "help_text": "",
+                                                        "role": null,
+                                                        "topic": null,
+                                                        "difficulty": 1,
+                                                        "options": [],
+                                                        "response_scale": [
+                                                            {
+                                                                "key": "strongly_agree",
+                                                                "label": "Strongly agree",
+                                                                "value": 2,
+                                                                "display_order": 1
+                                                            },
+                                                            {
+                                                                "key": "agree",
+                                                                "label": "Agree",
+                                                                "value": 1,
+                                                                "display_order": 2
+                                                            },
+                                                            {
+                                                                "key": "neutral",
+                                                                "label": "Neutral",
+                                                                "value": 0,
+                                                                "display_order": 3
+                                                            },
+                                                            {
+                                                                "key": "disagree",
+                                                                "label": "Disagree",
+                                                                "value": -1,
+                                                                "display_order": 4
+                                                            },
+                                                            {
+                                                                "key": "strongly_disagree",
+                                                                "label": "Strongly disagree",
+                                                                "value": -2,
+                                                                "display_order": 5
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        ],
+                                        "summary": "Session list response"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "Sessions owned by the signed-in respondent, most recently started first."
+                    },
+                    "401": {
+                        "description": "Listing sessions requires an account."
+                    }
+                }
+            },
             "post": {
                 "operationId": "createAssessmentSession",
                 "summary": "Create an assessment session",
@@ -23,6 +267,9 @@
                     }
                 },
                 "security": [
+                    {
+                        "tokenAuth": []
+                    },
                     {
                         "cookieAuth": []
                     },
@@ -143,6 +390,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -190,6 +440,9 @@
                     "required": true
                 },
                 "security": [
+                    {
+                        "tokenAuth": []
+                    },
                     {
                         "cookieAuth": []
                     },
@@ -313,6 +566,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -383,6 +639,9 @@
                     "Assessment Sessions"
                 ],
                 "security": [
+                    {
+                        "tokenAuth": []
+                    },
                     {
                         "cookieAuth": []
                     },
@@ -480,6 +739,9 @@
                     "Assessment Sessions"
                 ],
                 "security": [
+                    {
+                        "tokenAuth": []
+                    },
                     {
                         "cookieAuth": []
                     },
@@ -603,6 +865,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -668,6 +933,9 @@
                 },
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -729,6 +997,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -779,6 +1050,9 @@
                 },
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -824,6 +1098,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -864,6 +1141,9 @@
                     "Catalog"
                 ],
                 "security": [
+                    {
+                        "tokenAuth": []
+                    },
                     {
                         "cookieAuth": []
                     },
@@ -946,6 +1226,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -979,6 +1262,9 @@
                 ],
                 "security": [
                     {
+                        "tokenAuth": []
+                    },
+                    {
                         "cookieAuth": []
                     },
                     {}
@@ -993,6 +1279,26 @@
     },
     "components": {
         "schemas": {
+            "Account": {
+                "type": "object",
+                "description": "The identity a signed-in respondent gets back when they ask who they are.",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "readOnly": true,
+                        "title": "Email address"
+                    }
+                },
+                "required": [
+                    "email",
+                    "id"
+                ]
+            },
             "AnswerHistory": {
                 "type": "object",
                 "properties": {
@@ -1572,6 +1878,25 @@
                     "top_supporting_pillars"
                 ]
             },
+            "Registration": {
+                "type": "object",
+                "description": "The email and password pair a respondent presents to register or to sign in.",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 150
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ]
+            },
             "RoadmapPrerequisiteEdge": {
                 "type": "object",
                 "description": "One prerequisite edge of a role's roadmap graph.\n\n``prerequisite`` may point at a topic owned by another role, so a client\nrendering the graph should tolerate an edge whose endpoint is not in the\n``topics`` list.",
@@ -1792,6 +2117,25 @@
                     "prerequisite_edges",
                     "role",
                     "topics"
+                ]
+            },
+            "SignIn": {
+                "type": "object",
+                "description": "The email and password pair a respondent presents to register or to sign in.",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 150
+                    },
+                    "password": {
+                        "type": "string",
+                        "writeOnly": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
                 ]
             },
             "SkillAssessmentCatalog": {
@@ -2031,6 +2375,12 @@
                 "type": "apiKey",
                 "in": "cookie",
                 "name": "sessionid"
+            },
+            "tokenAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+                "description": "Token-based authentication with required prefix \"Token\""
             }
         }
     }

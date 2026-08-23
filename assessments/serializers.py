@@ -238,7 +238,11 @@ class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer)
         )
 
     def create(self, validated_data):
-        return create_assessment_session(**validated_data)
+        # A session created while signed in belongs to that account; one created
+        # signed out stays ownerless and is never adopted later.
+        request = self.context.get('request')
+        user = request.user if request is not None and request.user.is_authenticated else None
+        return create_assessment_session(user=user, **validated_data)
 
     def _session_state(self, obj):
         return self._memoized(obj, context_key='session_state', builder=build_session_state)

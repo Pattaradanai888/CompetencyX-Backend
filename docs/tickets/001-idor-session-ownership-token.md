@@ -1,6 +1,10 @@
 # 001 — Fix IDOR: bind assessment sessions to an ownership token
 
-**Label:** `ready-for-agent` · **Blocks:** 002, 004 (soft — they should inherit the permission pattern)
+> **Superseded by real accounts (ADR-0003).** The anonymous ownership token below was rejected: a mark that a
+> cleared browser destroys is not a statement about the person. The IDOR it describes is closed instead by
+> accounts plus session ownership — see GitHub issues #3 and #4. Kept for the record; do not implement.
+
+**Label:** ~~`ready-for-agent`~~ superseded · **Blocks:** 002, 004 (soft — they should inherit the permission pattern)
 
 ## Summary
 
