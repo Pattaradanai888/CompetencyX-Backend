@@ -80,6 +80,12 @@ class AssessmentSession(models.Model):
     profile = models.JSONField(default=dict, blank=True)
     skill_assessment_completed = models.BooleanField(default=False)
     skill_assessment_completed_at = models.DateTimeField(null=True, blank=True)
+    # The top five suggestions as of the last saved answer, and whether that
+    # answer left them unchanged: Recommendation Stability is the signal to
+    # stop asking, so it has to survive the request that observed it
+    # (ADR-0003). ``null`` means no suggestion has been computed yet.
+    skill_assessment_top_five = models.JSONField(null=True, blank=True)
+    skill_assessment_stable = models.BooleanField(default=False)
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -288,3 +294,32 @@ class AssessableTopicSet(models.Model):
 
     def __str__(self) -> str:
         return self.set_key
+
+
+class HeldTopicMark(models.Model):
+    """A respondent's statement that they can already work on an Assessable Topic Set.
+
+    The mark belongs to the account, not the session, so it follows the
+    respondent across sessions and devices. It is the same statement as a
+    self-rating at or above the threshold, so both land in one notion of
+    "already held" (ADR-0003) -- and neither is a verdict the product issues.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='held_topic_marks',
+    )
+    topic_set = models.ForeignKey(
+        AssessableTopicSet,
+        on_delete=models.CASCADE,
+        related_name='held_marks',
+    )
+    marked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [('user', 'topic_set')]
+        ordering = ['user_id', 'topic_set__set_key']
+
+    def __str__(self) -> str:
+        return f'{self.user_id}:{self.topic_set.set_key}'

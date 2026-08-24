@@ -239,6 +239,68 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
         'q-psp': 4,
     },
     'completed_at': '2026-05-08T20:00:00Z',
+    'topic_mastery': {'backend-developer--databases': 0.25},
+    'topic_states': [
+        {
+            'topic_slug': 'backend-developer--databases',
+            'topic_title': 'Data storage',
+            'state': 'assessed_gap',
+            'mastery': 0.25,
+        },
+        {
+            'topic_slug': 'backend-developer--caching',
+            'topic_title': 'Caching',
+            'state': 'unassessed',
+            'mastery': None,
+        },
+        {
+            'topic_slug': 'backend-developer--internet-and-web',
+            'topic_title': 'Internet and web protocols',
+            'state': 'held',
+            'mastery': 1.0,
+            'statement': 'You said you can already work on "Internet and web protocols".',
+        },
+    ],
+    'recommended_topics': [
+        {
+            'topic_slug': 'backend-developer--databases',
+            'topic_title': 'Data storage',
+            'state': 'assessed_gap',
+            'mastery': 0.25,
+            'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
+        },
+        {
+            'topic_slug': 'backend-developer--caching',
+            'topic_title': 'Caching',
+            'state': 'unassessed',
+            'mastery': None,
+            'reason': 'The assessment has not asked about "Caching" yet.',
+        },
+    ],
+    'next_topics': [
+        {
+            'topic_slug': 'backend-developer--databases',
+            'topic_title': 'Data storage',
+            'state': 'assessed_gap',
+            'mastery': 0.25,
+            'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
+        },
+    ],
+    'readiness': {
+        'targets': {'backend-developer--databases': 0.6, 'backend-developer--caching': 0.6},
+        'overall_target': 0.6,
+        'overall_mastery': 0.25,
+        'assessed_count': 1,
+    },
+    'progress': {
+        'answered': 6,
+        'total': 18,
+        'remaining': 12,
+        'floor': 12,
+        'ceiling': 18,
+        'settled': True,
+    },
+    'confidence': 'high',
 }
 
 SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE = {
@@ -253,5 +315,13 @@ SKILL_ASSESSMENT_NEXT_QUESTION_RESPONSE_EXAMPLE = {
         'id': 'q-dev',
         'prompt': 'I can implement features using clear design and coding practices.',
         'dimension_key': 'development',
+    },
+    'progress': {
+        'answered': 2,
+        'total': 18,
+        'remaining': 16,
+        'floor': 12,
+        'ceiling': 18,
+        'settled': False,
     },
 }

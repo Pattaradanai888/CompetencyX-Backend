@@ -28,8 +28,12 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
                 'answers': {},
                 'completed_at': None,
                 'topic_mastery': {},
+                'topic_states': [],
                 'recommended_topics': [],
-                'readiness': {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0},
+                'next_topics': [],
+                'readiness': {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0, 'assessed_count': 0},
+                'progress': {'answered': 0, 'total': 11, 'remaining': 11, 'floor': 11, 'ceiling': 11, 'settled': False},
+                'confidence': None,
             },
         )
         payload = {
@@ -134,7 +138,10 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertEqual(payload['dimensions'][0]['low_score_action'], 'Database-backed planning action')
         self.assertEqual(payload['role_guidance'][0], 'Database-backed backend guidance')
 
-    def test_completed_skill_assessment_requires_all_catalog_questions(self):
+    def test_completed_skill_assessment_refuses_to_stop_before_the_floor(self):
+        # The stop rule owns completion: for the eleven-item role-independent
+        # catalog the floor is eleven, so one answer cannot complete the
+        # assessment even though every remaining key is known.
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         session_id = create_response.json()['id']
@@ -146,7 +153,7 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         )
 
         self.assertEqual(save_response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('answers', save_response.json())
+        self.assertIn('completed', save_response.json())
 
     def test_skill_assessment_next_question_returns_unanswered_question(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
@@ -164,6 +171,35 @@ class SkillAssessmentTests(AssessmentFlowTestCase):
         self.assertIn('next_question', payload)
         self.assertIsNotNone(payload['next_question'])
         self.assertNotEqual(payload['next_question']['id'], 'psp-plan-estimate')
+
+    def test_next_question_selection_is_deterministic_and_follows_catalog_order(self):
+        # Selection used to be epsilon-greedy over a learned Q-table whose
+        # reward was agreement, so it learned to ask the items a respondent
+        # already agrees with. ADR-0003 replaced it: the same answers produce
+        # the same next question, in the catalog's own order, skipping
+        # answered items and never repeating one.
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        session_id = create_response.json()['id']
+        next_url = reverse('assessment-session-skill-assessment-next-question', kwargs={'pk': session_id})
+
+        first = self.client.post(next_url, {'answers': {}}, format='json').json()
+        second = self.client.post(next_url, {'answers': {}}, format='json').json()
+        self.assertEqual(first['next_question'], second['next_question'])
+        self.assertEqual(first['next_question']['id'], 'psp-plan-estimate')
+
+        skip_answered = self.client.post(next_url, {'answers': {'psp-plan-estimate': 4}}, format='json').json()
+        self.assertEqual(skip_answered['next_question']['id'], 'psp-plan-compare')
+
+    def test_next_question_is_null_when_every_item_is_answered(self):
+        create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')
+        session_id = create_response.json()['id']
+        next_url = reverse('assessment-session-skill-assessment-next-question', kwargs={'pk': session_id})
+
+        everything = dict.fromkeys(SkillAssessmentQuestion.objects.filter(is_active=True, role__isnull=True).values_list('question_id', flat=True), 3)
+        response = self.client.post(next_url, {'answers': everything}, format='json').json()
+
+        self.assertIsNone(response['next_question'])
+        self.assertEqual(response['progress']['remaining'], 0)
 
     def test_skill_assessment_state_survives_removing_and_readding_an_answer(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'preferred_role_slug': self.backend_role.slug}, format='json')

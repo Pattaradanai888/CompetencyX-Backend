@@ -1,11 +1,50 @@
+"""Views for the catalog of roles and their roadmaps."""
+
+import hashlib
+
+from django.db.models import Count, Max
 from drf_spectacular.utils import OpenApiExample, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .external_roadmap import build_external_roadmap_topics, build_external_source_meta
-from .models import Role
+from .models import ExternalRoadmapEdge, ExternalRoadmapNode, RoadmapTopic, Role, TopicPrerequisite
 from .serializers import RoadmapTopicSerializer, RoleRoadmapSerializer, RoleSerializer
+
+
+# The full roadmap is master data that changes only on import, so it is served
+# cacheable with validators rather than paginated (ADR-0003).
+ROADMAP_CACHE_CONTROL = 'public, max-age=3600'
+
+
+def build_role_roadmap_etag(role) -> str:
+    """A validator over everything the roadmap response carries.
+
+    Built from row counts and the latest ``updated_at`` of each contributing
+    table, so a re-import that rewrites the graph moves the validator and a
+    stale response is not served.
+    """
+    node_stats = ExternalRoadmapNode.objects.filter(role=role).aggregate(latest=Max('updated_at'), total=Count('id'))
+    # Edges and curated prerequisite rows carry no timestamps; the highest id
+    # stands in, and moves whenever an import rewrites the rows.
+    edge_stats = ExternalRoadmapEdge.objects.filter(role=role).aggregate(latest=Max('id'), total=Count('id'))
+    topic_stats = RoadmapTopic.objects.filter(role=role, is_active=True).aggregate(latest=Max('updated_at'), total=Count('id'))
+    prerequisite_stats = TopicPrerequisite.objects.filter(topic__role=role).aggregate(latest=Max('id'), total=Count('id'))
+    digest = hashlib.md5(  # noqa: S324 - an ETag is a change detector, not a secret
+        repr(
+            (
+                role.slug,
+                role.updated_at,
+                node_stats,
+                edge_stats,
+                topic_stats,
+                prerequisite_stats,
+                build_external_source_meta(role),
+            ),
+        ).encode(),
+    )
+    return f'W/"{digest.hexdigest()}"'
 
 
 @extend_schema_view(
@@ -103,21 +142,37 @@ class RoleViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     )
     def roadmap(self, request, *args, **kwargs):
         role = self.get_object()
-        topics = list(
-            role.topics.filter(is_active=True)
-            .prefetch_related('prerequisites__prerequisite')
-            .order_by('display_order', 'id'),
-        )
-        edges = [
-            edge
-            for topic in topics
-            for edge in sorted(topic.prerequisites.all(), key=lambda item: item.prerequisite.slug)
-        ]
-        payload = {
-            'role': role,
-            'topics': topics,
-            'prerequisite_edges': edges,
-            'external_topics': build_external_roadmap_topics(role),
-            'external_source': build_external_source_meta(role),
-        }
-        return Response(self.get_serializer(payload).data)
+        etag = build_role_roadmap_etag(role)
+        response = self._not_modified_if_matching(request, etag)
+        if response is None:
+            topics = list(
+                role.topics.filter(is_active=True)
+                .prefetch_related('prerequisites__prerequisite')
+                .order_by('display_order', 'id'),
+            )
+            edges = [
+                edge
+                for topic in topics
+                for edge in sorted(topic.prerequisites.all(), key=lambda item: item.prerequisite.slug)
+            ]
+            payload = {
+                'role': role,
+                'topics': topics,
+                'prerequisite_edges': edges,
+                'external_topics': build_external_roadmap_topics(role),
+                'external_source': build_external_source_meta(role),
+            }
+            response = Response(self.get_serializer(payload).data)
+        response['ETag'] = etag
+        response['Cache-Control'] = ROADMAP_CACHE_CONTROL
+        return response
+
+    def _not_modified_if_matching(self, request, etag):
+        """A 304 when the validator the client holds still matches."""
+        header = request.META.get('HTTP_IF_NONE_MATCH')
+        if not header:
+            return None
+        candidates = {candidate.strip() for candidate in header.split(',')}
+        if etag in candidates or '*' in candidates:
+            return Response(status=304)
+        return None

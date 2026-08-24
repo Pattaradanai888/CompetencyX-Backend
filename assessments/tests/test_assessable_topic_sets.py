@@ -184,8 +184,9 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
 
         units = {unit['slug']: unit for unit in select_assessable_topic_sets(self.backend)}
 
-        self.assertEqual(units['internet-and-web-protocols']['prerequisite_titles'], [])
-        self.assertEqual(units['data-storage']['prerequisite_titles'], ['HTTPS'])
+        internet = units['backend-developer--internet-and-web-protocols']
+        self.assertEqual(internet['prerequisite_titles'], [])
+        self.assertEqual(units['backend-developer--data-storage']['prerequisite_titles'], ['HTTPS'])
 
     def test_an_item_is_keyed_by_the_stable_set_key(self):
         self.write_sets('backend-developer', BACKEND_SETS)
@@ -238,9 +239,9 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
 
         targets = build_topic_targets(self.backend)
 
-        self.assertAlmostEqual(targets['internet-and-web-protocols'], 0.7)
-        self.assertLess(targets['internet-and-web-protocols'], TOPIC_TARGET_MAX)
-        self.assertAlmostEqual(targets['data-storage'], 0.6)
+        self.assertAlmostEqual(targets['backend-developer--internet-and-web-protocols'], 0.7)
+        self.assertLess(targets['backend-developer--internet-and-web-protocols'], TOPIC_TARGET_MAX)
+        self.assertAlmostEqual(targets['backend-developer--data-storage'], 0.6)
 
     def test_a_role_without_authored_sets_keeps_the_items_derived_from_its_roadmap(self):
         sync_topic_skill_assessment_catalog()

@@ -17,9 +17,7 @@ from assessments.services.skill_assessment_service import (
 )
 from assessments.services.topic_skill_assessment_service import (
     MAX_TOPIC_QUESTIONS_PER_ROLE,
-    TOPIC_MASTERY_THRESHOLD,
     build_readiness_summary,
-    build_topic_recommendations,
     build_topic_targets,
     get_topic_mastery,
     is_assessable_topic_title,
@@ -135,45 +133,11 @@ class TopicSkillAssessmentTests(TestCase):
         self.assertEqual(scale_value_to_mastery(99), 1.0)
         self.assertEqual(scale_value_to_mastery(None), 0.0)
 
-    def test_different_answers_on_the_same_role_recommend_different_topics(self):
-        weak_on_caching = build_topic_recommendations(
-            self.backend,
-            self._answers(self.backend, http=5, databases=5, caching=1),
-        )
-        weak_on_http = build_topic_recommendations(
-            self.backend,
-            self._answers(self.backend, http=1, databases=5, caching=5),
-        )
-
-        self.assertEqual(weak_on_caching[0]['topic_slug'], 'caching')
-        self.assertEqual(weak_on_http[0]['topic_slug'], 'http')
-        self.assertNotEqual(weak_on_caching[0]['topic_slug'], weak_on_http[0]['topic_slug'])
-
-    def test_mastered_topics_are_not_recommended(self):
-        answers = self._answers(self.backend, http=5, databases=5, caching=1)
-
-        recommended = build_topic_recommendations(self.backend, answers)
-
-        slugs = {item['topic_slug'] for item in recommended}
-        self.assertEqual(slugs, {'caching'})
-        for item in recommended:
-            self.assertLess(item['mastery'], TOPIC_MASTERY_THRESHOLD)
-
-    def test_recommendations_carry_a_reason_naming_prerequisites(self):
-        answers = self._answers(self.backend, http=5, databases=1, caching=5)
-
-        recommended = build_topic_recommendations(self.backend, answers)
-
-        self.assertEqual(recommended[0]['topic_slug'], 'databases')
-        self.assertIn('HTTP Fundamentals', recommended[0]['reason'])
-
-    def test_unanswered_topics_are_treated_as_not_yet_held(self):
-        recommended = build_topic_recommendations(self.backend, {})
-
-        self.assertEqual(
-            [item['topic_slug'] for item in recommended],
-            ['http', 'databases', 'caching'],
-        )
+    # How the answers order the suggestions -- prerequisite layer before
+    # Self-placed Mastery, assessed gaps before unassessed sets, held topics
+    # dropping out -- is asserted at the HTTP seam in
+    # api/tests/test_topic_states_and_ordering.py, where a respondent observes
+    # it (ADR-0003).
 
     def test_the_readiness_target_comes_from_the_role_s_own_roadmap(self):
         # HTTP Fundamentals unlocks Databases, so it has to be held more firmly

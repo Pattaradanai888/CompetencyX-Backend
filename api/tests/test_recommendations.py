@@ -49,13 +49,25 @@ class RecommendationRemovalTests(AssessmentFlowTestCase):
     def test_a_full_assessment_leaves_no_q_learning_tables_to_write_to(self):
         session_id, _payload = self._complete_role_discovery()
 
+        # Every item of the eleven-question role-independent catalog: that
+        # reaches the ceiling, which is what lets completion through the stop
+        # rule (ADR-0003).
+        answers = {
+            'psp-plan-estimate': 4,
+            'psp-plan-compare': 4,
+            'psp-quality-defects': 3,
+            'psp-quality-review': 4,
+            'sdlc-req-criteria': 4,
+            'sdlc-design-tradeoffs': 5,
+            'sdlc-dev-conventions': 4,
+            'sdlc-test-strategy': 3,
+            'sdlc-release-checklist': 3,
+            'sdlc-maintain-debug': 4,
+            'sdlc-collab-blockers': 4,
+        }
         self.client.post(
             reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
-            {
-                'completed': True,
-                'answers': {'psp-plan-estimate': 4, 'psp-quality-defects': 2},
-                'completed_at': '2026-05-08T20:00:00Z',
-            },
+            {'completed': True, 'answers': answers},
             format='json',
         )
 

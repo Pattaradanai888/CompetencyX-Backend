@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -29,13 +30,26 @@ from .serializers import (
     AssessmentHistorySerializer,
     AssessmentResultSerializer,
     AssessmentSessionSerializer,
+    HeldTopicMarkRequestSerializer,
     RoleInsightsSerializer,
     SkillAssessmentCatalogSerializer,
     SkillAssessmentNextQuestionRequestSerializer,
     SkillAssessmentNextQuestionResponseSerializer,
     SkillAssessmentSessionStateSerializer,
 )
-from .services import skill_assessment_service
+from .services import held_topic_service, skill_assessment_service
+
+
+# A control that silently does nothing is worse than a clear statement: a mark
+# says something about the person and has to survive this browser, which is why
+# it needs the account (ADR-0003). DRF's own unauthenticated message does not
+# say that, so the refusal names the reason.
+MARKING_A_TOPIC_REQUIRES_AN_ACCOUNT = 'Marking a topic as already held requires an account.'
+
+
+def _require_account_for_marking(request):
+    if not (request.user and request.user.is_authenticated):
+        raise NotAuthenticated(MARKING_A_TOPIC_REQUIRES_AN_ACCOUNT)
 
 
 @extend_schema_view(
@@ -82,7 +96,9 @@ class AssessmentSessionViewSet(
     def get_permissions(self):
         # Every other action is reachable signed out; the queryset is what keeps an
         # owned session private. Listing has no session identifier to scope it, so it
-        # needs an account to answer "which sessions are mine".
+        # needs an account to answer "which sessions are mine". Marking and
+        # unmarking check for an account in the action itself, so the refusal can
+        # say plainly that a mark requires one.
         if self.action == 'list':
             return [IsAuthenticated()]
         return super().get_permissions()
@@ -380,5 +396,72 @@ class AssessmentSessionViewSet(
         serializer.is_valid(raise_exception=True)
         answers = serializer.validated_data.get('answers', {})
         next_question = skill_assessment_service.select_next_skill_assessment_question(session, answers)
-        payload = SkillAssessmentNextQuestionResponseSerializer({'next_question': next_question}).data
+        payload = SkillAssessmentNextQuestionResponseSerializer(
+            {
+                'next_question': next_question,
+                'progress': skill_assessment_service.build_skill_assessment_progress(session, answers),
+            },
+        ).data
         return Response(payload)
+
+    @extend_schema(
+        operation_id='markAssessmentHeldTopic',
+        summary='Mark a topic as something the respondent can already do',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(name='id', type=str, location=OpenApiParameter.PATH, description='Assessment session UUID.'),
+        ],
+        request=HeldTopicMarkRequestSerializer,
+        responses={
+            200: OpenApiResponse(
+                response=SkillAssessmentSessionStateSerializer,
+                description='The set is held; the response is the updated skill-assessment state, so the suggestions visibly react.',
+            ),
+            401: OpenApiResponse(description='Marking a topic as already held requires an account.'),
+            404: OpenApiResponse(description='Assessment session or Assessable Topic Set was not found.'),
+        },
+    )
+    @action(detail=True, methods=['post'], url_path='skill-assessment/held-topics', url_name='skill-assessment-held-topics')
+    def mark_held_topic(self, request, *args, **kwargs):
+        session = self.get_object()
+        _require_account_for_marking(request)
+        serializer = HeldTopicMarkRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        held_topic_service.mark_topic_held(request.user, serializer.validated_data['topic_key'])
+        return self._held_topic_state_response(session)
+
+    @extend_schema(
+        operation_id='unmarkAssessmentHeldTopic',
+        summary='Withdraw a mark that a topic is already held',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(name='id', type=str, location=OpenApiParameter.PATH, description='Assessment session UUID.'),
+            OpenApiParameter(name='topic_key', type=str, location=OpenApiParameter.PATH, description='Assessable Topic Set key.'),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=SkillAssessmentSessionStateSerializer,
+                description='The mark is withdrawn; the response is the updated skill-assessment state.',
+            ),
+            401: OpenApiResponse(description='Marking a topic as already held requires an account.'),
+            404: OpenApiResponse(description='Assessment session or Assessable Topic Set was not found.'),
+        },
+    )
+    @action(
+        detail=True,
+        methods=['delete'],
+        url_path='skill-assessment/held-topics/(?P<topic_key>[^/.]+)',
+        url_name='skill-assessment-unhold-topic',
+    )
+    def unmark_held_topic(self, request, *args, **kwargs):
+        session = self.get_object()
+        _require_account_for_marking(request)
+        held_topic_service.unmark_topic_held(request.user, kwargs['topic_key'])
+        return self._held_topic_state_response(session)
+
+    def _held_topic_state_response(self, session):
+        return Response(
+            SkillAssessmentSessionStateSerializer(
+                skill_assessment_service.get_skill_assessment_state(session),
+            ).data,
+        )

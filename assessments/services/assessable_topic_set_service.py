@@ -157,9 +157,17 @@ def select_assessable_topic_sets(role: Role) -> list[dict]:
         follow_on_titles = _related_titles(covered, 'follow_on_titles', covered_titles)
         units.append(
             {
-                'slug': topic_set.key,
+                # The stable catalog key, the same string the question id, the
+                # answer keys, and a Held Topic mark are addressed by.
+                'slug': topic_set.set_key,
+                'question_id': topic_set.set_key,
                 'title': topic_set.title,
                 'title_th': topic_set.title_th,
+                # Which imported nodes the set covers: prerequisite edges are
+                # resolved at the node level and lifted back to units, so a set
+                # whose nodes span several roadmap sections still lands after
+                # everything it builds on (ADR-0003).
+                'node_slugs': [node.slug for node in topic_set.nodes.all()],
                 'display_order': topic_set.display_order or display_order,
                 'prerequisite_titles': _related_titles(covered, 'prerequisite_titles', covered_titles),
                 'follow_on_titles': follow_on_titles,

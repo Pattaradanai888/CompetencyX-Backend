@@ -418,8 +418,16 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
     )
     completed_at = serializers.DateTimeField(read_only=True, allow_null=True)
     topic_mastery = serializers.DictField(child=serializers.FloatField(), read_only=True)
+    # Every assessable unit and which of the three states it is in -- held, an
+    # assessed gap, or unassessed -- so nothing unasked is read as a gap.
+    topic_states = serializers.ListField(child=serializers.DictField(), read_only=True)
     recommended_topics = serializers.ListField(child=serializers.DictField(), read_only=True)
+    # What the post-assessment screen reads: the next few topics, not the graph.
+    next_topics = serializers.ListField(child=serializers.DictField(), read_only=True)
     readiness = serializers.DictField(read_only=True)
+    # How many questions remain, and whether the suggestions have settled.
+    progress = serializers.DictField(read_only=True)
+    confidence = serializers.ChoiceField(choices=['low', 'high'], read_only=True, allow_null=True)
 
     def _role_slug(self):
         return _session_role_slug(self.context)
@@ -427,13 +435,9 @@ class SkillAssessmentSessionStateSerializer(serializers.Serializer):
     def validate_answers(self, value):
         return _validate_skill_assessment_answer_keys(value, forbid_blank=True, role_slug=self._role_slug())
 
-    def validate(self, attrs):
-        if attrs.get('completed', False):
-            missing_question_ids = sorted(get_skill_assessment_question_ids(self._role_slug()) - set(attrs.get('answers', {})))
-            if missing_question_ids:
-                missing_answers = ', '.join(missing_question_ids)
-                raise serializers.ValidationError({'answers': f'Completed Skill Assessment is missing answers for: {missing_answers}.'})
-        return attrs
+    # Completing early is a stop-rule decision, not a payload shape: the
+    # service decides it from the answers, the floor, and Recommendation
+    # Stability (ADR-0003).
 
     def create(self, validated_data):
         return save_skill_assessment_state(session=self.context['session'], state=validated_data)
@@ -485,3 +489,10 @@ class SkillAssessmentNextQuestionRequestSerializer(serializers.Serializer):
 
 class SkillAssessmentNextQuestionResponseSerializer(serializers.Serializer):
     next_question = SkillAssessmentQuestionSerializer(allow_null=True)
+    progress = serializers.DictField(read_only=True)
+
+
+class HeldTopicMarkRequestSerializer(serializers.Serializer):
+    """Which Assessable Topic Set the respondent says they can already work on."""
+
+    topic_key = serializers.SlugField(max_length=128)

@@ -4,6 +4,7 @@ from .models import (
     Answer,
     AssessableTopicSet,
     AssessmentSession,
+    HeldTopicMark,
     SkillAssessmentDimension,
     SkillAssessmentQuestion,
     SkillAssessmentRoleGuidance,
@@ -53,3 +54,10 @@ class AssessableTopicSetAdmin(admin.ModelAdmin):
     list_select_related = ('role',)
     search_fields = ('set_key', 'title', 'title_th', 'role__slug')
     filter_horizontal = ('nodes',)
+
+
+@admin.register(HeldTopicMark)
+class HeldTopicMarkAdmin(admin.ModelAdmin):
+    list_display = ('user', 'topic_set', 'marked_at')
+    list_select_related = ('user', 'topic_set')
+    search_fields = ('user__email', 'topic_set__set_key')
