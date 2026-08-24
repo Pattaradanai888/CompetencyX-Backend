@@ -13,24 +13,23 @@ from assessments.models import AssessableTopicSet, HeldTopicMark
 UNKNOWN_TOPIC_SET_MESSAGE = 'Unknown Assessable Topic Set.'
 
 
-def mark_topic_held(user, topic_set_key: str) -> AssessableTopicSet:
-    """Record the statement, idempotently; the set must exist to be markable."""
+def _topic_set_or_404(topic_set_key: str) -> AssessableTopicSet:
     try:
-        topic_set = AssessableTopicSet.objects.get(set_key=topic_set_key)
+        return AssessableTopicSet.objects.get(set_key=topic_set_key)
     except AssessableTopicSet.DoesNotExist as exc:
         raise NotFound({'topic_key': UNKNOWN_TOPIC_SET_MESSAGE}) from exc
 
+
+def mark_topic_held(user, topic_set_key: str) -> AssessableTopicSet:
+    """Record the statement, idempotently; the set must exist to be markable."""
+    topic_set = _topic_set_or_404(topic_set_key)
     HeldTopicMark.objects.get_or_create(user=user, topic_set=topic_set)
     return topic_set
 
 
 def unmark_topic_held(user, topic_set_key: str) -> AssessableTopicSet:
     """Withdraw the statement; unmarking something never marked is not an error."""
-    try:
-        topic_set = AssessableTopicSet.objects.get(set_key=topic_set_key)
-    except AssessableTopicSet.DoesNotExist as exc:
-        raise NotFound({'topic_key': UNKNOWN_TOPIC_SET_MESSAGE}) from exc
-
+    topic_set = _topic_set_or_404(topic_set_key)
     HeldTopicMark.objects.filter(user=user, topic_set=topic_set).delete()
     return topic_set
 

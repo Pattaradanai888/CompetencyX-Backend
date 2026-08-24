@@ -127,6 +127,30 @@ class StopRuleTests(StopRuleFlowTestCase):
         self.assertTrue(state['completed'])
         self.assertEqual(state['confidence'], 'low')
 
+    def test_a_refused_completion_leaves_the_saved_answers_and_stability_intact(self):
+        # The completion decision and the answer save are one transaction: a
+        # refused completion rolls back its own answers rather than leaving
+        # them recorded against a stability baseline that never saw them.
+        session_id = self.create_session()
+        answers = self.answer_first_n(session_id, 12)
+
+        # Twelve unsettled answers (reverse order keeps the top five moving):
+        # completion is refused, and nothing from that request survives.
+        unsettled = {self.key(index): 1 for index in range(SET_COUNT, SET_COUNT - 12, -1)}
+        response = self.save(session_id, unsettled, completed=True)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        state = self.client.get(reverse('assessment-session-skill-assessment', kwargs={'pk': session_id})).json()
+        self.assertEqual(state['answers'], answers)
+        self.assertEqual(state['progress']['answered'], 12)
+        self.assertFalse(state['completed'])
+
+        # The next save compares its top five against the last successful one.
+        thirteenth = {**answers, self.key(13): 1}
+        follow_up = self.save(session_id, thirteenth)
+        self.assertEqual(follow_up.status_code, status.HTTP_200_OK)
+        self.assertEqual(follow_up.json()['progress']['answered'], 13)
+
     def test_question_selection_is_deterministic(self):
         session_id = self.create_session()
         answers = {self.key(1): 1, self.key(3): 4}

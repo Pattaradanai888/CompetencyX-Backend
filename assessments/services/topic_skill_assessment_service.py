@@ -245,15 +245,17 @@ def build_unit_dependencies(role: Role, units: list[dict]) -> dict[str, set[str]
     return dependencies
 
 
-def build_unit_layers(role: Role, units: list[dict]) -> dict[str, int]:
+def build_unit_layers(role: Role, units: list[dict], *, dependencies: dict[str, set[str]] | None = None) -> dict[str, int]:
     """Prerequisite depth of each unit: how much it builds on.
 
     The depth is the longest prerequisite chain below the unit. 64% of
     imported nodes appear in no edge at all; those land at depth 0, where the
     roadmap's own order carries them. Cycles in imported graphs are tolerated:
-    a back-edge does not add depth.
+    a back-edge does not add depth. Pass ``dependencies`` when the caller
+    already built the unit graph, so the tables are read once.
     """
-    dependencies = build_unit_dependencies(role, units)
+    if dependencies is None:
+        dependencies = build_unit_dependencies(role, units)
     layers: dict[str, int] = {}
     visiting: set[str] = set()
 
@@ -296,8 +298,8 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
     units = select_assessable_units(role)
     mastery = get_topic_mastery(role, answers)
     unit_by_slug = {unit['slug']: unit for unit in units}
-    layers = build_unit_layers(role, units)
     dependencies = build_unit_dependencies(role, units)
+    layers = build_unit_layers(role, units, dependencies=dependencies)
 
     states: list[dict] = []
     by_slug: dict[str, dict] = {}
@@ -354,17 +356,6 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
         )
 
     return {'units': units, 'states': states, 'recommendations': recommendations, 'targets': build_topic_targets(role, units=units)}
-
-
-def build_topic_recommendations(role: Role, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> list[dict]:
-    """Which units this respondent should learn next, and why.
-
-    Ordered by prerequisite layer, then roadmap order, then Self-placed
-    Mastery, so two people on the same role with different answers get
-    different suggestions while the sequence stays learnable. Held Topics drop
-    out while staying on the roadmap.
-    """
-    return build_assessment_summary(role, answers, held_keys=held_keys)['recommendations']
 
 
 # A topic that other topics build on has to be solid before the roadmap makes

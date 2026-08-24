@@ -293,11 +293,12 @@ def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, 
     if requested_completed:
         progress = build_skill_assessment_progress(session, answers)
         if not (progress['settled'] or progress['answered'] >= progress['ceiling']):
-            remaining_to_floor = max(0, progress['floor'] - progress['answered'])
-            msg = (
-                'The Skill Assessment cannot be completed yet: '
-                f'{remaining_to_floor} more answer(s) are needed before the suggestions can settle.'
-            )
+            if progress['answered'] < progress['floor']:
+                how_far = max(0, progress['floor'] - progress['answered'])
+                detail = f'{how_far} more answer(s) are needed before the suggestions can settle.'
+            else:
+                detail = 'the suggestions have not settled yet; answer a little more, or reach the ceiling.'
+            msg = f'The Skill Assessment cannot be completed yet: {detail}'
             raise ValidationError({'completed': msg})
 
     session.save(
