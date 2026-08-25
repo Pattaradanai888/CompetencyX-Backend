@@ -35,6 +35,7 @@ class SessionOwnershipTests(AssessmentFlowTestCase):
     def _session_scoped_urls(self, session_id):
         return [
             reverse('assessment-session-detail', kwargs={'pk': session_id}),
+            reverse('assessment-session-next-question', kwargs={'pk': session_id}),
             reverse('assessment-session-results', kwargs={'pk': session_id}),
             reverse('assessment-session-insights', kwargs={'pk': session_id}),
             reverse('assessment-session-history', kwargs={'pk': session_id}),

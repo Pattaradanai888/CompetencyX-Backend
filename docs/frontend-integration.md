@@ -64,6 +64,27 @@ Fields removed from the in-progress session payload:
 
 `discrimination_score` is no longer exposed in the public question payload.
 
+### Next question, and the `current_question` deprecation window
+Role Discovery now serves its next question the way Skill Assessment does, through its own read-only endpoint:
+
+```
+GET /api/v1/assessment-sessions/{id}/next-question/
+-> {"next_question": { ...same shape as current_question... }}
+```
+
+`next_question` is `null` once the role stage is exhausted or the session is completed -- in this backend those are the
+same moment, since running out of role questions is what completes a session. The endpoint answers only "what am I
+being asked next?"; read `phase` and `status` from the session payload to tell *why* nothing is being asked. The GET
+writes nothing, so it is safe to poll, retry, or replay on a page refresh.
+
+The envelope is `{"next_question": ...}` alone. Skill Assessment adds a `progress` object to its envelope because it
+has a stop rule to report against; Role Discovery has no equivalent, and its progress is already in the session
+payload as `milestones`, so it is deliberately not duplicated here.
+
+`current_question` stays in the session payload for now, carrying exactly the same value, so no client has to move in
+the same release. Plan: it is deprecated from this release, clients migrate to `GET /next-question/`, and the field is
+removed from the session payload once the frontend no longer reads it -- not before.
+
 ### Question language
 Create-session accepts an optional `language` field:
 
@@ -164,6 +185,7 @@ out have no owner: they stay readable, and reading one never assigns it to the a
 | `GET` | `/api/v1/assessment-sessions/` | Lists the sessions the signed-in respondent owns; `401` when signed out |
 | `GET` | `/api/v1/assessment-sessions/{id}/` | Returns lean session state for recovery or refresh |
 | `POST` | `/api/v1/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
+| `GET` | `/api/v1/assessment-sessions/{id}/next-question/` | Returns the role discovery question the session is waiting on, or `null` |
 | `GET` | `/api/v1/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
 | `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns mastery, gap topics, and role analysis after completion |
 | `GET` | `/api/v1/assessment-sessions/{id}/history/` | Returns answer history after completion |

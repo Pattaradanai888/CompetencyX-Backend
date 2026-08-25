@@ -720,6 +720,107 @@
                 }
             }
         },
+        "/api/v1/assessment-sessions/{id}/next-question/": {
+            "get": {
+                "operationId": "getAssessmentNextQuestion",
+                "summary": "Get the next role discovery question",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RoleDiscoveryNextQuestionResponse"
+                                },
+                                "examples": {
+                                    "NextQuestionResponse": {
+                                        "value": {
+                                            "next_question": {
+                                                "id": 101,
+                                                "code": "role-likert-build-working-parts",
+                                                "stage": "role",
+                                                "question_type": "likert_5",
+                                                "prompt": "I enjoy turning an idea into a working technical part.",
+                                                "help_text": "",
+                                                "role": null,
+                                                "topic": null,
+                                                "difficulty": 1,
+                                                "options": [],
+                                                "response_scale": [
+                                                    {
+                                                        "key": "strongly_agree",
+                                                        "label": "Strongly agree",
+                                                        "value": 2,
+                                                        "display_order": 1
+                                                    },
+                                                    {
+                                                        "key": "agree",
+                                                        "label": "Agree",
+                                                        "value": 1,
+                                                        "display_order": 2
+                                                    },
+                                                    {
+                                                        "key": "neutral",
+                                                        "label": "Neutral",
+                                                        "value": 0,
+                                                        "display_order": 3
+                                                    },
+                                                    {
+                                                        "key": "disagree",
+                                                        "label": "Disagree",
+                                                        "value": -1,
+                                                        "display_order": 4
+                                                    },
+                                                    {
+                                                        "key": "strongly_disagree",
+                                                        "label": "Strongly disagree",
+                                                        "value": -2,
+                                                        "display_order": 5
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "summary": "Next question response"
+                                    },
+                                    "NoQuestionRemains": {
+                                        "value": {
+                                            "next_question": null
+                                        },
+                                        "summary": "No question remains"
+                                    }
+                                }
+                            }
+                        },
+                        "description": "The role discovery question this session is waiting on, or null once no question remains."
+                    },
+                    "404": {
+                        "description": "Assessment session was not found."
+                    }
+                }
+            }
+        },
         "/api/v1/assessment-sessions/{id}/results/": {
             "get": {
                 "operationId": "getAssessmentResults",
@@ -891,7 +992,74 @@
                                                 "q-release": 3,
                                                 "q-psp": 4
                                             },
-                                            "completed_at": "2026-05-08T20:00:00Z"
+                                            "completed_at": "2026-05-08T20:00:00Z",
+                                            "topic_mastery": {
+                                                "backend-developer--databases": 0.25
+                                            },
+                                            "topic_states": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--caching",
+                                                    "topic_title": "Caching",
+                                                    "state": "unassessed",
+                                                    "mastery": null
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--internet-and-web",
+                                                    "topic_title": "Internet and web protocols",
+                                                    "state": "held",
+                                                    "mastery": 1.0,
+                                                    "statement": "You said you can already work on \"Internet and web protocols\"."
+                                                }
+                                            ],
+                                            "recommended_topics": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25,
+                                                    "reason": "You rated \"Data storage\" low, and it builds on \"Internet and web protocols\"."
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--caching",
+                                                    "topic_title": "Caching",
+                                                    "state": "unassessed",
+                                                    "mastery": null,
+                                                    "reason": "The assessment has not asked about \"Caching\" yet."
+                                                }
+                                            ],
+                                            "next_topics": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25,
+                                                    "reason": "You rated \"Data storage\" low, and it builds on \"Internet and web protocols\"."
+                                                }
+                                            ],
+                                            "readiness": {
+                                                "targets": {
+                                                    "backend-developer--databases": 0.6,
+                                                    "backend-developer--caching": 0.6
+                                                },
+                                                "overall_target": 0.6,
+                                                "overall_mastery": 0.25,
+                                                "assessed_count": 1
+                                            },
+                                            "progress": {
+                                                "answered": 6,
+                                                "total": 18,
+                                                "remaining": 12,
+                                                "floor": 12,
+                                                "ceiling": 18,
+                                                "settled": true
+                                            },
+                                            "confidence": "high"
                                         },
                                         "summary": "Skill assessment state"
                                     }
@@ -959,7 +1127,74 @@
                                                 "q-release": 3,
                                                 "q-psp": 4
                                             },
-                                            "completed_at": "2026-05-08T20:00:00Z"
+                                            "completed_at": "2026-05-08T20:00:00Z",
+                                            "topic_mastery": {
+                                                "backend-developer--databases": 0.25
+                                            },
+                                            "topic_states": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--caching",
+                                                    "topic_title": "Caching",
+                                                    "state": "unassessed",
+                                                    "mastery": null
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--internet-and-web",
+                                                    "topic_title": "Internet and web protocols",
+                                                    "state": "held",
+                                                    "mastery": 1.0,
+                                                    "statement": "You said you can already work on \"Internet and web protocols\"."
+                                                }
+                                            ],
+                                            "recommended_topics": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25,
+                                                    "reason": "You rated \"Data storage\" low, and it builds on \"Internet and web protocols\"."
+                                                },
+                                                {
+                                                    "topic_slug": "backend-developer--caching",
+                                                    "topic_title": "Caching",
+                                                    "state": "unassessed",
+                                                    "mastery": null,
+                                                    "reason": "The assessment has not asked about \"Caching\" yet."
+                                                }
+                                            ],
+                                            "next_topics": [
+                                                {
+                                                    "topic_slug": "backend-developer--databases",
+                                                    "topic_title": "Data storage",
+                                                    "state": "assessed_gap",
+                                                    "mastery": 0.25,
+                                                    "reason": "You rated \"Data storage\" low, and it builds on \"Internet and web protocols\"."
+                                                }
+                                            ],
+                                            "readiness": {
+                                                "targets": {
+                                                    "backend-developer--databases": 0.6,
+                                                    "backend-developer--caching": 0.6
+                                                },
+                                                "overall_target": 0.6,
+                                                "overall_mastery": 0.25,
+                                                "assessed_count": 1
+                                            },
+                                            "progress": {
+                                                "answered": 6,
+                                                "total": 18,
+                                                "remaining": 12,
+                                                "floor": 12,
+                                                "ceiling": 18,
+                                                "settled": true
+                                            },
+                                            "confidence": "high"
                                         },
                                         "summary": "Saved skill assessment state"
                                     }
@@ -1021,6 +1256,119 @@
                 }
             }
         },
+        "/api/v1/assessment-sessions/{id}/skill-assessment/held-topics/": {
+            "post": {
+                "operationId": "markAssessmentHeldTopic",
+                "summary": "Mark a topic as something the respondent can already do",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/HeldTopicMarkRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillAssessmentSessionState"
+                                }
+                            }
+                        },
+                        "description": "The set is held; the response is the updated skill-assessment state, so the suggestions visibly react."
+                    },
+                    "401": {
+                        "description": "Marking a topic as already held requires an account."
+                    },
+                    "404": {
+                        "description": "Assessment session or Assessable Topic Set was not found."
+                    }
+                }
+            }
+        },
+        "/api/v1/assessment-sessions/{id}/skill-assessment/held-topics/{topic_key}/": {
+            "delete": {
+                "operationId": "unmarkAssessmentHeldTopic",
+                "summary": "Withdraw a mark that a topic is already held",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessment session UUID.",
+                        "required": true
+                    },
+                    {
+                        "in": "path",
+                        "name": "topic_key",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Assessable Topic Set key.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Assessment Sessions"
+                ],
+                "security": [
+                    {
+                        "tokenAuth": []
+                    },
+                    {
+                        "cookieAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SkillAssessmentSessionState"
+                                }
+                            }
+                        },
+                        "description": "The mark is withdrawn; the response is the updated skill-assessment state."
+                    },
+                    "401": {
+                        "description": "Marking a topic as already held requires an account."
+                    },
+                    "404": {
+                        "description": "Assessment session or Assessable Topic Set was not found."
+                    }
+                }
+            }
+        },
         "/api/v1/assessment-sessions/{id}/skill-assessment/next-question/": {
             "post": {
                 "operationId": "getAssessmentSkillAssessmentNextQuestion",
@@ -1071,6 +1419,14 @@
                                                 "id": "q-dev",
                                                 "prompt": "I can implement features using clear design and coding practices.",
                                                 "dimension_key": "development"
+                                            },
+                                            "progress": {
+                                                "answered": 2,
+                                                "total": 18,
+                                                "remaining": 16,
+                                                "floor": 12,
+                                                "ceiling": 18,
+                                                "settled": false
                                             }
                                         },
                                         "summary": "Next question response"
@@ -1674,8 +2030,14 @@
                         "readOnly": true
                     },
                     "current_question": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Question"
+                            }
+                        ],
                         "nullable": true,
-                        "readOnly": true
+                        "readOnly": true,
+                        "description": "Deprecated: read GET /api/v1/assessment-sessions/{id}/next-question/ instead. Still served, and still the same value."
                     }
                 },
                 "required": [
@@ -1700,6 +2062,14 @@
                 "enum": [
                     ""
                 ]
+            },
+            "ConfidenceEnum": {
+                "enum": [
+                    "low",
+                    "high"
+                ],
+                "type": "string",
+                "description": "* `low` - low\n* `high` - high"
             },
             "DifficultyEnum": {
                 "enum": [
@@ -1802,6 +2172,20 @@
                     "topic_group"
                 ]
             },
+            "HeldTopicMarkRequest": {
+                "type": "object",
+                "description": "Which Assessable Topic Set the respondent says they can already work on.",
+                "properties": {
+                    "topic_key": {
+                        "type": "string",
+                        "maxLength": 128,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    }
+                },
+                "required": [
+                    "topic_key"
+                ]
+            },
             "LanguageEnum": {
                 "enum": [
                     "en",
@@ -1809,6 +2193,39 @@
                 ],
                 "type": "string",
                 "description": "* `en` - English\n* `th` - Thai"
+            },
+            "LikertResponseScaleChoice": {
+                "type": "object",
+                "description": "One rung of the five-point agreement scale, labeled in the session language.",
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "label": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "value": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "display_order",
+                    "key",
+                    "label",
+                    "value"
+                ]
+            },
+            "NullEnum": {
+                "enum": [
+                    null
+                ]
             },
             "PhaseEnum": {
                 "enum": [
@@ -1846,6 +2263,122 @@
                     "normalized_score",
                     "raw_score"
                 ]
+            },
+            "Question": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "code": {
+                        "type": "string",
+                        "maxLength": 96,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "stage": {
+                        "$ref": "#/components/schemas/StageEnum"
+                    },
+                    "question_type": {
+                        "$ref": "#/components/schemas/QuestionTypeEnum"
+                    },
+                    "prompt": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "help_text": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "translations": {
+                        "readOnly": true
+                    },
+                    "role": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "topic": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "difficulty": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/QuestionOption"
+                        },
+                        "readOnly": true
+                    },
+                    "response_scale": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LikertResponseScaleChoice"
+                        },
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "code",
+                    "help_text",
+                    "id",
+                    "options",
+                    "prompt",
+                    "question_type",
+                    "response_scale",
+                    "role",
+                    "stage",
+                    "topic",
+                    "translations"
+                ]
+            },
+            "QuestionOption": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": true
+                    },
+                    "key": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "pattern": "^[-a-zA-Z0-9_]+$"
+                    },
+                    "label": {
+                        "type": "string",
+                        "maxLength": 160
+                    },
+                    "value": {
+                        "type": "string",
+                        "maxLength": 64
+                    },
+                    "display_order": {
+                        "type": "integer",
+                        "maximum": 9223372036854775807,
+                        "minimum": 0,
+                        "format": "int64"
+                    }
+                },
+                "required": [
+                    "id",
+                    "key",
+                    "label"
+                ]
+            },
+            "QuestionTypeEnum": {
+                "enum": [
+                    "yes_no",
+                    "yes_no_maybe",
+                    "likert_5",
+                    "single_choice",
+                    "ranked_choice"
+                ],
+                "type": "string",
+                "description": "* `yes_no` - Yes / No\n* `yes_no_maybe` - Yes / No / Maybe\n* `likert_5` - Five-Point Agreement Scale\n* `single_choice` - Single Choice\n* `ranked_choice` - Ranked Choice"
             },
             "RankedRoleInsight": {
                 "type": "object",
@@ -2013,6 +2546,23 @@
                     "id",
                     "name",
                     "slug"
+                ]
+            },
+            "RoleDiscoveryNextQuestionResponse": {
+                "type": "object",
+                "properties": {
+                    "next_question": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/Question"
+                            }
+                        ],
+                        "readOnly": true,
+                        "nullable": true
+                    }
+                },
+                "required": [
+                    "next_question"
                 ]
             },
             "RoleInsights": {
@@ -2228,10 +2778,16 @@
                             }
                         ],
                         "nullable": true
+                    },
+                    "progress": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "readOnly": true
                     }
                 },
                 "required": [
-                    "next_question"
+                    "next_question",
+                    "progress"
                 ]
             },
             "SkillAssessmentQuestion": {
@@ -2248,6 +2804,12 @@
                         "additionalProperties": {}
                     },
                     "dimension_key": {
+                        "type": "string"
+                    },
+                    "topic_slug": {
+                        "type": "string"
+                    },
+                    "topic_title": {
                         "type": "string"
                     }
                 },
@@ -2306,7 +2868,23 @@
                         },
                         "readOnly": true
                     },
+                    "topic_states": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        },
+                        "readOnly": true
+                    },
                     "recommended_topics": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": {}
+                        },
+                        "readOnly": true
+                    },
+                    "next_topics": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -2318,14 +2896,42 @@
                         "type": "object",
                         "additionalProperties": {},
                         "readOnly": true
+                    },
+                    "progress": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "readOnly": true
+                    },
+                    "confidence": {
+                        "readOnly": true,
+                        "nullable": true,
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/ConfidenceEnum"
+                            },
+                            {
+                                "$ref": "#/components/schemas/NullEnum"
+                            }
+                        ]
                     }
                 },
                 "required": [
                     "completed_at",
+                    "confidence",
+                    "next_topics",
+                    "progress",
                     "readiness",
                     "recommended_topics",
-                    "topic_mastery"
+                    "topic_mastery",
+                    "topic_states"
                 ]
+            },
+            "StageEnum": {
+                "enum": [
+                    "role"
+                ],
+                "type": "string",
+                "description": "* `role` - Role Discovery"
             },
             "StatusEnum": {
                 "enum": [

@@ -83,6 +83,16 @@ SESSION_RESPONSE_EXAMPLE = {
     },
 }
 
+# The Role Discovery endpoint serves exactly what the session payload carries in
+# ``current_question``, so the example is that field rather than a second copy of it.
+ROLE_DISCOVERY_NEXT_QUESTION_RESPONSE_EXAMPLE = {
+    'next_question': SESSION_RESPONSE_EXAMPLE['current_question'],
+}
+
+ROLE_DISCOVERY_NEXT_QUESTION_EXHAUSTED_RESPONSE_EXAMPLE = {
+    'next_question': None,
+}
+
 INSIGHTS_RESPONSE_EXAMPLE = {
     'role_resolution_status': 'resolved',
     'best_fit_role': {

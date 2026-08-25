@@ -19,6 +19,8 @@ from .schema import (
     HISTORY_RESPONSE_EXAMPLE,
     INSIGHTS_RESPONSE_EXAMPLE,
     RESULT_RESPONSE_EXAMPLE,
+    ROLE_DISCOVERY_NEXT_QUESTION_EXHAUSTED_RESPONSE_EXAMPLE,
+    ROLE_DISCOVERY_NEXT_QUESTION_RESPONSE_EXAMPLE,
     SESSION_CREATE_REQUEST_EXAMPLE,
     SESSION_RESPONSE_EXAMPLE,
     SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE,
@@ -31,13 +33,14 @@ from .serializers import (
     AssessmentResultSerializer,
     AssessmentSessionSerializer,
     HeldTopicMarkRequestSerializer,
+    RoleDiscoveryNextQuestionResponseSerializer,
     RoleInsightsSerializer,
     SkillAssessmentCatalogSerializer,
     SkillAssessmentNextQuestionRequestSerializer,
     SkillAssessmentNextQuestionResponseSerializer,
     SkillAssessmentSessionStateSerializer,
 )
-from .services import held_topic_service, skill_assessment_service
+from .services import assessment_service, held_topic_service, skill_assessment_service
 
 
 # A control that silently does nothing is worse than a clear statement: a mark
@@ -219,6 +222,48 @@ class AssessmentSessionViewSet(
             msg = 'Assessment history is only available after completion.'
             raise AssessmentNotCompleted(msg)
         return Response(self.get_serializer(session).data)
+
+    @extend_schema(
+        operation_id='getAssessmentNextQuestion',
+        summary='Get the next role discovery question',
+        tags=['Assessment Sessions'],
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=str,
+                location=OpenApiParameter.PATH,
+                description='Assessment session UUID.',
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                response=RoleDiscoveryNextQuestionResponseSerializer,
+                description='The role discovery question this session is waiting on, or null once no question remains.',
+                examples=[
+                    OpenApiExample(
+                        'Next question response',
+                        value=ROLE_DISCOVERY_NEXT_QUESTION_RESPONSE_EXAMPLE,
+                        response_only=True,
+                        status_codes=['200'],
+                    ),
+                    OpenApiExample(
+                        'No question remains',
+                        value=ROLE_DISCOVERY_NEXT_QUESTION_EXHAUSTED_RESPONSE_EXAMPLE,
+                        response_only=True,
+                        status_codes=['200'],
+                    ),
+                ],
+            ),
+            404: OpenApiResponse(description='Assessment session was not found.'),
+        },
+    )
+    @action(detail=True, methods=['get'], url_path='next-question', url_name='next-question')
+    def next_question(self, request, *args, **kwargs):
+        # Both surveys now answer "what am I being asked next?" through the same
+        # envelope; Role Discovery reads it out of the same pure selection the
+        # session payload uses, so the GET stays free of side effects.
+        session = self.get_object()
+        return Response({'next_question': assessment_service.get_current_question_data(session)})
 
     @extend_schema(
         operation_id='submitAssessmentAnswer',

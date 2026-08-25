@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from roadmaps.models import Question, QuestionOption, Role
-from roadmaps.serializers import RoadmapTopicSerializer, RoleSerializer
+from roadmaps.serializers import QuestionSerializer, RoadmapTopicSerializer, RoleSerializer
 
 from .exceptions import AssessmentFlowError
 from .models import Answer, AssessmentSession
@@ -195,7 +195,9 @@ class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer)
     role_alignment_status = serializers.SerializerMethodField()
     role_resolution_status = serializers.SerializerMethodField()
     guidance_summary = serializers.SerializerMethodField()
-    current_question = serializers.SerializerMethodField()
+    current_question = serializers.SerializerMethodField(
+        help_text='Deprecated: read GET /api/v1/assessment-sessions/{id}/next-question/ instead. Still served, and still the same value.',
+    )
 
     class Meta:
         model = AssessmentSession
@@ -272,7 +274,9 @@ class AssessmentSessionSerializer(ContextMemoMixin, serializers.ModelSerializer)
     def get_guidance_summary(self, obj):
         return self._session_state(obj)['guidance_summary']
 
-    @extend_schema_field(serializers.JSONField(allow_null=True))
+    # Typed as the question itself, not as free JSON: it is the same value the
+    # next-question endpoint serves, and the two schemas should not disagree.
+    @extend_schema_field(QuestionSerializer(allow_null=True))
     def get_current_question(self, obj):
         return self._session_state(obj)['current_question']
 
@@ -490,6 +494,10 @@ class SkillAssessmentNextQuestionRequestSerializer(serializers.Serializer):
 class SkillAssessmentNextQuestionResponseSerializer(serializers.Serializer):
     next_question = SkillAssessmentQuestionSerializer(allow_null=True)
     progress = serializers.DictField(read_only=True)
+
+
+class RoleDiscoveryNextQuestionResponseSerializer(serializers.Serializer):
+    next_question = QuestionSerializer(allow_null=True, read_only=True)
 
 
 class HeldTopicMarkRequestSerializer(serializers.Serializer):

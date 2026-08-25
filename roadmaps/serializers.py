@@ -137,6 +137,15 @@ class RoleRoadmapSerializer(serializers.Serializer):
     external_source = ExternalRoadmapSourceSerializer(read_only=True, allow_null=True)
 
 
+class LikertResponseScaleChoiceSerializer(serializers.Serializer):
+    """One rung of the five-point agreement scale, labeled in the session language."""
+
+    key = serializers.CharField(read_only=True)
+    label = serializers.CharField(read_only=True)
+    value = serializers.IntegerField(read_only=True)
+    display_order = serializers.IntegerField(read_only=True)
+
+
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
@@ -181,6 +190,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     def get_translations(self, obj):
         return get_question_translations(obj)
 
+    @extend_schema_field(LikertResponseScaleChoiceSerializer(many=True))
     def get_response_scale(self, obj):
         if obj.question_type != Question.Type.LIKERT_5:
             return []
