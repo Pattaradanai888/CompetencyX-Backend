@@ -3,9 +3,13 @@
 Coverage of the imported graph is deliberately not required: a node belonging
 to no set stays Unassessed and is reported as a review backlog rather than
 failing the run (ADR-0003). The findings that are content errors -- a set
-pointing at a node that does not exist, a set with no reviewed Thai wording --
-are reported the same way, and only ``--strict`` turns any of it into a
-failure.
+pointing at a node that does not exist, a set whose Canonical Thai Wording a
+person has not yet reviewed -- are reported the same way, and only
+``--strict`` turns any of it into a failure.
+
+"Not yet reviewed" is read off the set's ``review.status``, never off whether
+it has Thai text: this is the human gate of the topic-set review made
+mechanical. A draft set is still synced and asked in the meantime (ADR-0004).
 """
 
 from django.core.management.base import BaseCommand, CommandError
@@ -20,7 +24,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--strict',
             action='store_true',
-            help='Exit 1 if any role has no sets, any set points at a missing node, or any set has no reviewed Thai wording.',
+            help='Exit 1 if any role has no sets, any set points at a missing node, or any set is not yet review.status=reviewed.',
         )
 
     def handle(self, *args, **options):
@@ -35,7 +39,7 @@ class Command(BaseCommand):
             'Sets pointing at nodes that do not exist',
             [f'{set_key}: {", ".join(slugs)}' for set_key, slugs in report['unknown_node_slugs']],
         )
-        self._write_section('Sets missing reviewed Thai wording', report['sets_missing_thai'])
+        self._write_section('Sets not yet reviewed', report['sets_not_reviewed'])
 
         # Counted by slug: a slug is how a set addresses a node, so two nodes
         # sharing one are covered or uncovered together.
@@ -44,12 +48,12 @@ class Command(BaseCommand):
             self.stdout.write(f'  {role_slug}: {count}')
         self.stdout.write(f'Total uncovered node slugs: {report["uncovered_node_total"]} (backlog, not a failure)')
 
-        blocking = report['roles_without_sets'] or report['unknown_node_slugs'] or report['sets_missing_thai']
+        blocking = report['roles_without_sets'] or report['unknown_node_slugs'] or report['sets_not_reviewed']
         if options['strict'] and blocking:
             msg = (
                 f'{len(report["roles_without_sets"])} role(s) with no sets, '
                 f'{len(report["unknown_node_slugs"])} set(s) with unknown nodes, and '
-                f'{len(report["sets_missing_thai"])} set(s) missing Thai wording.'
+                f'{len(report["sets_not_reviewed"])} set(s) not yet reviewed.'
             )
             raise CommandError(msg)
         if not blocking:

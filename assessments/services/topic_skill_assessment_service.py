@@ -125,11 +125,13 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
             # A set's slug already is its global catalog key; a derived topic's
             # is role-local and carries the role slug here to become one.
             question_id = topic.get('question_id') or build_question_id(role, topic['slug'])
-            # An authored set carries its own Canonical Thai wording, and a set
-            # without reviewed wording gets no Thai prompt: English inside a
-            # Thai sentence would read as reviewed when it is not. A derived
-            # topic has no authored wording either way, so its own title stands
-            # in as it did before.
+            # An authored set carries its own Canonical Thai Wording and is
+            # asked in it whatever its review.status: review runs in parallel
+            # with use, and the respondent is not told the wording is draft
+            # (ADR-0004 decision 2). Only a set with no Thai text at all gets
+            # no Thai prompt -- there is nothing to put in the sentence. A
+            # derived topic has no authored wording either way, so its own
+            # title stands in as it did before.
             thai_topic = topic['title_th'] if 'title_th' in topic else topic['title']
             dimension_key = question_id
             live_question_ids.append(question_id)

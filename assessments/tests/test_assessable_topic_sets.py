@@ -40,10 +40,12 @@ sets:
   - key: internet-and-web-protocols
     title: Internet and web protocols
     title_th: อินเทอร์เน็ตและโปรโตคอลเว็บ
+    review: {status: reviewed}
     nodes: [http, https]
   - key: data-storage
     title: Data storage
     title_th: การจัดเก็บข้อมูล
+    review: {status: draft}
     nodes: [databases]
 """
 
@@ -123,6 +125,7 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
               - key: data-storage
                 title: Data storage
                 title_th: การจัดเก็บข้อมูล
+                review: {status: draft}
                 nodes: [databases]
             """,
         )
@@ -152,6 +155,7 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
             sets:
               - key: anything
                 title: Anything
+                review: {status: draft}
                 nodes: []
             """,
         )
@@ -166,9 +170,11 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
             sets:
               - key: data-storage
                 title: Data storage
+                review: {status: draft}
                 nodes: [databases]
               - key: data-storage
                 title: Data storage again
+                review: {status: draft}
                 nodes: [caching]
             """,
         )
@@ -213,7 +219,23 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
         self.assertIn('Internet and web protocols', questions[0]['prompt'])
         self.assertIn('อินเทอร์เน็ตและโปรโตคอลเว็บ', questions[0]['translations']['th']['prompt'])
 
-    def test_a_set_without_reviewed_thai_wording_is_served_without_a_thai_prompt(self):
+    def test_a_draft_set_is_synced_and_its_draft_thai_wording_is_served(self):
+        # Review runs in parallel with use: a draft set is asked, in its draft
+        # Thai, and the respondent is not told it is draft (ADR-0004).
+        self.write_sets('backend-developer', BACKEND_SETS)
+        sync_assessable_topic_sets()
+        sync_topic_skill_assessment_catalog()
+
+        topic_set = AssessableTopicSet.objects.get(set_key='backend-developer--data-storage')
+        self.assertTrue(topic_set.is_active)
+        self.assertEqual(topic_set.title_th, 'การจัดเก็บข้อมูล')
+        question = next(q for q in list_skill_assessment_questions('backend-developer') if q['id'] == 'backend-developer--data-storage')
+        self.assertIn('การจัดเก็บข้อมูล', question['translations']['th']['prompt'])
+        self.assertNotIn('draft', question['translations']['th']['prompt'].lower())
+
+    def test_a_set_with_no_thai_wording_at_all_is_served_without_a_thai_prompt(self):
+        # Not a review gate: there is simply nothing to put in the Thai prompt,
+        # and an English title inside a Thai sentence would be worse.
         self.write_sets(
             'backend-developer',
             """
@@ -221,6 +243,7 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
             sets:
               - key: data-storage
                 title: Data storage
+                review: {status: draft}
                 nodes: [databases]
             """,
         )
@@ -230,6 +253,59 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
         translations = list_skill_assessment_questions('backend-developer')[0]['translations']
 
         self.assertEqual(set(translations), {'en'})
+
+    def test_a_set_without_a_review_status_fails_to_load_naming_the_set_and_file(self):
+        self.write_sets(
+            'backend-developer',
+            """
+            role_slug: backend-developer
+            sets:
+              - key: data-storage
+                title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                nodes: [databases]
+            """,
+        )
+
+        with pytest.raises(ValueError, match=r'"backend-developer--data-storage".*"backend-developer\.yaml".*review\.status'):
+            load_assessable_topic_sets()
+
+    def test_a_review_block_that_is_not_a_mapping_fails_to_load_naming_the_set(self):
+        # ``review: draft`` is the obvious authoring slip; it must not escape
+        # as a bare attribute error.
+        self.write_sets(
+            'backend-developer',
+            """
+            role_slug: backend-developer
+            sets:
+              - key: data-storage
+                title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                review: draft
+                nodes: [databases]
+            """,
+        )
+
+        with pytest.raises(ValueError, match=r'"backend-developer--data-storage".*review\.status'):
+            load_assessable_topic_sets()
+
+    def test_a_set_with_an_unknown_review_status_fails_to_load(self):
+        # Thai text is not approval: only draft and reviewed mean anything.
+        self.write_sets(
+            'backend-developer',
+            """
+            role_slug: backend-developer
+            sets:
+              - key: data-storage
+                title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                review: {status: approved}
+                nodes: [databases]
+            """,
+        )
+
+        with pytest.raises(ValueError, match=r'"backend-developer--data-storage".*review\.status'):
+            load_assessable_topic_sets()
 
     def test_the_readiness_target_counts_dependent_sets_not_dependent_titles(self):
         # http -> https and https -> databases both leave the first set, but
@@ -290,6 +366,7 @@ class TopicSetValidationTests(TopicSetContentTestCase):
               - key: data-storage
                 title: Data storage
                 title_th: การจัดเก็บข้อมูล
+                review: {status: reviewed}
                 nodes: [databases]
             """,
         )
@@ -305,13 +382,16 @@ class TopicSetValidationTests(TopicSetContentTestCase):
               - key: data-storage
                 title: Data storage
                 title_th: การจัดเก็บข้อมูล
+                review: {status: reviewed}
                 nodes: [databases, nowhere]
             """,
         )
 
         self.assertEqual(build_topic_set_report()['unknown_node_slugs'], [('backend-developer--data-storage', ['nowhere'])])
 
-    def test_sets_missing_reviewed_thai_wording_are_reported(self):
+    def test_sets_not_yet_reviewed_are_reported_even_when_they_have_thai_wording(self):
+        # Having Thai text is not being reviewed: the gate is the status a
+        # person set, never the presence of title_th (ADR-0004).
         self.write_sets(
             'backend-developer',
             """
@@ -319,11 +399,55 @@ class TopicSetValidationTests(TopicSetContentTestCase):
             sets:
               - key: data-storage
                 title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                review: {status: draft}
+                nodes: [databases]
+              - key: interfaces
+                title: Interfaces
+                title_th: อินเทอร์เฟซ
+                review: {status: reviewed}
+                nodes: [http]
+            """,
+        )
+
+        report = build_topic_set_report()
+
+        self.assertEqual(report['sets_not_reviewed'], ['backend-developer--data-storage'])
+        self.assertNotIn('sets_missing_thai', report)
+
+    def test_strict_fails_while_any_set_is_a_draft_and_passes_once_all_are_reviewed(self):
+        Role.objects.filter(slug='ux-designer').update(is_active=False)
+        self.write_sets(
+            'backend-developer',
+            """
+            role_slug: backend-developer
+            sets:
+              - key: data-storage
+                title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                review: {status: draft}
                 nodes: [databases]
             """,
         )
 
-        self.assertEqual(build_topic_set_report()['sets_missing_thai'], ['backend-developer--data-storage'])
+        call_command('validate_topic_set_catalog')
+        with pytest.raises(CommandError, match='not yet reviewed'):
+            call_command('validate_topic_set_catalog', '--strict')
+
+        self.write_sets(
+            'backend-developer',
+            """
+            role_slug: backend-developer
+            sets:
+              - key: data-storage
+                title: Data storage
+                title_th: การจัดเก็บข้อมูล
+                review: {status: reviewed}
+                nodes: [databases]
+            """,
+        )
+
+        call_command('validate_topic_set_catalog', '--strict')
 
     def test_nodes_belonging_to_no_set_are_a_backlog_and_do_not_fail_the_run(self):
         self.write_sets(
@@ -334,10 +458,12 @@ class TopicSetValidationTests(TopicSetContentTestCase):
               - key: data-storage
                 title: Data storage
                 title_th: การจัดเก็บข้อมูล
+                review: {status: reviewed}
                 nodes: [databases]
               - key: interfaces
                 title: Interfaces
                 title_th: อินเทอร์เฟซ
+                review: {status: reviewed}
                 nodes: [http]
             """,
         )
@@ -357,6 +483,7 @@ class TopicSetValidationTests(TopicSetContentTestCase):
               - key: data-storage
                 title: Data storage
                 title_th: การจัดเก็บข้อมูล
+                review: {status: reviewed}
                 nodes: [databases]
             """,
         )
@@ -372,6 +499,7 @@ class TopicSetValidationTests(TopicSetContentTestCase):
             sets:
               - key: data-storage
                 title: Data storage
+                review: {status: draft}
                 nodes: [databases, nowhere]
             """,
         )
@@ -380,3 +508,15 @@ class TopicSetValidationTests(TopicSetContentTestCase):
 
         with pytest.raises(CommandError):
             call_command('validate_topic_set_catalog', '--strict')
+
+
+def test_every_authored_set_in_the_repository_declares_a_review_status():
+    # The loader rejects a set without a status, so one missing block would
+    # take the whole catalog down with it; loading the real directory is the
+    # check that no authored file was left behind.
+    authored_files = sorted(assessable_topic_set_service.TOPIC_SET_CONTENT_DIR.glob('*.yaml'))
+
+    authored = load_assessable_topic_sets()
+
+    assert authored_files
+    assert {entry['role_slug'] for entry in authored} == {path.stem for path in authored_files}

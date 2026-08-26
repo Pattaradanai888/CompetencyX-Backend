@@ -30,8 +30,9 @@ DRAFT_HEADER = """\
 # Nothing in this file is live: publication is the separate, reviewed step of
 # moving reviewed sets into data/content/topic_sets/{role_slug}.yaml and
 # running sync_content.
-# Canonical Thai wording is authored and approved by a human reviewer;
-# title_th is intentionally empty until then.
+# Canonical Thai wording is drafted into title_th by whoever reviews this
+# file (a person or an agent) and approved only by a person: every set starts
+# at review.status: draft, and only a person changes it to reviewed (ADR-0004).
 """
 
 
@@ -176,6 +177,7 @@ def render_draft(role, groups, unassigned) -> str:
         lines.append(f'  - key: {key}')
         lines.append(f'    title: {_draft_title(group)}')
         lines.append("    title_th: ''")
+        lines.append('    review: {status: draft}')
         lines.append(f'    nodes: [{", ".join(node.slug for node in group)}]')
     lines.append('')
     lines.append('unassigned:')

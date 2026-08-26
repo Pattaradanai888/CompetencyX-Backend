@@ -1,13 +1,15 @@
 """Load, synchronise, and validate the authored Assessable Topic Sets.
 
-A set is a reviewed cluster of one role's imported roadmap nodes, written so a
-respondent can place themselves against it in a single question. The sets are
+A set is an authored cluster of one role's imported roadmap nodes, written so
+a respondent can place themselves against it in a single question. The sets are
 authored per role under ``data/content/topic_sets/<role-slug>.yaml`` rather than
 derived from the imported graph, because the graph's own structure does not
 carry the distinction the assessment needs (ADR-0003).
 
 This module owns the entity and its synchronisation. The content that fills it
-is drafted and reviewed separately.
+is drafted and reviewed separately: each set records where that review stands
+in ``review.status``, and a set is synced and asked whichever status it holds
+(ADR-0004).
 """
 
 from pathlib import Path
@@ -22,6 +24,10 @@ from roadmaps.models import ExternalRoadmapNode, Role
 TOPIC_SET_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / 'data' / 'content' / 'topic_sets'
 
 SET_KEY_MAX_LENGTH = 128
+
+# Mirrors the per-item review block of the question catalog. An agent may
+# write ``draft``; only a person sets ``reviewed`` (ADR-0004).
+VALID_TOPIC_SET_REVIEW_STATUSES = frozenset({'draft', 'reviewed'})
 
 
 def build_set_key(role_slug: str, key: str) -> str:
@@ -65,12 +71,24 @@ def _normalise_set(entry: dict, *, role_slug: str, display_order: int, path: Pat
         raise ValueError(msg)
     seen_keys.add(set_key)
 
+    review = entry.get('review')
+    review_status = review.get('status') if isinstance(review, dict) else None
+    if review_status not in VALID_TOPIC_SET_REVIEW_STATUSES:
+        msg = (
+            f'Topic set "{set_key}" in "{path.name}" must declare review.status as one of '
+            f'{sorted(VALID_TOPIC_SET_REVIEW_STATUSES)} (got: {review_status!r}).'
+        )
+        raise ValueError(msg)
+
     return {
         'set_key': set_key,
         'key': entry['key'],
         'role_slug': role_slug,
         'title': entry['title'],
         'title_th': entry.get('title_th', '') or '',
+        # Read by the catalog report only: the sync publishes a set whichever
+        # status it holds, so nothing downstream needs to know it (ADR-0004).
+        'review_status': review_status,
         'node_slugs': list(entry.get('nodes') or []),
         'display_order': entry.get('display_order', display_order),
     }
@@ -195,6 +213,10 @@ def build_topic_set_report() -> dict[str, object]:
 
     Coverage of the graph is deliberately not a gate: a node belonging to no
     set stays Unassessed and is reported as a review backlog (ADR-0003).
+
+    A set is "not reviewed" by its ``review.status`` alone, never by whether it
+    has Thai wording: the wording is drafted by an agent and served while the
+    human review of it runs in parallel (ADR-0004).
     """
     authored = load_assessable_topic_sets()
     node_slugs_by_role: dict[str, set[str]] = {}
@@ -203,7 +225,7 @@ def build_topic_set_report() -> dict[str, object]:
 
     covered_by_role: dict[str, set[str]] = {}
     unknown_node_slugs: list[tuple[str, list[str]]] = []
-    sets_missing_thai: list[str] = []
+    sets_not_reviewed: list[str] = []
     roles_with_sets: set[str] = set()
 
     for entry in authored:
@@ -215,8 +237,8 @@ def build_topic_set_report() -> dict[str, object]:
         unknown = [slug for slug in entry['node_slugs'] if slug not in known]
         if unknown:
             unknown_node_slugs.append((entry['set_key'], unknown))
-        if not entry['title_th'].strip():
-            sets_missing_thai.append(entry['set_key'])
+        if entry['review_status'] != 'reviewed':
+            sets_not_reviewed.append(entry['set_key'])
 
     active_role_slugs = list(Role.objects.filter(is_active=True).order_by('slug').values_list('slug', flat=True))
     uncovered_counts = [
@@ -230,7 +252,7 @@ def build_topic_set_report() -> dict[str, object]:
         'roles_with_sets': sorted(roles_with_sets),
         'roles_without_sets': [slug for slug in active_role_slugs if slug not in roles_with_sets],
         'unknown_node_slugs': unknown_node_slugs,
-        'sets_missing_thai': sets_missing_thai,
+        'sets_not_reviewed': sets_not_reviewed,
         'uncovered_node_counts': [(role_slug, count) for role_slug, count in uncovered_counts if count],
         'uncovered_node_total': sum(count for _role_slug, count in uncovered_counts),
     }

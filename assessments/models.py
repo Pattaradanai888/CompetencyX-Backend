@@ -250,7 +250,7 @@ class SkillAssessmentAnswer(models.Model):
 
 
 class AssessableTopicSet(models.Model):
-    """A reviewed cluster of a role's roadmap topics, rated as one question.
+    """An authored cluster of a role's roadmap topics, rated as one question.
 
     The assessable unit used to be read off the imported graph -- the first
     twelve nodes whose ``node_type`` was ``topic``. That predicate is not

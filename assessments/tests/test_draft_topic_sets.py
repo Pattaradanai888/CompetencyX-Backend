@@ -76,6 +76,7 @@ class DraftTopicSetsTests(TestCase):
         self.assertGreaterEqual(len(sets), 1)
         self.assertTrue(all(set_['key'] and set_['title'] for set_ in sets))
         self.assertTrue(all('title_th' in set_ for set_ in sets))
+        self.assertTrue(all(set_['review'] == {'status': 'draft'} for set_ in sets))
         assigned = {slug for set_ in sets for slug in set_['nodes']}
         self.assertGreaterEqual(len(assigned), 25)
         self.assertIn('topic-01', assigned)
