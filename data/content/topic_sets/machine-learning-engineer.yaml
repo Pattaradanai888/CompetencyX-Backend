@@ -1,0 +1,122 @@
+role_slug: machine-learning-engineer
+sets:
+  - key: linear-algebra
+    title: Linear algebra
+    title_th: พีชคณิตเชิงเส้น (Linear Algebra)
+    review: {status: draft}
+    display_order: 1
+    nodes: [linear-algebra, matrix-and-matrix-operations, 'scalars,-vectors,-tensors', singular-value-decomposition, 'determinants,-inverse-of-matrix', 'eigenvalues,-diagonalization']
+  - key: calculus-and-discrete-mathematics
+    title: Calculus and discrete mathematics
+    title_th: แคลคูลัสและคณิตศาสตร์ไม่ต่อเนื่อง (Calculus, Discrete Mathematics)
+    review: {status: draft}
+    display_order: 2
+    nodes: [calculus, chain-rule-of-derivation, 'derivatives,-partial-derivatives', 'gradient,-jacobian,-hessian', discrete-mathematics]
+  - key: statistics-and-probability
+    title: Statistics and probability
+    title_th: สถิติและความน่าจะเป็น (Statistics, Probability)
+    review: {status: draft}
+    display_order: 3
+    nodes: [statistics, basic-concepts, basics-of-probability, descriptive-statistics, 'random-variances,-pdfs', bayes-theorem, inferential-statistics, types-of-distribution, graphs-and-charts]
+  - key: python-programming
+    title: Python programming
+    title_th: การเขียนโปรแกรมภาษา Python
+    review: {status: draft}
+    display_order: 4
+    nodes: [python, basic-syntax, variables-and-data-types, conditionals, loops, 'functions,-builtin-functions', data-structures, exceptions, object-oriented-programming]
+  - key: python-data-libraries
+    title: Python data analysis libraries
+    title_th: ไลบรารีวิเคราะห์ข้อมูลของ Python (NumPy, Pandas, Matplotlib)
+    review: {status: draft}
+    display_order: 5
+    nodes: [essential-libraries, numpy, pandas, matplotlib, seaborn]
+  - key: data-sources-and-formats
+    title: Data sources and formats
+    title_th: แหล่งข้อมูลและรูปแบบข้อมูล (SQL, NoSQL, API)
+    review: {status: draft}
+    display_order: 6
+    nodes: [data-sources, 'databases-(sql,-no-sql)', internet, apis, mobile-apps, iot, data-formats, json, csv, parquet, excel, other-data-formats]
+  - key: data-preprocessing
+    title: Data preprocessing and feature engineering
+    title_th: การทำ Data Preprocessing และ Feature Engineering
+    review: {status: draft}
+    display_order: 7
+    nodes: [preprocessing-techniques, data-cleaning, feature-engineering, feature-selection, feature-scaling-and-normalization]
+  - key: ml-fundamentals
+    title: Machine learning fundamentals and paradigms
+    title_th: พื้นฐาน Machine Learning และประเภทของการเรียนรู้
+    review: {status: draft}
+    display_order: 8
+    nodes: ['what-is-machine-learning?', types-of-machine-learning, supervised-learning, 'what-is-supervised-learning?', unsupervised-learning, 'what-is-unsupervised-learning?', semi-supervised-learning, self-supervised-learning]
+  - key: regression-and-regularization
+    title: Regression and regularization
+    title_th: โมเดล Regression และ Regularization (Ridge, Lasso)
+    review: {status: draft}
+    display_order: 9
+    nodes: [regression, linear-regression, polynomial-regression, ridge, lasso, elasticnet-regularization]
+  - key: classification-models
+    title: Classification models
+    title_th: โมเดล Classification (Logistic Regression, SVM, Random Forest)
+    review: {status: draft}
+    display_order: 10
+    nodes: [classification, logistic-regression, 'k-nearest-neighbors-(knn)', support-vector-machines, 'decision-trees,-random-forest', gradient-boosting-machines]
+  - key: clustering-and-dimensionality-reduction
+    title: Clustering and dimensionality reduction
+    title_th: การจัดกลุ่มข้อมูลและการลดมิติ (Clustering, Dimensionality Reduction)
+    review: {status: draft}
+    display_order: 11
+    nodes: [clustering, overlapping, hierarchical, exclusive, probabilistic, dimensionality-reduction, principal-component-analysis]
+  - key: reinforcement-learning
+    title: Reinforcement learning
+    title_th: Reinforcement Learning (Q-Learning, Policy Gradient)
+    review: {status: draft}
+    display_order: 12
+    nodes: ['what-is-reinforcement-learning?', reinforcement-learning, policy-gradient, actor-critic-methods, deep-q-networks, q-learning]
+  - key: model-evaluation-and-validation
+    title: Model evaluation and validation
+    title_th: การประเมินผลและ Validation โมเดล (Metrics, Cross-Validation)
+    review: {status: draft}
+    display_order: 13
+    nodes: ['what-is-model-evaluation?', metrics-to-evaluate, confusion-matrix, accuracy, precision, recall, f1-score, roc-auc, log-loss, validation-techniques, k-fold-cross-validation, loocv]
+  - key: neural-network-fundamentals
+    title: Neural network fundamentals
+    title_th: พื้นฐานโครงข่ายประสาทเทียม (Neural Networks)
+    review: {status: draft}
+    display_order: 14
+    nodes: ['neural-network-(nn)-basics', 'perceptron,-multi-layer-perceptrons', activation-functions, forward-propagation, back-propagation, loss-functions]
+  - key: cnn-and-computer-vision
+    title: Convolutional neural networks and computer vision
+    title_th: โครงข่าย CNN และการประยุกต์ใช้ (Computer Vision, Recommendation Systems)
+    review: {status: draft}
+    display_order: 15
+    nodes: [convolutional-neural-network, convolution, pooling, strides, padding, applications-of-cnns, image-classification, image-segmentation, image-and-video-recognition, recommendation-systems]
+  - key: sequence-models-and-transformers
+    title: Sequence models and Transformers
+    title_th: โมเดลข้อมูลลำดับและ Transformers (RNN, LSTM, Attention)
+    review: {status: draft}
+    display_order: 16
+    nodes: [recurrent-neural-networks, rnn, lstm, gru, attention-mechanisms, attention-models, self-attention, multi-head-attention, transformers]
+  - key: deep-learning-architectures
+    title: Advanced deep learning architectures
+    title_th: สถาปัตยกรรม Deep Learning เพิ่มเติม (GANs, Autoencoders)
+    review: {status: draft}
+    display_order: 17
+    nodes: [deep-learning-architectures, generative-adversarial-networks, autoencoders]
+  - key: natural-language-processing
+    title: Natural language processing
+    title_th: การประมวลผลภาษาธรรมชาติ (NLP)
+    review: {status: draft}
+    display_order: 18
+    nodes: [natural-language-processing, tokenization, lemmatization, stemming, embeddings]
+  - key: ml-frameworks
+    title: ML and deep learning frameworks
+    title_th: Framework สำหรับ Machine Learning และ Deep Learning (scikit-learn, TensorFlow, PyTorch)
+    review: {status: draft}
+    display_order: 19
+    nodes: [deep-learning-libraries, tensorflow, keras, pytorch, scikit-learn, data-preparation, data-loading, train---test-data, model-selection, tuning, prediction]
+  - key: explainable-ai
+    title: Explainable AI
+    title_th: Explainable AI (XAI)
+    review: {status: draft}
+    display_order: 20
+    nodes: [explainable-ai]

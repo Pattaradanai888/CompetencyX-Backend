@@ -1,0 +1,116 @@
+role_slug: qa-engineer
+sets:
+  - key: qa-foundations
+    title: Quality Assurance Fundamentals
+    title_th: พื้นฐานการประกันคุณภาพซอฟต์แวร์ (QA)
+    review: {status: draft}
+    display_order: 1
+    nodes: ['what-is-quality-assurance?', qa-mindset, testing-approaches, test-oracles, test-prioritization]
+  - key: web-technology-fundamentals
+    title: Web Technology Fundamentals
+    title_th: พื้นฐานเว็บเทคโนโลยีสำหรับงาน QA (HTML, CSS, JavaScript)
+    review: {status: draft}
+    display_order: 2
+    nodes: ['html,-css,-javascript', browser---dev-tools, ajax, caching, 'swas,-pwas,-jamstack', csr-vs-ssr, responsive-vs-adaptive, chrome-devtools]
+  - key: test-design-techniques
+    title: Test Design Techniques
+    title_th: เทคนิคการออกแบบการทดสอบ (White Box, Black Box)
+    review: {status: draft}
+    display_order: 3
+    nodes: [testing-techniques, white-box-testing, gray-box-testing, black-box-testing, unit-testing, integration-testing]
+  - key: functional-testing
+    title: Functional Testing Types
+    title_th: การทดสอบเชิงฟังก์ชัน (Smoke, Regression, UAT)
+    review: {status: draft}
+    display_order: 4
+    nodes: [functional-testing, smoke-testing, sanity-testing, regression-testing, exploratory-testing, uat]
+  - key: test-planning-and-cases
+    title: Test Planning and Test Case Design
+    title_th: การวางแผนการทดสอบและการเขียน Test Case
+    review: {status: draft}
+    display_order: 5
+    nodes: [manual-testing, test-planning, test-cases-and-scenarios, compatibility, verification-and-validation]
+  - key: non-functional-testing
+    title: Non-Functional Testing
+    title_th: การทดสอบ Non-Functional (Load, Performance, Stress)
+    review: {status: draft}
+    display_order: 6
+    nodes: [non-functional-testing, load-testing, performance-testing, stress-testing]
+  - key: sdlc-and-agile
+    title: SDLC Models and Agile Methodologies
+    title_th: SDLC และการทำงานแบบ Agile (Scrum, Kanban)
+    review: {status: draft}
+    display_order: 7
+    nodes: [sdlc-delivery-model, agile-model, v-model, waterfall, kanban, scrum, xp, safe, tdd]
+  - key: frontend-test-automation
+    title: Web UI Test Automation
+    title_th: การทำ Test Automation สำหรับหน้าเว็บ (Selenium, Playwright, Cypress)
+    review: {status: draft}
+    display_order: 8
+    nodes: [frontend-automation, selenium, selenium-ide, webdriver.io, ghost-inspector, bug-magnet, qa-wolf, cypress, playwright, puppeteer, jasmine, jest, nightwatch, robot]
+  - key: api-backend-test-automation
+    title: API and Backend Test Automation
+    title_th: การทดสอบ API และแบ็กเอนด์แบบอัตโนมัติ (Postman, REST Assured)
+    review: {status: draft}
+    display_order: 9
+    nodes: [backend-automation, soap-ui, karateframework, postman---newman, rest-assured, junit]
+  - key: mobile-test-automation
+    title: Mobile Test Automation
+    title_th: การทำ Test Automation บนมือถือ (Appium, Espresso)
+    review: {status: draft}
+    display_order: 10
+    nodes: [mobile-automation, appium, espresso, detox, xcuitest]
+  - key: headless-testing
+    title: Headless Browser Testing
+    title_th: การทดสอบด้วย Headless Browser
+    review: {status: draft}
+    display_order: 11
+    nodes: [headless-testing, zombie.js, headless-chrome, headless-fox, html-unit]
+  - key: performance-testing-tools
+    title: Load and Performance Testing Tools
+    title_th: เครื่องมือทดสอบ Load และ Performance (JMeter, K6)
+    review: {status: draft}
+    display_order: 12
+    nodes: [load-and-performance-testing, lighthouse, webpage-test, gatling, k6, artillery, vegeta, jmeter, locust]
+  - key: security-testing
+    title: Security Testing
+    title_th: การทดสอบความปลอดภัย (Security Testing, OWASP)
+    review: {status: draft}
+    display_order: 13
+    nodes: [security-testing, authentication---authorization, vulnerability-scanning, secrets-management, owasp-10, attack-vectors]
+  - key: accessibility-testing
+    title: Accessibility Testing
+    title_th: การทดสอบการเข้าถึงได้สำหรับทุกคน (Accessibility)
+    review: {status: draft}
+    display_order: 14
+    nodes: [accessibility-testing, accessibility-tests, wave, axe]
+  - key: email-testing
+    title: Email Testing
+    title_th: การทดสอบอีเมล (Email Testing)
+    review: {status: draft}
+    display_order: 15
+    nodes: [email-testing, mailinator, gmail-tester]
+  - key: version-control
+    title: Version control and repository hosting
+    title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
+    review: {status: draft}
+    display_order: 16
+    nodes: [version-control-system, git, repo-hosting-services, github, bitbucket, gitlab]
+  - key: cicd
+    title: CI/CD Pipelines and Tools
+    title_th: ระบบ CI/CD (Jenkins, TeamCity)
+    review: {status: draft}
+    display_order: 17
+    nodes: [ci---cd, jenkins, circle-ci, drone, travis-ci, gitlab-ci, bamboo, teamcity, azure-devops-services]
+  - key: test-management-and-reporting
+    title: Test Management and Reporting Tools
+    title_th: เครื่องมือบริหารจัดการการทดสอบและรายงานผล (TestRail, Jira)
+    review: {status: draft}
+    display_order: 18
+    nodes: [manage-your-testing, qtest, testrail, testlink, zephyr, project-management, atlassian, assembla, youtrack, trello, reporting, allure]
+  - key: monitoring
+    title: Monitoring and log analysis
+    title_th: การเฝ้าระวังและติดตามระบบ (Monitoring, Logs)
+    review: {status: draft}
+    display_order: 19
+    nodes: [monitoring-and-logs, new-relic, runscope, kibana, datadog, pager-duty, grafana, sentry]

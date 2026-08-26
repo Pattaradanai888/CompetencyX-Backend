@@ -1,0 +1,104 @@
+role_slug: android-developer
+sets:
+  - key: android-fundamentals
+    title: Android development fundamentals
+    title_th: พื้นฐานการพัฒนาแอป Android (IDE, Gradle, OOP)
+    review: {status: draft}
+    display_order: 1
+    nodes: [the-fundamentals, development-ide, basics-of-kotlin, basics-of-oop, data-structures-and-algorithms, 'what-is-and-how-to-use-gradle?', create-a-basic-hello-world-app]
+  - key: android-languages
+    title: Android programming languages (Kotlin, Java)
+    title_th: ภาษาสำหรับพัฒนาแอป Android (Kotlin, Java)
+    review: {status: draft}
+    display_order: 2
+    nodes: [kotlin, java]
+  - key: version-control
+    title: Version control and repository hosting
+    title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
+    review: {status: draft}
+    display_order: 3
+    nodes: [version-control, git, github, bitbucket, gitlab]
+  - key: app-components
+    title: Android app components and lifecycle
+    title_th: App Components และวงจรชีวิตของแอป Android (Activity, Service, Intent)
+    review: {status: draft}
+    display_order: 4
+    nodes: [app-components, activity, activity-lifecycle, state-changes, services, content-provider, broadcast-receiver, intent, implicit-intents, explicit-intents, intent-filters]
+  - key: android-ui
+    title: Android UI widgets and layouts
+    title_th: การสร้าง UI ของ Android ด้วย View และ Layout ต่าง ๆ (RecyclerView, Fragment)
+    review: {status: draft}
+    display_order: 5
+    nodes: [frame, linear, relative, constraint, textview, edittext, buttons, imageview, listview, recyclerview, fragments, dialogs, toast, bottom-sheet, tabs, drawer, animations]
+  - key: jetpack-compose
+    title: Jetpack Compose
+    title_th: การสร้าง UI ด้วย Jetpack Compose
+    review: {status: draft}
+    display_order: 6
+    nodes: [jetpack-compose]
+  - key: app-navigation
+    title: App navigation and back stack
+    title_th: การนำทางในแอป Android (Navigation, Back Stack)
+    review: {status: draft}
+    display_order: 7
+    nodes: [interface-and-navigation, navigation-components, tasks-and-backstack, app-shortcuts]
+  - key: architecture-patterns
+    title: App architecture patterns (MVC, MVP, MVVM, MVI)
+    title_th: แพตเทิร์นสถาปัตยกรรมแอป Android (MVC, MVP, MVVM, MVI)
+    review: {status: draft}
+    display_order: 8
+    nodes: [design-and-architecture, mvc, mvp, mvvm, mvi]
+  - key: design-patterns
+    title: Design patterns in Android
+    title_th: Design Patterns ในการพัฒนาแอป Android
+    review: {status: draft}
+    display_order: 9
+    nodes: [repository-pattern, builder-pattern, factory-pattern, observer-pattern]
+  - key: async-and-reactive
+    title: Asynchronous and reactive programming
+    title_th: การเขียนโปรแกรมแบบ Asynchronous และ Reactive (Coroutines, Flow, RxJava)
+    review: {status: draft}
+    display_order: 10
+    nodes: [asynchronism, coroutines, flow, livedata, threads, rxjava, rxkotlin, workmanager]
+  - key: dependency-injection
+    title: Dependency injection
+    title_th: การทำ Dependency Injection (Hilt, Dagger, Koin)
+    review: {status: draft}
+    display_order: 11
+    nodes: [dependency-injection, dagger, koin, hilt, kodein]
+  - key: local-storage
+    title: Local data storage
+    title_th: การจัดเก็บข้อมูลบนเครื่อง (Room, DataStore, Shared Preferences)
+    review: {status: draft}
+    display_order: 12
+    nodes: [storage, shared-preferences, datastore, room-database, file-system]
+  - key: networking
+    title: Networking and API integration
+    title_th: การเชื่อมต่อ Network และ API (Retrofit, OkHttp)
+    review: {status: draft}
+    display_order: 13
+    nodes: [network, retro, okhttp, apollo-android]
+  - key: firebase-and-google-services
+    title: Firebase and Google services
+    title_th: การใช้งาน Firebase และบริการของ Google
+    review: {status: draft}
+    display_order: 14
+    nodes: [common-services, authentication, crashlytics, remote-config, cloud-messaging, firestore, google-admob, google-play-services, google-maps]
+  - key: testing
+    title: Testing Android apps
+    title_th: การทดสอบแอป Android (JUnit, Espresso)
+    review: {status: draft}
+    display_order: 15
+    nodes: [testing, junit, espresso]
+  - key: code-quality-and-debugging
+    title: Code quality, linting, and debugging
+    title_th: คุณภาพของโค้ด การทำ Lint และการดีบัก (Detekt, LeakCanary)
+    review: {status: draft}
+    display_order: 16
+    nodes: [linting, ktlint, detekt, debugging, timber, leak-canary, chucker, jetpack-benchmark]
+  - key: app-distribution
+    title: App release and distribution
+    title_th: การเผยแพร่และ Distribution แอป Android (Google Play, Signed APK)
+    review: {status: draft}
+    display_order: 17
+    nodes: [distribution, google-playstore, firebase-distribution, signed-apk]

@@ -1,0 +1,92 @@
+role_slug: ai-engineer
+sets:
+  - key: llm-fundamentals
+    title: LLM fundamentals and the AI engineering role
+    title_th: พื้นฐาน LLM และบทบาทของ AI Engineer
+    review: {status: draft}
+    display_order: 1
+    nodes: [introduction, 'what-is-an-ai-engineer?', ai-engineer-vs-ml-engineer, ai-vs-agi, impact-on-product-development, roles-and-responsiblities, llms, training, inference]
+  - key: pre-trained-models
+    title: Pre-trained models and model providers
+    title_th: โมเดลสำเร็จรูป (Pre-trained Models) และผู้ให้บริการโมเดล
+    review: {status: draft}
+    display_order: 2
+    nodes: [pre-trained-models, limitations-and-considerations, benefits-of-pre-trained-models, openai-models, open-ai-models, capabilities---context-length, cut-off-dates---knowledge, anthropic's-claude, google's-gemini, azure-ai, aws-sagemaker, hugging-face-models, mistral-ai, cohere]
+  - key: openai-api
+    title: OpenAI API development
+    title_th: การพัฒนาด้วย OpenAI API
+    review: {status: draft}
+    display_order: 3
+    nodes: [openai-api, chat-completions-api, open-ai-playground, fine-tuning, pricing-considerations]
+  - key: prompt-engineering
+    title: Prompt engineering and token management
+    title_th: การทำ Prompt Engineering และการจัดการ Token
+    review: {status: draft}
+    display_order: 4
+    nodes: [prompt-engineering, writing-prompts, robust-prompt-engineering, maximum-tokens, token-counting, constraining-outputs-and-inputs]
+  - key: hugging-face
+    title: Hugging Face ecosystem
+    title_th: ระบบนิเวศ Hugging Face
+    review: {status: draft}
+    display_order: 5
+    nodes: [hugging-face, hugging-face-hub, hugging-face-tasks, inference-sdk, transformers.js]
+  - key: open-source-and-local-models
+    title: Open-source and local model deployment
+    title_th: โมเดล Open Source และการรันโมเดลด้วยตัวเอง (Ollama)
+    review: {status: draft}
+    display_order: 6
+    nodes: [opensource-ai, open-vs-closed-source-models, popular-open-source-models, ollama, ollama-models, ollama-sdk]
+  - key: embeddings
+    title: Embeddings and semantic applications
+    title_th: Embeddings และการใช้งานเชิงความหมาย (Semantic Search, Recommendations)
+    review: {status: draft}
+    display_order: 7
+    nodes: [what-are-embeddings, embeddings, semantic-search, recommendation-systems, anomaly-detection, data-classification, open-ai-embedding-models, open-ai-embeddings-api, open-source-embeddings, sentence-transformers, models-on-hugging-face]
+  - key: vector-databases
+    title: Vector databases and similarity search
+    title_th: Vector Databases และการค้นหาความคล้ายคลึง (Similarity Search)
+    review: {status: draft}
+    display_order: 8
+    nodes: [vector-databases, purpose-and-functionality, chroma, pinecone, weaviate, faiss, lancedb, qdrant, supabase, mongodb-atlas, indexing-embeddings, performing-similarity-search]
+  - key: rag
+    title: Retrieval-Augmented Generation (RAG)
+    title_th: การทำ RAG (Retrieval-Augmented Generation)
+    review: {status: draft}
+    display_order: 9
+    nodes: [rag, rag-usecases, rag-vs-fine-tuning, rag-and-implementation, chunking, embedding, vector-database, retrieval-process, generation]
+  - key: llm-frameworks
+    title: LLM application frameworks and SDKs
+    title_th: เฟรมเวิร์กและ SDK สำหรับสร้างแอปพลิเคชัน LLM (LangChain, LlamaIndex)
+    review: {status: draft}
+    display_order: 10
+    nodes: [using-sdks-directly, langchain, llama-index, open-ai-assistant-api, openai-assistant-api, replicate, langchain-for-multimodal-apps, llamaindex-for-multimodal-apps]
+  - key: ai-agents
+    title: AI agents and tool use
+    title_th: AI Agents และการเรียกใช้เครื่องมือ (Function Calling)
+    review: {status: draft}
+    display_order: 11
+    nodes: [ai-agents, agents-usecases, react-prompting, manual-implementation, openai-functions---tools]
+  - key: multimodal-vision
+    title: Multimodal AI for image and video
+    title_th: Multimodal AI ด้านรูปภาพและวิดีโอ
+    review: {status: draft}
+    display_order: 12
+    nodes: [multimodal-ai, multimodal-ai-usecases, image-understanding, image-generation, video-understanding, openai-vision-api, dall-e-api]
+  - key: audio-and-speech
+    title: Audio and speech processing
+    title_th: การประมวลผลเสียงและการพูด (Speech-to-Text, Text-to-Speech)
+    review: {status: draft}
+    display_order: 13
+    nodes: [audio-processing, text-to-speech, speech-to-text, whisper-api]
+  - key: ai-safety
+    title: AI safety, security, and responsible use
+    title_th: ความปลอดภัยและการใช้ AI อย่างรับผิดชอบ
+    review: {status: draft}
+    display_order: 14
+    nodes: [ai-safety-and-ethics, prompt-injection-attacks, security-and-privacy-concerns, conducting-adversarial-testing, openai-moderation-api, adding-end-user-ids-in-prompts, bias-and-fairness, know-your-customers---usecases]
+  - key: ai-development-tools
+    title: AI-assisted development tools
+    title_th: เครื่องมือพัฒนาซอฟต์แวร์ที่มี AI ช่วย (AI Code Editors, Copilot)
+    review: {status: draft}
+    display_order: 15
+    nodes: [development-tools, ai-code-editors, code-completion-tools]

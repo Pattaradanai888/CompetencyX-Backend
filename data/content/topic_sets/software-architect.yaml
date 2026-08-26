@@ -1,0 +1,116 @@
+role_slug: software-architect
+sets:
+  - key: architecture-fundamentals
+    title: Architecture fundamentals
+    title_th: พื้นฐานสถาปัตยกรรมซอฟต์แวร์และระดับของสถาปัตยกรรม
+    review: {status: draft}
+    display_order: 1
+    nodes: [understand-the-basics, what-is-software-architecture, what-is-a-software-architect, levels-of-architecture, solution-architecture, enterprise-architecture, application-architecture]
+  - key: architect-responsibilities
+    title: Responsibilities of an architect
+    title_th: บทบาทและความรับผิดชอบของ Software Architect
+    review: {status: draft}
+    display_order: 2
+    nodes: [responsibilities, decision-making, simplifying-things, estimate-and-evaluate, balance, consult-and-coach, marketing-skills]
+  - key: communication-and-documentation
+    title: Communication and documentation
+    title_th: การสื่อสารและการจัดทำเอกสารสถาปัตยกรรม (UML)
+    review: {status: draft}
+    display_order: 3
+    nodes: [important-skills-to-learn, communication, documentation, how-to-code, uml]
+  - key: programming-languages
+    title: Programming languages
+    title_th: ภาษาโปรแกรมที่สถาปนิกซอฟต์แวร์ควรรู้
+    review: {status: draft}
+    display_order: 4
+    nodes: [technical-skills, programming-languages, 'java---kotlin---scala', python, ruby, go, 'javascript---typescript', '.net-framework-based']
+  - key: programming-paradigms
+    title: Programming paradigms
+    title_th: กระบวนทัศน์การเขียนโปรแกรม (OOP, Functional, Reactive)
+    review: {status: draft}
+    display_order: 5
+    nodes: [oop, functional-programming, reactive-programming]
+  - key: design-principles
+    title: Design principles and patterns
+    title_th: หลักการออกแบบและ Design Patterns (SOLID, DDD, TDD)
+    review: {status: draft}
+    display_order: 6
+    nodes: [patterns-and-design-principles, design-and-architecture, solid, ddd, tdd, 'mvc,-mvp,-mvvm']
+  - key: distributed-data-patterns
+    title: Distributed data patterns
+    title_th: แพตเทิร์นข้อมูลในระบบกระจาย (CQRS, CAP Theorem)
+    review: {status: draft}
+    display_order: 7
+    nodes: ['cqrs,-eventual-consistency', actors, 'acid,-cap-theorem']
+  - key: architecture-styles
+    title: Architecture styles
+    title_th: รูปแบบสถาปัตยกรรม (Microservices, Layered, Serverless)
+    review: {status: draft}
+    display_order: 8
+    nodes: [architecture, microservices, serverless, 'client---server', layered, distributed-systems, service-oriented]
+  - key: apis-and-integration
+    title: APIs and integration
+    title_th: การเชื่อมต่อระบบและ API (REST, GraphQL, gRPC)
+    review: {status: draft}
+    display_order: 9
+    nodes: [apis-and-integrations, rest, graphql, grpc, 'esb,-soap', 'bpm,-bpel', messaging-queues]
+  - key: security
+    title: Security architecture
+    title_th: สถาปัตยกรรมด้านความปลอดภัย (OWASP, PKI, Auth)
+    review: {status: draft}
+    display_order: 10
+    nodes: [security, owasp, hashing-algorithms, pki, auth-strategies]
+  - key: working-with-data
+    title: Working with data
+    title_th: การออกแบบการจัดเก็บข้อมูล (SQL, NoSQL, Data Warehouse)
+    review: {status: draft}
+    display_order: 11
+    nodes: [working-with-data, sql-databases, nosql-databases, 'etl,-datawarehouses', datawarehouse-principles]
+  - key: big-data-processing
+    title: Big data processing
+    title_th: การประมวลผลข้อมูลขนาดใหญ่ (Hadoop, Spark)
+    review: {status: draft}
+    display_order: 12
+    nodes: [apache-spark, hadoop, 'hadoop,-spark,-mapreduce']
+  - key: web-and-mobile
+    title: Web and mobile architecture
+    title_th: สถาปัตยกรรมฝั่งเว็บและโมบาย (SPA, SSR, Microfrontends)
+    review: {status: draft}
+    display_order: 13
+    nodes: ['web,-mobile', 'react,-vue,-angular', 'spa,-ssr,-ssg', microfrontends, w3c-and-whatwg]
+  - key: operations-knowledge
+    title: Operations knowledge
+    title_th: ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD, IaC)
+    review: {status: draft}
+    display_order: 14
+    nodes: [operations-knowledge, infrastructure-as-code, cloud-providers, serverless-concepts, 'linux---unix', service-mesh, 'ci---cd', containers, cloud-design-patterns]
+  - key: networking
+    title: Networking
+    title_th: เครือข่ายและโปรโตคอล (TCP/IP, OSI, HTTPS)
+    review: {status: draft}
+    display_order: 15
+    nodes: [networks, 'tcp-ip-model', osi, 'http,-https', proxies, firewalls]
+  - key: collaboration-tools
+    title: Collaboration tools
+    title_th: เครื่องมือทำงานร่วมกัน (Git, Jira, Slack)
+    review: {status: draft}
+    display_order: 16
+    nodes: [tools, git, github, slack, trello, atlassian-tools]
+  - key: architecture-frameworks
+    title: Architecture frameworks
+    title_th: กรอบงานสถาปัตยกรรมองค์กร (TOGAF, IAF, BABOK)
+    review: {status: draft}
+    display_order: 17
+    nodes: [frameworks, togaf, iaf, babok, 'emc-dms']
+  - key: management-and-methodologies
+    title: Management and delivery methodologies
+    title_th: การบริหารโครงการและระเบียบวิธีส่งมอบ (Scrum, Kanban, SAFe)
+    review: {status: draft}
+    display_order: 18
+    nodes: [management, pmi, itil, prince2, rup, less, safe, kanban, scrum, xp]
+  - key: enterprise-software
+    title: Enterprise software platforms
+    title_th: แพลตฟอร์มซอฟต์แวร์องค์กร (SAP, Salesforce, MS Dynamics)
+    review: {status: draft}
+    display_order: 19
+    nodes: [enterprise-software, ms-dynamics, 'sap-erp,-hana,-business-objects', 'ibm-bpm', salesforce]

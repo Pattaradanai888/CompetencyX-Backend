@@ -1,0 +1,50 @@
+role_slug: ai-data-scientist
+sets:
+  - key: mathematics
+    title: Mathematics foundations
+    title_th: คณิตศาสตร์พื้นฐานสำหรับงาน Data Science
+    review: {status: draft}
+    display_order: 1
+    nodes: [mathematics]
+  - key: statistics
+    title: Statistics
+    title_th: สถิติศาสตร์สำหรับการวิเคราะห์ข้อมูล
+    review: {status: draft}
+    display_order: 2
+    nodes: [statistics]
+  - key: econometrics
+    title: Econometrics
+    title_th: เศรษฐมิติ (Econometrics)
+    review: {status: draft}
+    display_order: 3
+    nodes: [econometrics]
+  - key: coding
+    title: Programming for data science
+    title_th: การเขียนโปรแกรมสำหรับงาน Data Science
+    review: {status: draft}
+    display_order: 4
+    nodes: [coding]
+  - key: exploratory-data-analysis
+    title: Exploratory data analysis
+    title_th: การวิเคราะห์ข้อมูลเชิงสำรวจ (EDA)
+    review: {status: draft}
+    display_order: 5
+    nodes: [exploratory-data-analysis]
+  - key: machine-learning
+    title: Machine learning
+    title_th: การเรียนรู้ของเครื่อง (Machine Learning)
+    review: {status: draft}
+    display_order: 6
+    nodes: [machine-learning]
+  - key: deep-learning
+    title: Deep learning
+    title_th: การเรียนรู้เชิงลึก (Deep Learning)
+    review: {status: draft}
+    display_order: 7
+    nodes: [deep-learning]
+  - key: mlops
+    title: MLOps
+    title_th: MLOps และการดูแลวงจรชีวิตโมเดล
+    review: {status: draft}
+    display_order: 8
+    nodes: [mlops]

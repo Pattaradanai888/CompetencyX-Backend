@@ -1,0 +1,92 @@
+role_slug: technical-writer
+sets:
+  - key: technical-writing-foundations
+    title: Technical writing foundations
+    title_th: พื้นฐานอาชีพนักเขียนเชิงเทคนิค (Technical Writing)
+    review: {status: draft}
+    display_order: 1
+    nodes: [introduction, 'who-is-a-technical-writer?', 'what-is-technical-writing?', role-of-technical-writers-in-organizations, forms-of-technical-writing, growth-as-a-technical-writer]
+  - key: core-writing-skills
+    title: Core writing skills
+    title_th: ทักษะหลักของการเขียนเชิงเทคนิค
+    review: {status: draft}
+    display_order: 2
+    nodes: [required-skills, technology-expertise, language-proficiency, written-communication-proficiency, writing-style-guides]
+  - key: writing-tools
+    title: Writing and publishing tools
+    title_th: เครื่องมือสำหรับเขียนและเผยแพร่เนื้อหา (Markdown, Git)
+    review: {status: draft}
+    display_order: 3
+    nodes: [tooling, editing-tools, markdown, publishing-tools, blogging-platforms, plagiarism-checker, 'git---version-control', research-tools]
+  - key: audience-understanding
+    title: Understanding the audience
+    title_th: การทำความเข้าใจกลุ่มผู้อ่านเป้าหมาย
+    review: {status: draft}
+    display_order: 4
+    nodes: [user-persona, icp-and-buyer-persona, buyer-journey-and-content-funnel, content-objectives-and-intent, user-goals, developer-journey]
+  - key: content-research
+    title: Content research
+    title_th: การค้นคว้าและเลือกหัวข้อเนื้อหา
+    review: {status: draft}
+    display_order: 5
+    nodes: [content-research, topic-score, search-trends, communities-and-forums, support-request-evaluation, keyword-volume]
+  - key: developer-documentation
+    title: Developer documentation
+    title_th: การเขียนเอกสารสำหรับนักพัฒนา (Developer Docs)
+    review: {status: draft}
+    display_order: 6
+    nodes: [developer-docs, docs-structure, product-content, general-product-prose]
+  - key: api-reference
+    title: API reference documentation
+    title_th: การเขียนเอกสารอ้างอิง API (API Reference)
+    review: {status: draft}
+    display_order: 7
+    nodes: [api-reference, docs-generation-tools, api-definitions]
+  - key: help-content
+    title: Help and support content
+    title_th: เนื้อหาช่วยเหลือและการแก้ปัญหาให้ผู้ใช้
+    review: {status: draft}
+    display_order: 8
+    nodes: [help-content, troubleshooting, developer-support, platform-support, frequently-asked-questions]
+  - key: content-types
+    title: Types of technical content
+    title_th: ประเภทของเนื้อหาเชิงเทคนิค (How-to, Tutorial, Release Notes)
+    review: {status: draft}
+    display_order: 9
+    nodes: [types-of-technical-content, how-to-guides, tutorials, 'release-notes---product-announcements', customer-case-studies, technical-website-copy]
+  - key: content-marketing
+    title: Technical content marketing
+    title_th: การตลาดผ่านเนื้อหาเชิงเทคนิค (Content Marketing)
+    review: {status: draft}
+    display_order: 10
+    nodes: [technical-content-marketing, awareness-blog-posts, research-reports, white-papers, ebook, comparative-posts]
+  - key: funnel-content
+    title: Content across the funnel
+    title_th: เนื้อหาตามลำดับขั้นของ Funnel (Top, Mid, Bottom)
+    review: {status: draft}
+    display_order: 11
+    nodes: [top-funnel-content, pillar-content, mid-funnel-content, generic-gated-content, bottom-funnel-content]
+  - key: content-seo
+    title: Content SEO
+    title_th: การทำ SEO ให้กับเนื้อหา
+    review: {status: draft}
+    display_order: 12
+    nodes: [content-seo, seo-tools, seo-keywords, short-tail-keywords, long-tail-keywords, backlinking, content-optimization, opengraph-data, canonical-link]
+  - key: content-distribution
+    title: Content distribution
+    title_th: การกระจายเนื้อหาสู่ช่องทางต่าง ๆ (Content Distribution)
+    review: {status: draft}
+    display_order: 13
+    nodes: [content-distribution, content-distribution-channels, content-distribution-amplification-strategies, 'link-shorteners---tracking']
+  - key: content-analytics
+    title: Content analytics
+    title_th: การวัดผลและวิเคราะห์เนื้อหา (Content Analytics)
+    review: {status: draft}
+    display_order: 14
+    nodes: [content-analysis, content-aging-and-timelines, platform-tracking-and-metrics, conversion-tracking]
+  - key: writing-best-practices
+    title: Writing best practices
+    title_th: แนวปฏิบัติที่ดีในการเขียน (Storytelling, Structure, CTA)
+    review: {status: draft}
+    display_order: 15
+    nodes: [best-practices, story-telling, subtle-selling, content-structure, call-to-actions, references, crafting-great-titles]

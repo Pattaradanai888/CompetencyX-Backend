@@ -1,0 +1,122 @@
+role_slug: data-engineer
+sets:
+  - key: data-engineering-foundations
+    title: Data engineering foundations
+    title_th: พื้นฐานงานวิศวกรรมข้อมูล (Data Engineering)
+    review: {status: draft}
+    display_order: 1
+    nodes: [introduction, 'what-is-data-engineering?', skills-and-responsibilities, data-engineering-vs-data-science, choosing-the-right-technologies]
+  - key: data-engineering-lifecycle
+    title: The data engineering lifecycle
+    title_th: วงจรชีวิตของข้อมูล ตั้งแต่การสร้างจนถึงการนำไปใช้
+    review: {status: draft}
+    display_order: 2
+    nodes: [data-engineering-lifecycle, data-generation, data-ingestion, data-storage, data-serving]
+  - key: programming-and-fundamentals
+    title: Programming and engineering fundamentals
+    title_th: ภาษาโปรแกรมและพื้นฐานวิศวกรรมซอฟต์แวร์
+    review: {status: draft}
+    display_order: 3
+    nodes: [programming-skills, python, java, scala, go, data-structures-and-algorithms, git-and-github, linux-basics, networking-fundamentals, distributed-systems-basics]
+  - key: data-sources
+    title: Sources of data
+    title_th: แหล่งที่มาของข้อมูล (API, Database, Logs, IoT)
+    review: {status: draft}
+    display_order: 4
+    nodes: [sources-of-data, apis, database, mobile-apps, logs, iot]
+  - key: data-modelling
+    title: Data modelling
+    title_th: การออกแบบแบบจำลองข้อมูล (Star Schema, SCD)
+    review: {status: draft}
+    display_order: 5
+    nodes: [database-fundamentals, data-collection-considerations, data-normalization, data-modelling-techniques, star-vs-snowflake-schema, 'slowly-changing-dimension---scd']
+  - key: database-concepts
+    title: Core database concepts
+    title_th: แนวคิดหลักของฐานข้อมูล (SQL, Index, Transaction, CAP)
+    review: {status: draft}
+    display_order: 6
+    nodes: [indexing, transactions, cap-theorem, oltp-vs-olap, horizontal-vs-vertical-scaling]
+  - key: relational-databases
+    title: Relational databases
+    title_th: ฐานข้อมูลเชิงสัมพันธ์ (PostgreSQL, MySQL, Oracle)
+    review: {status: draft}
+    display_order: 7
+    nodes: [relational-databases, mysql, postgresql, mariadb, aurora-db, oracle, ms-sql]
+  - key: nosql-databases
+    title: NoSQL databases
+    title_th: ฐานข้อมูล NoSQL (Document, Key-Value, Column, Graph)
+    review: {status: draft}
+    display_order: 8
+    nodes: [nosql-databsases, document, mongodb, elasticsearch, cosmosdb, couchdb, column, cassandra, bigtable, hbase, graph, neo4j, neptune, key-value, redis, memcached, dynamodb]
+  - key: data-warehousing
+    title: Data warehousing
+    title_th: คลังข้อมูล (Data Warehouse, BigQuery, Snowflake)
+    review: {status: draft}
+    display_order: 9
+    nodes: [data-warehouse, 'what-is-data-warehouse?', data-warehousing-architectures, data-mart, google-bigquery, snowflake, amazon-redshift]
+  - key: data-lake-and-mesh
+    title: Data lake, mesh, and fabric
+    title_th: Data Lake, Data Mesh และ Data Fabric
+    review: {status: draft}
+    display_order: 10
+    nodes: [data-lake, databricks-delta-lake, onehouse, data-mesh, data-fabric, data-hub, metadata-first-architecture]
+  - key: cloud-computing
+    title: Cloud computing for data
+    title_th: บริการคลาวด์สำหรับงานข้อมูล (AWS, Azure, GCP)
+    review: {status: draft}
+    display_order: 11
+    nodes: [cloud-computing, cloud-architectures, serverless-options, 'amazon-ec2-(-compute)', 's3-(storage)', 'amazon-rds-(database)', azure-virtual-machines, azure-blob-storage, azure-sql-database, 'data-factory-(etl)', 'compute-engine-(compute)', google-cloud-storage, 'cloud-sql-(database)', dataflow]
+  - key: data-pipelines
+    title: Data ingestion, pipelines, and ETL
+    title_th: การนำเข้าข้อมูล Data Pipeline และ ETL (Batch, Streaming, Airflow, dbt)
+    review: {status: draft}
+    display_order: 12
+    nodes: [types-of-data-ingestion, batch, streaming, realtime, hybrid, data-pipelines, extract-data, transform-data, load-data, apache-airflow, dbt, luigi, perfect, reverse-etl, etl-vs-reverse-etl, reverse-etl-usecases, census, segment, hightouch]
+  - key: messaging-systems
+    title: Messaging and streaming systems
+    title_th: ระบบส่งข้อความและสตรีมข้อมูล (Kafka, RabbitMQ)
+    review: {status: draft}
+    display_order: 13
+    nodes: [messaging-systems, 'what-and-why-use-them?', async-vs-sync-communication, messages-vs-streams, best-practices, apache-kafka, rabbitmq, aws-sqs, aws-sns]
+  - key: cluster-and-big-data
+    title: Cluster computing and big data tools
+    title_th: การประมวลผลแบบคลัสเตอร์และเครื่องมือ Big Data (Hadoop, Spark)
+    review: {status: draft}
+    display_order: 14
+    nodes: [cluster-computing-basics, what-is-cluster-computing, distributed-file-systems, job-scheduling, cluster-management-tools, apache-hadoop-yarn, yarn, hdfs, big-data-tools, apache-spark, mapreduce]
+  - key: containers-and-orchestration
+    title: Containers, orchestration, and CI/CD
+    title_th: คอนเทนเนอร์ การจัดการคลัสเตอร์ และ CI/CD (Docker, Kubernetes)
+    review: {status: draft}
+    display_order: 15
+    nodes: [containers-and-orchestration, docker, kubernetes, google-cloud-gke, aws-eks, 'ci-cd', github-actions, gitlab-ci, circle-ci, argocd]
+  - key: infrastructure-as-code
+    title: Infrastructure as code
+    title_th: การจัดการโครงสร้างพื้นฐานด้วยโค้ด (Terraform, IaC)
+    review: {status: draft}
+    display_order: 16
+    nodes: ['infrastructure-as-code---iac', declarative-vs-imperative, idempotency, reusability, environmental-management, terraform, opentofu, aws-cdk, 'google-deployment--mgr.']
+  - key: monitoring
+    title: Monitoring and alerting
+    title_th: การเฝ้าระวังและแจ้งเตือน (Prometheus, Datadog)
+    review: {status: draft}
+    display_order: 17
+    nodes: [monitoring, prometheus, sentry, new-relic, datadog]
+  - key: testing
+    title: Testing data systems
+    title_th: การทดสอบระบบข้อมูล (Unit, Integration, Load Testing)
+    review: {status: draft}
+    display_order: 18
+    nodes: [testing, unit-testing, integration-testing, end-to-end-testing, functional-testing, 'a-b-testing', load-testing, smoke-testing]
+  - key: governance-and-compliance
+    title: Data governance, security, and compliance
+    title_th: ธรรมาภิบาลข้อมูล ความปลอดภัย และการปฏิบัติตามกฎหมาย (GDPR)
+    review: {status: draft}
+    display_order: 19
+    nodes: [data-quality, data-lineage, metadata-management, data-interoperability, authentication-vs-authorization, encryption, tokenization, data-masking, data-obfuscation, gdpr, ecpa, eu-ai-act]
+  - key: analytics-bi-and-ml
+    title: Analytics, BI, and machine learning
+    title_th: การวิเคราะห์ข้อมูล BI และ Machine Learning (Power BI, MLOps)
+    review: {status: draft}
+    display_order: 20
+    nodes: [data-analytics, business-intelligence, microsoft-power-bi, streamlit, tableu, looker, machine-learning, mlops]

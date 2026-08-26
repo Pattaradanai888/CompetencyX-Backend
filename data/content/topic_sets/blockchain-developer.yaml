@@ -1,0 +1,98 @@
+role_slug: blockchain-developer
+sets:
+  - key: blockchain-fundamentals
+    title: Blockchain fundamentals, cryptography, and hashing
+    title_th: พื้นฐาน Blockchain และ Cryptography (Hashing)
+    review: {status: draft}
+    display_order: 1
+    nodes: [introduction, understanding-blockchain, what-is-blockchain, 'why-it-matters?', applications-and-uses, blockchain-structure, basic-blockchain-operations, decentralization, decentralization-vs-trust, blockchain-forking, environmental-considerations, cryptography-and-hashing]
+  - key: consensus-and-blockchain-types
+    title: Consensus protocols and blockchain types
+    title_th: Consensus Protocols (PoW, PoS, BFT) และประเภทของ Blockchain
+    review: {status: draft}
+    display_order: 2
+    nodes: [consensus-protocols, pow, pos, poh, bft, types-of-blockchains, blockchain-networks, mining-and-incentive-models]
+  - key: crypto-assets-and-wallets
+    title: Cryptocurrencies and crypto wallets
+    title_th: Cryptocurrency และ Crypto Wallet
+    review: {status: draft}
+    display_order: 3
+    nodes: [cryptocurrencies, cryptowallets, crypto-wallets]
+  - key: ethereum-ecosystem
+    title: Ethereum and EVM-compatible chains
+    title_th: Ethereum และ Blockchain ที่ใช้ EVM (Polygon, Avalanche)
+    review: {status: draft}
+    display_order: 4
+    nodes: [evm-based, ethereum, polygon, bnb-chain, gnosis-chain, avalanche, fantom, moonbeam---moonriver, everscale, gosh, ton, venom, ethereum-2.0]
+  - key: blockchain-platforms
+    title: Other blockchain platforms (Bitcoin, Solana, Cardano)
+    title_th: Blockchain Platforms อื่น ๆ (Bitcoin, Solana, Cardano)
+    review: {status: draft}
+    display_order: 5
+    nodes: [solana, tvm-based, utxo-based, bitcoin, cardano, base, starknet, blockchain-interoperability]
+  - key: scaling-and-l2
+    title: Blockchain scaling and Layer 2
+    title_th: การขยายขนาด Blockchain และ Layer 2 (Rollups, Sidechains)
+    review: {status: draft}
+    display_order: 6
+    nodes: [building-for-scale, l2-blockchains, arbitrum, optimism, state-and-payment-channels, optimistic-rollups-and-fraud-proofs, zk-rollups-and-zero-knowledge-proof, validium, plasma, sidechains, on-chain-scaling]
+  - key: smart-contract-programming
+    title: Smart contract programming (Solidity, Vyper)
+    title_th: การเขียน Smart Contract (Solidity, Vyper, Rust)
+    review: {status: draft}
+    display_order: 7
+    nodes: [smart-contracts, solidity, vyper, rust, erc-tokens, openzeppelin]
+  - key: smart-contract-tooling
+    title: Smart contract development tooling (Hardhat, Foundry)
+    title_th: เครื่องมือพัฒนา Smart Contract (Hardhat, Foundry, Remix)
+    review: {status: draft}
+    display_order: 8
+    nodes: [remix, crypto-faucets, hardhat, brownie, truffle, foundry, vs-code]
+  - key: smart-contract-security
+    title: Smart contract testing and security
+    title_th: การทดสอบและความปลอดภัยของ Smart Contract
+    review: {status: draft}
+    display_order: 9
+    nodes: [unit-tests, integration-tests, code-coverage, fuzz-testing-and-static-analysis, slither, diligent-fuzzing, echidna, common-threat-vectors, source-of-randomness-attacks, security, practices]
+  - key: contract-lifecycle
+    title: Smart contract deployment, upgrades, and maintenance
+    title_th: การ Deploy อัปเกรด และดูแลรักษา Smart Contract
+    review: {status: draft}
+    display_order: 10
+    nodes: [deployment, monitoring, upgrades, maintenance]
+  - key: dapp-development
+    title: dApp development, architecture, and storage
+    title_th: การพัฒนา dApp (Architecture, Testing, Decentralized Storage)
+    review: {status: draft}
+    display_order: 11
+    nodes: [dapps, architecture, testing, decentralized-storage, storage]
+  - key: web-development-for-web3
+    title: Web development for Web3 (JavaScript, React, ethers.js)
+    title_th: การพัฒนาเว็บสำหรับ Web3 (JavaScript, React, ethers.js, web3.js)
+    review: {status: draft}
+    display_order: 12
+    nodes: [supporting-languages, javascript, python, go, frontend-frameworks, react, angular, vue, client-libraries, ethers.js, web3.js, moralis]
+  - key: node-infrastructure
+    title: Node infrastructure and RPC services
+    title_th: โครงสร้างพื้นฐาน Node และบริการ RPC (Geth, Alchemy, Infura)
+    review: {status: draft}
+    display_order: 13
+    nodes: [client-nodes, geth, besu, nethermind, substrate, node-as-a-service, alchemy, infura, pokt-network, quicknode]
+  - key: oracles
+    title: Oracles and hybrid smart contracts
+    title_th: Oracle และ Hybrid Smart Contract (Chainlink)
+    review: {status: draft}
+    display_order: 14
+    nodes: [oracles, hybrid-smart-contracts, chainlink, oracle-networks]
+  - key: blockchain-use-cases
+    title: Blockchain use cases (DeFi, DAOs, NFTs)
+    title_th: การประยุกต์ใช้ Blockchain (DeFi, DAO, NFT)
+    review: {status: draft}
+    display_order: 15
+    nodes: [applicability, defi, daos, nfts, payments, insurance]
+  - key: version-control
+    title: Version control and repository hosting
+    title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
+    review: {status: draft}
+    display_order: 16
+    nodes: [git, github, gitlab, bitbucket]

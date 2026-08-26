@@ -1,0 +1,122 @@
+role_slug: backend-developer
+sets:
+  - key: internet-basics
+    title: Internet basics and how the web works
+    title_th: อินเทอร์เน็ตและหลักการทำงานของเว็บ (HTTP, DNS)
+    review: {status: draft}
+    display_order: 1
+    nodes: [internet, 'how-does-the-internet-work?', 'what-is-http?', 'what-is-domain-name?', 'what-is-hosting?', 'dns-and-how-it-works?', 'browsers-and-how-they-work?']
+  - key: backend-programming-languages
+    title: Backend programming languages
+    title_th: ภาษาโปรแกรมสำหรับงานแบ็กเอนด์
+    review: {status: draft}
+    display_order: 2
+    nodes: [php, go, javascript, java, python, 'c#', ruby, rust]
+  - key: version-control
+    title: Version control and repository hosting
+    title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
+    review: {status: draft}
+    display_order: 3
+    nodes: [version-control-systems, git, repo-hosting-services, github, bitbucket, gitlab]
+  - key: relational-databases
+    title: Relational databases
+    title_th: ฐานข้อมูลเชิงสัมพันธ์ (Relational Databases)
+    review: {status: draft}
+    display_order: 4
+    nodes: [relational-databases, mysql, mariadb, ms-sql, oracle, postgresql, sqlite]
+  - key: nosql-and-specialty-databases
+    title: NoSQL and specialty databases
+    title_th: ฐานข้อมูล NoSQL และฐานข้อมูลเฉพาะงาน
+    review: {status: draft}
+    display_order: 5
+    nodes: [nosql-databases, mongodb, couchdb, redis, rethinkdb, firebase, dynamodb, neo4j, cassandra, base, aws-neptune, influx-db, timescale]
+  - key: caching
+    title: Caching
+    title_th: การใช้งาน Caching
+    review: {status: draft}
+    display_order: 6
+    nodes: [caching, server-side, cdn, client-side, memcached]
+  - key: api-development
+    title: Building APIs
+    title_th: การพัฒนา API (REST, GraphQL, gRPC)
+    review: {status: draft}
+    display_order: 7
+    nodes: [rest, json-apis, open-api-specs, soap, graphql, grpc, hateoas]
+  - key: web-servers
+    title: Web servers
+    title_th: เว็บเซิร์ฟเวอร์ (Nginx, Apache)
+    review: {status: draft}
+    display_order: 8
+    nodes: [web-servers, nginx, apache, caddy, ms-iis]
+  - key: message-brokers
+    title: Message brokers and event streaming
+    title_th: ระบบ Message Broker (RabbitMQ, Kafka)
+    review: {status: draft}
+    display_order: 9
+    nodes: [message-brokers, rabbitmq, kafka]
+  - key: search-engines
+    title: Search engines
+    title_th: เสิร์ชเอนจิน (Elasticsearch, Solr)
+    review: {status: draft}
+    display_order: 10
+    nodes: [search-engines, elasticsearch, solr]
+  - key: real-time-communication
+    title: Real-time communication
+    title_th: การสื่อสารแบบเรียลไทม์ (WebSockets, SSE)
+    review: {status: draft}
+    display_order: 11
+    nodes: [real-time-data, server-sent-events, websockets, long-polling, short-polling]
+  - key: authentication-and-authorization
+    title: Authentication and authorization
+    title_th: การยืนยันตัวตนและการกำหนดสิทธิ์การเข้าถึง
+    review: {status: draft}
+    display_order: 12
+    nodes: [authentication, jwt, basic-authentication, token-authentication, oauth, cookie-based-auth, openid, saml]
+  - key: web-security
+    title: Web application security
+    title_th: ความปลอดภัยของเว็บแอปพลิเคชัน
+    review: {status: draft}
+    display_order: 13
+    nodes: [web-security, https, owasp-risks, ssl-tls, cors, server-security, csp, scrypt, sha, md5, bcrypt]
+  - key: testing-and-cicd
+    title: Testing and CI/CD
+    title_th: การทดสอบซอฟต์แวร์และระบบ CI/CD
+    review: {status: draft}
+    display_order: 14
+    nodes: [testing, unit-testing, integration-testing, functional-testing, ci---cd]
+  - key: architecture-patterns
+    title: Architecture patterns
+    title_th: แพตเทิร์นสถาปัตยกรรมซอฟต์แวร์ (Microservices, Serverless)
+    review: {status: draft}
+    display_order: 15
+    nodes: [architectural-patterns, monolithic-apps, microservices, soa, service-mesh, serverless, twelve-factor-apps]
+  - key: design-principles
+    title: Design principles and patterns
+    title_th: หลักการออกแบบซอฟต์แวร์และ Design Patterns
+    review: {status: draft}
+    display_order: 16
+    nodes: [design-and-development-principles, gof-design-patterns, domain-driven-design, test-driven-development, cqrs, event-sourcing]
+  - key: scaling-and-resilience
+    title: Scaling and resilience
+    title_th: การขยายขนาดระบบและความทนทานต่อความล้มเหลว
+    review: {status: draft}
+    display_order: 17
+    nodes: [building-for-scale, types-of-scaling, graceful-degradation, throttling, backpressure, loadshifting, circuit-breaker, migration-strategies]
+  - key: observability
+    title: Monitoring and observability
+    title_th: การเฝ้าระวังและติดตามระบบ (Monitoring, Observability)
+    review: {status: draft}
+    display_order: 18
+    nodes: [monitoring, telemetry, instrumentation, observability]
+  - key: containers-and-virtualization
+    title: Containers and virtualization
+    title_th: คอนเทนเนอร์และ Virtualization
+    review: {status: draft}
+    display_order: 19
+    nodes: [containerization-vs-virtualization, lxc]
+  - key: database-engineering
+    title: Database engineering
+    title_th: การออกแบบและปรับแต่งฐานข้อมูลเชิงลึก
+    review: {status: draft}
+    display_order: 20
+    nodes: [more-about-databases, orms, acid, transactions, 'n+1-problem', normalization, failure-modes, profiling-perfor., migrations, scaling-databases, database-indexes, sharding-strategies, data-replication, cap-theorem]

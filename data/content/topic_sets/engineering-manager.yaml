@@ -1,0 +1,122 @@
+role_slug: engineering-manager
+sets:
+  - key: em-role-foundations
+    title: The Engineering Manager Role
+    title_th: บทบาทและพื้นฐานของ Engineering Manager
+    review: {status: draft}
+    display_order: 1
+    nodes: ['what-is-engineering-management?', em-vs-tech-lead-vs-ic, people, product, process]
+  - key: technical-background
+    title: Technical Background and System Design
+    title_th: พื้นฐานทางเทคนิคและ System Design
+    review: {status: draft}
+    display_order: 2
+    nodes: [software-engineering-background, system-design-and-architecture, architectural-decision-making, technical-standards-setting, system-monitoring-and-performance, scaling-infrastructure]
+  - key: technical-planning
+    title: Technical Planning and Technical Debt
+    title_th: การวางแผนทางเทคนิคและการจัดการ Technical Debt
+    review: {status: draft}
+    display_order: 3
+    nodes: [technical-roadmapping, build-vs-buy-evaluation, technical-risk-assessment, api-strategy, integration-management, technical-debt-and-management, legacy-system-retirement, migration-planning, technology-adoption]
+  - key: dev-workflow-quality
+    title: Code Review, Testing and CI/CD
+    title_th: การทำ Code Review การทดสอบซอฟต์แวร์ และระบบ CI/CD
+    review: {status: draft}
+    display_order: 4
+    nodes: [development---release-workflow, code-review-best-practices, testing-strategies, ci-cd-implementation, security--best-practices]
+  - key: team-org-design
+    title: Team and Organization Design
+    title_th: การสรรหาคน การออกแบบทีม และโครงสร้างองค์กร
+    review: {status: draft}
+    display_order: 5
+    nodes: [hiring-and-recruitment, team-structure-and-design, organization-structure, reorganizations, team-mergers, role-transitions, responsibility-shifts, politics-navigation]
+  - key: performance-and-career
+    title: Performance Evaluation and Career Development
+    title_th: การประเมินผลงานและการพัฒนาเส้นทางอาชีพของทีม
+    review: {status: draft}
+    display_order: 6
+    nodes: [performance-evaluations, mentoring-and-coaching, career-development-planning, mentoring-programs, delegation]
+  - key: team-leadership
+    title: Team Leadership and Motivation
+    title_th: การนำทีม การให้ Feedback และการแก้ไขข้อขัดแย้ง
+    review: {status: draft}
+    display_order: 7
+    nodes: [conflict-resolution, feedback-delivery, team-motivation, trust---influence-building, emotional-intelligence]
+  - key: meetings-and-communication
+    title: Meetings and Team Communication
+    title_th: การประชุมและการสื่อสารภายในทีม
+    review: {status: draft}
+    display_order: 8
+    nodes: [one-on-one-meetings, team-meetings, status-reporting]
+  - key: stakeholder-communication
+    title: Stakeholder and Executive Communication
+    title_th: การสื่อสารกับ Stakeholder และผู้บริหาร
+    review: {status: draft}
+    display_order: 9
+    nodes: [stakeholder-management, stakeholder-communication, cross-functional-collaboration, cross-department-collaboration, board-presentations, executive-summaries, strategic-proposals, budget-requests, vision-alignment]
+  - key: delivery-management
+    title: Delivery Management and Agile Process
+    title_th: การจัดการการส่งมอบงานและกระบวนการ Agile
+    review: {status: draft}
+    display_order: 10
+    nodes: [agile-methodologies, sprint-planning, project-tracking, milestone-management, scope-management, timeline-estimation, release-management, resource-allocation, dependency-management, risk-management]
+  - key: metrics-and-retrospectives
+    title: Metrics, KPIs and Retrospectives
+    title_th: การวัดผลด้วย Metrics และการทำ Retrospective
+    review: {status: draft}
+    display_order: 11
+    nodes: [kpi-definition, velocity-tracking, quality-metrics, team-health-metrics, project-postmortems, blameless-post-mortems]
+  - key: product-and-business
+    title: Product Strategy and Business Acumen
+    title_th: กลยุทธ์ผลิตภัณฑ์และความเข้าใจธุรกิจ
+    review: {status: draft}
+    display_order: 12
+    nodes: [product-strategy-alignment, feature-prioritization, business-case-development, roi-analysis, market-awareness, competitive-analysis]
+  - key: budget-and-vendors
+    title: Budgeting, Vendors and Partnerships
+    title_th: การวางแผนงบประมาณและการจัดการ Vendor กับพันธมิตร
+    review: {status: draft}
+    display_order: 13
+    nodes: [budget-planning, resource-forecasting, cost-optimization, vendor-management, vendor-relationships, technical-partnerships, technology-partnerships, external-collaboration]
+  - key: culture-and-inclusion
+    title: Team Culture and Inclusion
+    title_th: วัฒนธรรมทีมและการสร้างความครอบคลุม (Inclusion)
+    review: {status: draft}
+    display_order: 14
+    nodes: [company-culture, defining-and-enforcing-values, team-traditions-and-rituals, recognition-programs, social-connections, inclusive-environment-creation, bias-recognition---mitigation]
+  - key: learning-and-knowledge
+    title: Learning Culture and Knowledge Sharing
+    title_th: วัฒนธรรมการเรียนรู้และการแบ่งปันความรู้
+    review: {status: draft}
+    display_order: 15
+    nodes: [learning-culture-development, knowledge-sharing-practices, technical-excellence-mindset, innovation-fostering, knowledge-bases, brown-bags, tech-talks, lessons-learned, best-practices]
+  - key: documentation-and-decisions
+    title: Technical Documentation and Decision Records
+    title_th: การเขียนเอกสารทางเทคนิคและการบันทึกการตัดสินใจ
+    review: {status: draft}
+    display_order: 16
+    nodes: [technical-documentation, architecture-documentation, process-documentation, decision-records]
+  - key: incident-and-crisis
+    title: Incident and Crisis Management
+    title_th: การจัดการเหตุการณ์และวิกฤต (Incident Management)
+    review: {status: draft}
+    display_order: 17
+    nodes: [incident-management, emergency-protocols, war-room-management, production-issues-management, post-incident-analysis, service-recovery]
+  - key: resilience-and-continuity
+    title: Disaster Recovery and Business Continuity
+    title_th: การกู้คืนระบบและความต่อเนื่องทางธุรกิจ (DR, Business Continuity)
+    review: {status: draft}
+    display_order: 18
+    nodes: [contingency-planning, disaster-recovery, business-continuity, security-incident-handling]
+  - key: customer-focus
+    title: Customer Focus and Technical Support
+    title_th: การมุ่งเน้นลูกค้าและการสนับสนุนด้านเทคนิค
+    review: {status: draft}
+    display_order: 19
+    nodes: [customer-feedback-integration, technical-customer-support, customer-success-alignment]
+  - key: change-management
+    title: Organizational Change Management
+    title_th: การจัดการการเปลี่ยนแปลงในองค์กร (Change Management)
+    review: {status: draft}
+    display_order: 20
+    nodes: [change-management, change-strategy, impact-assessment, communication-planning, resistance-management, tool-transitions, process-changes, culture-evolution]

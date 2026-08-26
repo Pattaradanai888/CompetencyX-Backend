@@ -1,0 +1,122 @@
+role_slug: bi-analyst
+sets:
+  - key: bi-foundations
+    title: Business Intelligence foundations and the BI analyst role
+    title_th: พื้นฐาน Business Intelligence และบทบาทนักวิเคราะห์ BI
+    review: {status: draft}
+    display_order: 1
+    nodes: [introduction, 'what-is-bi?', 'why-bi-matters?', bi-analyst-vs-other-roles, responsibilities, skills, types-of-bi-operations, operational-bi, tactical-bi, strategic-bi]
+  - key: metrics-and-business-functions
+    title: Metrics, KPIs, and business functions
+    title_th: Metrics, KPI และหน้าที่สำคัญของธุรกิจ
+    review: {status: draft}
+    display_order: 2
+    nodes: [metrics-and-kpis, key-business-functions, finance, marketing, operations, hr, stakeholder-identification]
+  - key: domain-analytics
+    title: Industry domain analytics
+    title_th: การวิเคราะห์ข้อมูลเชิงธุรกิจรายอุตสาหกรรม (การเงิน ค้าปลีก สุขภาพ การผลิต)
+    review: {status: draft}
+    display_order: 3
+    nodes: [financial-performance, fraud-detection, compliance-reporting, risk-analytics, retail-and-e-commerce, supply-chain-analytics, marketing-campaigns, inventory-optimization, sales-performance, healthcare, hospital-efficiency, public-health, patient-management, manufacturing, production-efficiency, quality-control, supply-chain-optimization, predictive-maintenance]
+  - key: data-fundamentals
+    title: Data fundamentals and data formats
+    title_th: พื้นฐานข้อมูลและรูปแบบข้อมูล (Data Types, CSV, JSON)
+    review: {status: draft}
+    display_order: 4
+    nodes: ['what-is-data?', analog-vs-digital-data, types-of-data, structured, semistructured, unstructured, variables-and-data-types, categorical-vs-numerical, discrete-vs-continuous, data-formats, xml, csv, other-formats, json]
+  - key: data-sources
+    title: Data sources and collection
+    title_th: แหล่งข้อมูลและการเก็บรวบรวมข้อมูล (Databases, APIs, IoT)
+    review: {status: draft}
+    display_order: 5
+    nodes: [data-sources, databases, web, mobile-apps, cloud, apis, iot]
+  - key: descriptive-statistics
+    title: Descriptive statistics
+    title_th: สถิติเชิงพรรณนา (Descriptive Statistics)
+    review: {status: draft}
+    display_order: 6
+    nodes: [descriptive-statistics, central-tendency, mean, median, mode, dispersion, range, variance, std, iqr, distribution, skewness, kurtosis, population-and-sample]
+  - key: inferential-statistics
+    title: Inferential statistics and hypothesis testing
+    title_th: สถิติเชิงอนุมานและการทดสอบสมมติฐาน (Hypothesis Testing, Regression)
+    review: {status: draft}
+    display_order: 7
+    nodes: [inferential-statistics, confidence-intervals, statistical-tests, p-value, types-of-errors, hypothesis-testing, correlation-analysis, correlation-vs-causation, regression-analysis, linear-regression, beyond-linear-regression]
+  - key: sql-and-databases
+    title: SQL and relational databases
+    title_th: SQL และฐานข้อมูลเชิงสัมพันธ์ (Relational Databases)
+    review: {status: draft}
+    display_order: 8
+    nodes: [sql, sql-fundamentals, basic-queries, advanced-queries, window-functions, performance, popular-databases, postgresql, oracle, mysql, sqlite]
+  - key: analytics-tools
+    title: Analytics tools (Excel, Python, R)
+    title_th: เครื่องมือวิเคราะห์ข้อมูล (Excel, Python, R, Pandas)
+    review: {status: draft}
+    display_order: 9
+    nodes: [programming-languages, python, r, pandas, dplyr, excel]
+  - key: data-cleaning-and-etl
+    title: Data cleaning, transformation, and ETL
+    title_th: การทำความสะอาดข้อมูล การแปลงข้อมูล และ ETL (Airflow, dbt)
+    review: {status: draft}
+    display_order: 10
+    nodes: [data-cleaning, duplicates, missing-values, outliers, standardisation, data-transformation-techniques, data-quality, etl-basics, etl-tools, airflow, dbt]
+  - key: data-warehousing-and-cloud
+    title: Data warehousing and cloud data platforms
+    title_th: Data Warehouse และแพลตฟอร์มข้อมูลบน Cloud (AWS, GCP, Azure)
+    review: {status: draft}
+    display_order: 11
+    nodes: [data-architectures, data-lake, data-warehouse, data-mart, cloud-bi-ecosystem, cloud-computing-basics, cloud-data-warehouses, 'providers:-aws,-gcp,-azure', data-lineage]
+  - key: data-modeling-for-bi
+    title: Dimensional data modeling for BI
+    title_th: การออกแบบ Data Model เพื่องาน BI (Star Schema, Fact และ Dimension Tables)
+    review: {status: draft}
+    display_order: 12
+    nodes: [data-modeling-for-bi, star-vs-snowflake-schema, normalization-vs-denormalization, fact-vs-dimension-tables, calculated-fields-and-measures]
+  - key: bi-platforms
+    title: BI platforms (Power BI, Tableau, Looker)
+    title_th: แพลตฟอร์ม BI (Power BI, Tableau, Looker, Qlik)
+    review: {status: draft}
+    display_order: 13
+    nodes: [bi-platforms, power-bi, qlik, tableau, looker]
+  - key: data-visualization
+    title: Data visualization and chart design
+    title_th: การทำ Data Visualization และการออกแบบกราฟ
+    review: {status: draft}
+    display_order: 14
+    nodes: [visualization-fundamentals, lineplot, scatterplot, map, chart-categories, heatmap, histogram, barplot, visualization-best-practices, accessibility, design-principles, misleading-charts, mobile-responsiveness, color-theory]
+  - key: analysis-techniques
+    title: Data analysis techniques (EDA, cohort, A/B testing)
+    title_th: เทคนิคการวิเคราะห์ข้อมูล (EDA, Cohort Analysis, A/B Testing)
+    review: {status: draft}
+    display_order: 15
+    nodes: [types-of-data-analysis, descriptive-analysis, diagnostic-analysis, predictive-analysis, prescriptive-analysis, 'exploratory-data-analysis-(eda)', cohort-analysis, clv, a-b-testing]
+  - key: time-series-and-forecasting
+    title: Time series analysis and forecasting
+    title_th: การวิเคราะห์อนุกรมเวลาและการพยากรณ์ (Time Series, Forecasting)
+    review: {status: draft}
+    display_order: 16
+    nodes: [time-series-analysis, trends, seasonality, forecasting]
+  - key: basic-machine-learning
+    title: Basic machine learning for analytics
+    title_th: Machine Learning เบื้องต้นสำหรับงานวิเคราะห์ข้อมูล
+    review: {status: draft}
+    display_order: 17
+    nodes: [basic-machine-learning, supervised-learning, unsupervised-learning, reinforcement-learning]
+  - key: data-storytelling
+    title: Data storytelling and dashboards
+    title_th: การเล่าเรื่องจากข้อมูล (Data Storytelling) และการทำ Dashboard
+    review: {status: draft}
+    display_order: 18
+    nodes: [communication-and-storytelling, storytelling-framework, writing-executive-summaries, presentation-design, dashboard-design, relevance, timeliness, accesibility, interpretability, accuracy, coherence]
+  - key: ethics-and-privacy
+    title: Data ethics, privacy, and bias
+    title_th: จริยธรรมของข้อมูล ความเป็นส่วนตัว และอคติ (GDPR, CCPA)
+    review: {status: draft}
+    display_order: 19
+    nodes: [ethical-data-use, gdpr, ccpa, algorithmic-bias, privacy, bias-recognition, mitigation-strategies]
+  - key: professional-development
+    title: Portfolio and professional development
+    title_th: การสร้าง Portfolio และการพัฒนาเส้นทางอาชีพ
+    review: {status: draft}
+    display_order: 20
+    nodes: [professional-development, building-your-portfolio, data-pipeline-design, end-to-end-analytics-project, networking, open-source-projects, conferences-and-webinars, bi-competitions, bi-communities, job-preparation, interview-preparation, portfolio-presentation, salary-negotiation-strategies, resume-optimization, certifications, soft-skills, project-management, change-management, stakeholder-management, critical-thinking, business-acumen]

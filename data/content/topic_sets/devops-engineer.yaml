@@ -1,0 +1,122 @@
+role_slug: devops-engineer
+sets:
+  - key: programming-languages
+    title: Programming and scripting languages
+    title_th: ภาษาโปรแกรมและสคริปต์สำหรับงาน DevOps
+    review: {status: draft}
+    display_order: 1
+    nodes: [go, python, 'javascript---node.js', ruby, rust, bash]
+  - key: operating-systems
+    title: Operating systems
+    title_th: ระบบปฏิบัติการ (Linux, BSD, Windows)
+    review: {status: draft}
+    display_order: 2
+    nodes: [operating-system, 'ubuntu---debian', suse-linux, 'rhel---derivatives', freebsd, openbsd, netbsd, windows]
+  - key: terminal-skills
+    title: Terminal and system administration
+    title_th: การใช้งาน Terminal และดูแลระบบเบื้องต้น
+    review: {status: draft}
+    display_order: 3
+    nodes: [terminal-knowledge, 'vim---nano----emacs', power-shell, process-monitoring, performance-monitoring, networking-tools, text-manipulation]
+  - key: version-control
+    title: Version control and hosting
+    title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
+    review: {status: draft}
+    display_order: 4
+    nodes: [version-control-systems, git, vcs-hosting, github, gitlab, bitbucket]
+  - key: networking-and-protocols
+    title: Networking and protocols
+    title_th: เครือข่ายและโปรโตคอล (DNS, HTTPS, SSH, SSL/TLS)
+    review: {status: draft}
+    display_order: 5
+    nodes: [networking-and-protocols, osi-model, dns, http, https, 'ssl---tls', ssh, 'ftp---sftp']
+  - key: email-protocols
+    title: Email protocols
+    title_th: โปรโตคอลอีเมลและการยืนยันผู้ส่ง (SMTP, SPF, DMARC)
+    review: {status: draft}
+    display_order: 6
+    nodes: [smtp, imap, pop3s, dmarc, spf, domain-keys, 'white---grey-listing']
+  - key: web-servers-and-proxies
+    title: Web servers, proxies, and load balancers
+    title_th: เว็บเซิร์ฟเวอร์ พร็อกซี และ Load Balancer
+    review: {status: draft}
+    display_order: 7
+    nodes: ['what-is-and-how-to-setup-x-?', nginx, apache, tomcat, caddy, iis, forward-proxy, reverse-proxy, load-balancer, caching-server, firewall]
+  - key: containers
+    title: Containers
+    title_th: คอนเทนเนอร์ (Docker, LXC)
+    review: {status: draft}
+    display_order: 8
+    nodes: [containers, docker, lxc]
+  - key: container-orchestration
+    title: Container orchestration
+    title_th: การจัดการคอนเทนเนอร์ (Kubernetes, ECS)
+    review: {status: draft}
+    display_order: 9
+    nodes: [container-orchestration, kubernetes, docker-swarm, 'gke---eks---aks', 'aws-ecs---fargate']
+  - key: cloud-providers
+    title: Cloud providers, hosting, and serverless
+    title_th: ผู้ให้บริการคลาวด์ โฮสติ้ง และ Serverless (AWS, Azure, GCP, Lambda)
+    review: {status: draft}
+    display_order: 10
+    nodes: [cloud-providers, aws, azure, google-cloud, digital-ocean, alibaba-cloud, hetzner, heroku, contabo, vercel, netlify, cloudflare, serverless, aws-lambda, azure-functions, gcp-functions]
+  - key: infrastructure-provisioning
+    title: Infrastructure provisioning
+    title_th: การจัดเตรียมโครงสร้างพื้นฐานด้วยโค้ด (Terraform, Pulumi)
+    review: {status: draft}
+    display_order: 11
+    nodes: [provisioning, terraform, pulumi, cloudformation, aws-cdk]
+  - key: configuration-management
+    title: Configuration management
+    title_th: การจัดการคอนฟิกอัตโนมัติ (Ansible, Chef, Puppet)
+    review: {status: draft}
+    display_order: 12
+    nodes: [configuration-management, ansible, chef, puppet]
+  - key: ci-cd
+    title: CI/CD pipelines and GitOps
+    title_th: ระบบ CI/CD และ GitOps (Jenkins, GitHub Actions, ArgoCD)
+    review: {status: draft}
+    display_order: 13
+    nodes: ['ci---cd-tools', jenkins, github-actions, gitlab-ci, circle-ci, drone, travis-ci, teamcity, gitops, argocd, fluxcd]
+  - key: secret-management
+    title: Secret management
+    title_th: การจัดการความลับและข้อมูลอ่อนไหว (Vault, Sealed Secrets)
+    review: {status: draft}
+    display_order: 14
+    nodes: [secret-management, vault, sealed-secrets, sops, cloud-specific-tools]
+  - key: artifact-management
+    title: Artifact management
+    title_th: การจัดเก็บ Artifact และแพ็กเกจ (Artifactory, Nexus)
+    review: {status: draft}
+    display_order: 15
+    nodes: [artifact-management, artifactory, nexus, cloud-smith]
+  - key: infrastructure-monitoring
+    title: Infrastructure monitoring
+    title_th: การเฝ้าระวังโครงสร้างพื้นฐาน (Prometheus, Grafana)
+    review: {status: draft}
+    display_order: 16
+    nodes: [infrastructure-monitoring, prometheus, grafana, zabbix, datadog, new-relic]
+  - key: application-monitoring
+    title: Application monitoring and tracing
+    title_th: การติดตามแอปพลิเคชันและ Distributed Tracing
+    review: {status: draft}
+    display_order: 17
+    nodes: [application-monitoring, opentelemetry, jaeger]
+  - key: logs-management
+    title: Logs management
+    title_th: การจัดการ Log (Elastic Stack, Loki, Splunk)
+    review: {status: draft}
+    display_order: 18
+    nodes: [logs-management, elastic-stack, splunk, graylog, papertrail, loki]
+  - key: service-mesh
+    title: Service mesh
+    title_th: Service Mesh (Istio, Linkerd, Envoy)
+    review: {status: draft}
+    display_order: 19
+    nodes: [service-mesh, istio, linkerd, envoy, consul]
+  - key: cloud-design-patterns
+    title: Cloud design patterns
+    title_th: แพตเทิร์นการออกแบบระบบบนคลาวด์
+    review: {status: draft}
+    display_order: 20
+    nodes: [cloud-design-patterns, availability, data-management, design-and-implementation, management-and-monitoring]
