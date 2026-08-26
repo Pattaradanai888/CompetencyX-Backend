@@ -25,7 +25,7 @@ COPY . /build
 # so pytest/ruff stay out of the runtime image.
 RUN --mount=type=cache,id=s/2ac3782d-47d9-493b-a8a8-a9796b4f5510-/root/.cache/uv,target=/root/.cache/uv \
     uv sync --frozen --no-dev && \
-    chmod +x /build/docker/entrypoint.sh
+    chmod +x /build/docker/entrypoint.sh /build/docker/pre-deploy.sh
 
 RUN mkdir -p /usr/src/app && \
     cp -r /build/. /usr/src/app/
