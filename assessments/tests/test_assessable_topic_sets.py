@@ -12,6 +12,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
+import yaml
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 
@@ -524,3 +525,33 @@ def test_every_authored_set_in_the_repository_declares_a_review_status():
 
     assert authored_files
     assert {entry['role_slug'] for entry in authored} == {path.stem for path in authored_files}
+
+
+def test_no_node_belongs_to_two_sets_of_one_role_in_the_repository():
+    # A node marked Held through one set and Not Held through another would
+    # contradict itself, so each roadmap node is claimed by at most one set of
+    # its role (issue #16 moved the misfiled ones rather than duplicating them).
+    claimed: dict[tuple[str, str], str] = {}
+    duplicates: list[str] = []
+    for entry in load_assessable_topic_sets():
+        for slug in entry['node_slugs']:
+            owner = claimed.setdefault((entry['role_slug'], slug), entry['set_key'])
+            if owner != entry['set_key']:
+                duplicates.append(f'{entry["role_slug"]}: {slug} in {owner} and {entry["set_key"]}')
+
+    assert duplicates == []
+
+
+def test_display_order_is_contiguous_in_every_authored_file():
+    # Removing or moving a set must renumber the file; a gap would be an
+    # authoring slip, not a deliberate ordering. Read straight off the YAML:
+    # the loader assigns display_order by position, so a gap in the file is
+    # invisible through it.
+    gaps: list[str] = []
+    for path in sorted(assessable_topic_set_service.TOPIC_SET_CONTENT_DIR.glob('*.yaml')):
+        entries = yaml.safe_load(path.read_text(encoding='utf-8'))['sets']
+        orders = [entry.get('display_order', position) for position, entry in enumerate(entries, start=1)]
+        if orders != list(range(1, len(orders) + 1)):
+            gaps.append(f'{path.name}: {orders}')
+
+    assert gaps == []

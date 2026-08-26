@@ -55,11 +55,11 @@ sets:
     display_order: 9
     nodes: [container-orchestration, kubernetes, docker-swarm, 'gke---eks---aks', 'aws-ecs---fargate']
   - key: cloud-providers
-    title: Cloud providers, hosting, and serverless
-    title_th: ผู้ให้บริการคลาวด์ โฮสติ้ง และ Serverless (AWS, Azure, GCP, Lambda)
+    title: Cloud providers and serverless
+    title_th: ผู้ให้บริการคลาวด์และ Serverless (AWS, Azure, Lambda)
     review: {status: draft}
     display_order: 10
-    nodes: [cloud-providers, aws, azure, google-cloud, digital-ocean, alibaba-cloud, hetzner, heroku, contabo, vercel, netlify, cloudflare, serverless, aws-lambda, azure-functions, gcp-functions]
+    nodes: [cloud-providers, aws, azure, google-cloud, alibaba-cloud, serverless, aws-lambda, azure-functions, gcp-functions]
   - key: infrastructure-provisioning
     title: Infrastructure provisioning
     title_th: การจัดเตรียมโครงสร้างพื้นฐานด้วยโค้ด (Terraform, Pulumi)

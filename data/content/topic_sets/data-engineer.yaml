@@ -67,11 +67,11 @@ sets:
     display_order: 11
     nodes: [cloud-computing, cloud-architectures, serverless-options, 'amazon-ec2-(-compute)', 's3-(storage)', 'amazon-rds-(database)', azure-virtual-machines, azure-blob-storage, azure-sql-database, 'data-factory-(etl)', 'compute-engine-(compute)', google-cloud-storage, 'cloud-sql-(database)', dataflow]
   - key: data-pipelines
-    title: Data ingestion, pipelines, and ETL
-    title_th: การนำเข้าข้อมูล Data Pipeline และ ETL (Batch, Streaming, Airflow, dbt)
+    title: Batch and streaming data pipelines and ETL
+    title_th: การนำเข้าข้อมูลแบบ Batch/Streaming, Data Pipeline และ ETL (Airflow, dbt)
     review: {status: draft}
     display_order: 12
-    nodes: [types-of-data-ingestion, batch, streaming, realtime, hybrid, data-pipelines, extract-data, transform-data, load-data, apache-airflow, dbt, luigi, perfect, reverse-etl, etl-vs-reverse-etl, reverse-etl-usecases, census, segment, hightouch]
+    nodes: [types-of-data-ingestion, batch, streaming, realtime, hybrid, data-pipelines, extract-data, transform-data, load-data, apache-airflow, dbt, luigi, perfect]
   - key: messaging-systems
     title: Messaging and streaming systems
     title_th: ระบบส่งข้อความและสตรีมข้อมูล (Kafka, RabbitMQ)
@@ -115,8 +115,8 @@ sets:
     display_order: 19
     nodes: [data-quality, data-lineage, metadata-management, data-interoperability, authentication-vs-authorization, encryption, tokenization, data-masking, data-obfuscation, gdpr, ecpa, eu-ai-act]
   - key: analytics-bi-and-ml
-    title: Analytics, BI, and machine learning
-    title_th: การวิเคราะห์ข้อมูล BI และ Machine Learning (Power BI, MLOps)
+    title: Analytics and BI
+    title_th: การวิเคราะห์ข้อมูลและ BI (Power BI, Tableau, Looker)
     review: {status: draft}
     display_order: 20
-    nodes: [data-analytics, business-intelligence, microsoft-power-bi, streamlit, tableu, looker, machine-learning, mlops]
+    nodes: [data-analytics, business-intelligence, microsoft-power-bi, streamlit, tableu, looker]

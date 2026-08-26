@@ -1,11 +1,11 @@
 role_slug: ios-developer
 sets:
   - key: swift-and-objective-c
-    title: Swift, Objective-C, and platform releases
-    title_th: ภาษา Swift, Objective-C และการติดตามเวอร์ชันใหม่ของแพลตฟอร์ม (WWDC)
+    title: Swift and platform releases
+    title_th: ภาษา Swift และการติดตามเวอร์ชันใหม่ของแพลตฟอร์ม (WWDC)
     review: {status: draft}
     display_order: 1
-    nodes: ['swift-(recommended)', 'history-and-why-swift?', swift-basics, benefits-over-objective-c, latest-swift-version, objective-c, objective-c-basics, interoperability-with-swift, keeping-updated-with-wwdc, latest-ios-sdk, new-feature-announcements]
+    nodes: ['swift-(recommended)', 'history-and-why-swift?', swift-basics, latest-swift-version, keeping-updated-with-wwdc, latest-ios-sdk, new-feature-announcements]
   - key: core-programming-concepts
     title: Core programming concepts
     title_th: แนวคิดพื้นฐานการเขียนโปรแกรม (OOP, Memory Management)

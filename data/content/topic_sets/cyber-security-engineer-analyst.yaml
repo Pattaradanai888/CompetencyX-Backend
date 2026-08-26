@@ -31,11 +31,11 @@ sets:
     display_order: 5
     nodes: [ssh, rdp, ftp, sftp, 'http---https', 'ssl---tls', ssl-and-tls-basics, ftp-vs-sftp, ssl-vs-tls, ipsec, dnssec, ldaps, srtp, 's-mime']
   - key: command-line-and-analysis-tools
-    title: Network troubleshooting tools
-    title_th: เครื่องมือตรวจสอบและแก้ปัญหาเครือข่าย (nmap, tcpdump)
+    title: Command-line and network troubleshooting tools
+    title_th: เครื่องมือ Command Line และการตรวจสอบแก้ปัญหาเครือข่าย (grep, nmap, tcpdump)
     review: {status: draft}
     display_order: 6
-    nodes: [nslookup, dig, ping, netstat, ipconfig, route, tracert, tcpdump, nmap, hping, curl, port-scanners, packet-sniffers, protocol-analyzers, iptables]
+    nodes: [nslookup, dig, ping, netstat, ipconfig, route, tracert, tcpdump, nmap, hping, curl, port-scanners, packet-sniffers, protocol-analyzers, iptables, cat, head, tail, grep, dd]
   - key: identity-and-access
     title: Identity, access, and cryptography
     title_th: การยืนยันตัวตน การจัดการสิทธิ์ และวิทยาการเข้ารหัส (SSO, MFA, PKI)
@@ -95,7 +95,7 @@ sets:
     title_th: การวิเคราะห์มัลแวร์และนิติวิทยาศาสตร์ดิจิทัล (VirusTotal, Wireshark, Autopsy)
     review: {status: draft}
     display_order: 16
-    nodes: [zero-day, known-vs-unknown, apt, understand-handshakes, virustotal, joe-sandbox, 'any.run', urlvoid, urlscan, whois, cat, head, tail, grep, dd, wireshark, winhex, memdump, ftk-imager, autopsy]
+    nodes: [zero-day, known-vs-unknown, apt, understand-handshakes, virustotal, joe-sandbox, 'any.run', urlvoid, urlscan, whois, wireshark, winhex, memdump, ftk-imager, autopsy]
   - key: incident-response
     title: Incident response
     title_th: การรับมือเหตุการณ์ผิดปกติ (Incident Response)
@@ -114,9 +114,3 @@ sets:
     review: {status: draft}
     display_order: 19
     nodes: [programming-skills, python, go, javascript, 'c++', bash, power-shell]
-  - key: labs-and-certifications
-    title: Practice labs and certifications
-    title_th: สนามฝึกและใบรับรองวิชาชีพ (HackTheBox, CompTIA, OSCP)
-    review: {status: draft}
-    display_order: 20
-    nodes: [hackthebox, tryhackme, vulnhub, picoctf, 'pwn.college', 'comptia-a+', 'comptia-linux+', 'comptia-network+', ccna, 'comptia-security+', ceh, cisa, cism, gsec, gpen, gwapt, giac, oscp, crest, cissp]

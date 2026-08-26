@@ -103,11 +103,11 @@ sets:
     display_order: 17
     nodes: [frameworks, togaf, iaf, babok, 'emc-dms']
   - key: management-and-methodologies
-    title: Management and delivery methodologies
-    title_th: การบริหารโครงการและระเบียบวิธีส่งมอบ (Scrum, Kanban, SAFe)
+    title: Agile delivery methodologies
+    title_th: ระเบียบวิธีส่งมอบแบบ Agile (Scrum, Kanban, SAFe)
     review: {status: draft}
     display_order: 18
-    nodes: [management, pmi, itil, prince2, rup, less, safe, kanban, scrum, xp]
+    nodes: [less, safe, kanban, scrum, xp]
   - key: enterprise-software
     title: Enterprise software platforms
     title_th: แพลตฟอร์มซอฟต์แวร์องค์กร (SAP, Salesforce, MS Dynamics)
