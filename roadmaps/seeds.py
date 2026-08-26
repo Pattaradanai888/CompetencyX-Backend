@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import yaml
 
+from roadmaps.content_review import VALID_REVIEW_STATUSES, invalid_review_status_message, read_review_status
 from roadmaps.models import (
     ExternalRoadmapEdge,
     ExternalRoadmapNode,
@@ -456,7 +457,6 @@ def _validate_option_key_uniqueness(question_code: str, option_seed: dict, optio
 
 
 LEGACY_QUESTION_FIELDS = {'agree_dimension_signals', 'disagree_dimension_signals', 'difficulty', 'discrimination_score', 'trait_positive_dimension'}
-VALID_QUESTION_REVIEW_STATUSES = {'draft', 'reviewed'}
 
 
 def _validate_role_question_seed(role_question: dict, *, role_slugs: set[str], existing_codes: set[str]) -> None:
@@ -525,10 +525,9 @@ def _validate_question_provenance(role_question: dict, *, agree_signals: dict) -
     if not str(role_question.get('rationale') or '').strip():
         msg = f'Role question "{code}" requires a non-empty rationale.'
         raise ValueError(msg)
-    review = role_question.get('review') or {}
-    if review.get('status') not in VALID_QUESTION_REVIEW_STATUSES:
-        msg = f'Role question "{code}" review.status must be one of {sorted(VALID_QUESTION_REVIEW_STATUSES)}.'
-        raise ValueError(msg)
+    review_status = read_review_status(role_question)
+    if review_status not in VALID_REVIEW_STATUSES:
+        raise ValueError(invalid_review_status_message(f'Role question "{code}"', review_status))
     ka_codes, manifest_files = _load_known_source_anchors()
     source_errors: list[str] = []
     _validate_sources(f'question "{code}"', role_question.get('sources'), ka_codes=ka_codes, manifest_files=manifest_files, errors=source_errors)

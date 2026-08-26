@@ -415,8 +415,12 @@ class TopicSetValidationTests(TopicSetContentTestCase):
         self.assertEqual(report['sets_not_reviewed'], ['backend-developer--data-storage'])
         self.assertNotIn('sets_missing_thai', report)
 
+    def leave_only_the_backend_role_active(self):
+        # So that the missing UX sets are not what makes --strict fail.
+        Role.objects.exclude(pk=self.backend.pk).update(is_active=False)
+
     def test_strict_fails_while_any_set_is_a_draft_and_passes_once_all_are_reviewed(self):
-        Role.objects.filter(slug='ux-designer').update(is_active=False)
+        self.leave_only_the_backend_role_active()
         self.write_sets(
             'backend-developer',
             """
@@ -487,7 +491,7 @@ class TopicSetValidationTests(TopicSetContentTestCase):
                 nodes: [databases]
             """,
         )
-        Role.objects.filter(slug='ux-designer').update(is_active=False)
+        self.leave_only_the_backend_role_active()
 
         call_command('validate_topic_set_catalog', '--strict')
 

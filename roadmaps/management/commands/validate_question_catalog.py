@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
+from roadmaps.content_review import is_reviewed
 from roadmaps.seeds import load_curated_catalog
 from roadmaps.weight_derivation import load_relevance_mapping
 
@@ -32,13 +33,13 @@ class Command(BaseCommand):
         draft_questions = [
             question['code']
             for question in questions_data['role_questions']
-            if (question.get('review') or {}).get('status') != 'reviewed'
+            if not is_reviewed(question)
         ]
         mapping = load_relevance_mapping()
         draft_mapping_roles = [
             role_slug
             for role_slug, role_entry in mapping['roles'].items()
-            if (role_entry.get('review') or {}).get('status') != 'reviewed'
+            if not is_reviewed(role_entry)
         ]
 
         self.stdout.write(self.style.MIGRATE_HEADING('\n--- Review status ---'))

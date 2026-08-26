@@ -15,6 +15,7 @@ from pathlib import Path
 
 import yaml
 
+from roadmaps.content_review import VALID_REVIEW_STATUSES, invalid_review_status_message, read_review_status
 from roadmaps.questionnaire import ROLE_DIMENSIONS
 
 
@@ -88,7 +89,6 @@ def render_generated_module(weights: dict[str, dict[str, float]], *, rubric_vers
 
 SWEBOK_REFERENCE_PATH = Path(__file__).resolve().parent.parent / 'data' / 'sources' / 'swebok_v4_ka_reference.yaml'
 ROADMAP_MANIFEST_PATH = Path(__file__).resolve().parent.parent / 'data' / 'upstream' / 'roadmap_sh' / 'manifest.yaml'
-VALID_REVIEW_STATUSES = {'draft', 'reviewed'}
 
 
 def _load_known_source_anchors() -> tuple[set[str], set[str]]:
@@ -134,9 +134,9 @@ def validate_relevance_mapping(mapping: dict, *, roles_yaml_entries: list[dict])
 
     derived_top_codes = derive_top_ka_codes(mapping, ka_code_by_dimension)
     for role_slug, role_entry in mapping['roles'].items():
-        review = role_entry.get('review') or {}
-        if review.get('status') not in VALID_REVIEW_STATUSES:
-            errors.append(f'{role_slug}.review.status must be one of {sorted(VALID_REVIEW_STATUSES)}')
+        review_status = read_review_status(role_entry)
+        if review_status not in VALID_REVIEW_STATUSES:
+            errors.append(invalid_review_status_message(f'Relevance mapping "{role_slug}"', review_status))
         for kind in KIND_TO_LADDER_KEY:
             for dimension_key, cell in (role_entry.get(kind) or {}).items():
                 cell_path = f'{role_slug}.{kind}.{dimension_key}'

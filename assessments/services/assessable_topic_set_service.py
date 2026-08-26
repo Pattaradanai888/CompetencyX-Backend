@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 
 from assessments.models import AssessableTopicSet
+from roadmaps.content_review import REVIEWED, VALID_REVIEW_STATUSES, invalid_review_status_message, read_review_status
 from roadmaps.external_roadmap import build_external_roadmap_topics
 from roadmaps.models import ExternalRoadmapNode, Role
 
@@ -24,10 +25,6 @@ from roadmaps.models import ExternalRoadmapNode, Role
 TOPIC_SET_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / 'data' / 'content' / 'topic_sets'
 
 SET_KEY_MAX_LENGTH = 128
-
-# Mirrors the per-item review block of the question catalog. An agent may
-# write ``draft``; only a person sets ``reviewed`` (ADR-0004).
-VALID_TOPIC_SET_REVIEW_STATUSES = frozenset({'draft', 'reviewed'})
 
 
 def build_set_key(role_slug: str, key: str) -> str:
@@ -71,14 +68,11 @@ def _normalise_set(entry: dict, *, role_slug: str, display_order: int, path: Pat
         raise ValueError(msg)
     seen_keys.add(set_key)
 
-    review = entry.get('review')
-    review_status = review.get('status') if isinstance(review, dict) else None
-    if review_status not in VALID_TOPIC_SET_REVIEW_STATUSES:
-        msg = (
-            f'Topic set "{set_key}" in "{path.name}" must declare review.status as one of '
-            f'{sorted(VALID_TOPIC_SET_REVIEW_STATUSES)} (got: {review_status!r}).'
-        )
-        raise ValueError(msg)
+    # The same block the question catalog carries: an agent may write draft,
+    # only a person sets reviewed (ADR-0004).
+    review_status = read_review_status(entry)
+    if review_status not in VALID_REVIEW_STATUSES:
+        raise ValueError(invalid_review_status_message(f'Topic set "{set_key}" in "{path.name}"', review_status))
 
     return {
         'set_key': set_key,
@@ -237,7 +231,7 @@ def build_topic_set_report() -> dict[str, object]:
         unknown = [slug for slug in entry['node_slugs'] if slug not in known]
         if unknown:
             unknown_node_slugs.append((entry['set_key'], unknown))
-        if entry['review_status'] != 'reviewed':
+        if entry['review_status'] != REVIEWED:
             sets_not_reviewed.append(entry['set_key'])
 
     active_role_slugs = list(Role.objects.filter(is_active=True).order_by('slug').values_list('slug', flat=True))
