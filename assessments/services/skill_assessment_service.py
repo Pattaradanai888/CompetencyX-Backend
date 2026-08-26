@@ -252,7 +252,10 @@ def get_skill_assessment_state(session: AssessmentSession) -> dict[str, object]:
 
 @transaction.atomic
 def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, object]) -> dict[str, object]:
-    session = AssessmentSession.objects.with_roles().select_for_update().get(pk=session.pk)
+    # Lock only the session row: with_roles() LEFT OUTER JOINs the nullable
+    # role FKs, and PostgreSQL rejects FOR UPDATE on the nullable side of an
+    # outer join unless the lock is restricted to the session table itself.
+    session = AssessmentSession.objects.with_roles().select_for_update(of=('self',)).get(pk=session.pk)
     answers = state.get('answers', {})
     if not isinstance(answers, dict):
         answers = {}
