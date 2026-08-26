@@ -204,7 +204,7 @@ re-deriving it from §1–§5.
 | §1 row 5 (`professional-development`) | Removed by #16 (ADR-0004 decision 4). |
 | §2.1 security register | ADR-0004 decision 3: ความปลอดภัย everywhere. Six sets changed — cyber `security-concepts`; devsecops `security-foundations`, `cloud-security`, `container-security`, `supply-chain-security`, `scripting-and-automation`. |
 | §2.2 cross-role terms | Settled by #17 rule B; the decisions are in 6.2. |
-| §2.3 gloss rule | Adopted as proposed: bare parenthetical, at most three names, never เช่น / อย่าง / และ inside it, proper nouns spelled canonically. mlops `workflow-orchestration` and `experiment-tracking` lost their conversational phrasing; `IPSEC` became `IPsec`; eleven four-name glosses were trimmed to three (rows in 6.3). |
+| §2.3 gloss rule | Adopted as proposed: bare parenthetical, at most three names, never เช่น / อย่าง / และ inside it, proper nouns spelled canonically. The "2–3" in #17 rule B is read as the size of a *tool list*; a one-name gloss that expands an abbreviation or names the single tool a set is about (`(Airflow)`, `(PgBouncer)`, `(Hashing)`) is left as it is. mlops `workflow-orchestration` and `experiment-tracking` lost their conversational phrasing; `IPSEC` became `IPsec`; eleven four-name glosses were trimmed to three (rows in 6.3). |
 | §3 answerability backlog | Resolved by #16: `domain-analytics`, `professional-development` and `labs-and-certifications` removed; `swift-and-objective-c`, `data-pipelines`, `analytics-bi-and-ml`, `management-and-methodologies` and `cloud-providers` narrowed to their primary skill (decision 5). `product-metrics-and-analytics` was left as it was. |
 | §3 misfiled nodes | #16 moved the Unix commands to `command-line-and-analysis-tools` and dropped `recommendation-systems` to the backlog. `ml-frameworks` and `it-fundamentals` are unchanged. |
 | §4 items 1–16, 18 (spelling only), 20–24 | Applied; see 6.3. Item 9's sibling, data-engineer `data-pipelines`, already had its separators from #16 and was not touched. |
@@ -222,7 +222,7 @@ re-deriving it from §1–§5.
 | Stakeholder | left in English | developer-relations [engineering-manager, product-manager] |
 | Reactive Programming | left in English | ios-developer [android, software-architect] |
 | Configuration Management | left in English | devops-engineer [postgresql] |
-| Infrastructure as Code | left in English, the role's tools in the gloss | data-engineer, devops-engineer (`infrastructure-provisioning`), mlops-engineer [full-stack]. Chosen over การจัดการโครงสร้างพื้นฐานด้วยโค้ด because the term is on ADR-0004's English list and the Thai form was in only two files, one of which said "provisioning" rather than IaC. |
+| Infrastructure as Code | left in English, the role's tools in the gloss where its nodes name any (mlops has none) | data-engineer, devops-engineer (`infrastructure-provisioning`), mlops-engineer [full-stack]. Chosen over การจัดการโครงสร้างพื้นฐานด้วยโค้ด because the term is on ADR-0004's English list and the Thai form was in only two files, one of which said "provisioning" rather than IaC. |
 | Incident Response | การรับมือ Incident | cyber, devsecops, engineering-manager |
 | Digital Forensics | left in English | cyber (was นิติวิทยาศาสตร์ดิจิทัล), devsecops (was ดิจิทัลฟอเรนซิก). Not on #17's list; applied under decision 3 by the same reasoning as the terms that are. |
 | Virtualization | left in English | cyber [backend] |
@@ -234,12 +234,12 @@ re-deriving it from §1–§5.
 Left alone on purpose, for the reviewer to confirm: data-engineer `governance-and-compliance`
 keeps ธรรมาภิบาลข้อมูล (the established Thai for *data governance*) while devsecops
 `governance-risk-compliance` uses การกำกับดูแล for the GRC sense — two constructs, not two
-renderings of one. Neural Networks, Semantic HTML and Loss Aversion stay in English as the
+renderings of one. Neural Networks (machine-learning-engineer was โครงข่ายประสาทเทียม), Semantic HTML and Loss Aversion stay in English as the
 terms practitioners recognise.
 
 ### 6.3 Second-pass checklist — every set #17 changed
 
-67 sets in 22 files. `backend-developer`, `postgresql-developer-dba`, `product-manager` and
+68 sets in 22 files. `backend-developer`, `postgresql-developer-dba`, `product-manager` and
 `technical-writer` were not touched. Each row is a draft awaiting a person's `reviewed` flip;
 where a redraft differs from §4's suggestion, the reason is in #17 table A or in 6.2 above.
 
@@ -299,6 +299,7 @@ where a redraft differs from §4's suggestion, the reason is in #17 table A or i
 | ios-developer · `ci-cd-and-distribution` | ระบบควบคุมเวอร์ชัน CI/CD และการเผยแพร่บน App Store | ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store |
 | machine-learning-engineer · `calculus-and-discrete-mathematics` | แคลคูลัสและคณิตศาสตร์ไม่ต่อเนื่อง (Calculus, Discrete Mathematics) | แคลคูลัสและคณิตศาสตร์ดิสครีต (Calculus, Discrete Mathematics) |
 | machine-learning-engineer · `ml-frameworks` | Framework สำหรับ Machine Learning และ Deep Learning (scikit-learn, TensorFlow, PyTorch) | เฟรมเวิร์ก Machine Learning และ Deep Learning (scikit-learn, TensorFlow, PyTorch) |
+| machine-learning-engineer · `neural-network-fundamentals` | พื้นฐานโครงข่ายประสาทเทียม (Neural Networks) | พื้นฐาน Neural Networks |
 | mlops-engineer · `containerization` | การใช้งาน Container (Docker, Kubernetes) | การใช้งานคอนเทนเนอร์ (Docker, Kubernetes) |
 | mlops-engineer · `infrastructure-as-code` | การจัดการ Infrastructure เป็นโค้ด (Infrastructure as Code) | Infrastructure as Code |
 | mlops-engineer · `workflow-orchestration` | การ Orchestrate Workflow ด้วยเครื่องมืออย่าง Airflow | การทำ Workflow Orchestration (Airflow) |
@@ -312,6 +313,9 @@ where a redraft differs from §4's suggestion, the reason is in #17 table A or i
 | software-architect · `operations-knowledge` | ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD, IaC) | ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD) |
 | software-architect · `architecture-frameworks` | กรอบงานสถาปัตยกรรมองค์กร (TOGAF, IAF, BABOK) | เฟรมเวิร์กสถาปัตยกรรมองค์กร (TOGAF, IAF, BABOK) |
 | ux-designer · `incentives-and-rewards` | สิ่งจูงใจ รางวัล และการหลีกเลี่ยงการสูญเสีย | สิ่งจูงใจ รางวัล และ Loss Aversion |
-The rules behind these rows are enforced from now on by
-`assessments/tests/test_topic_set_wording_rules.py`: the forbidden forms, the gloss shape, the
-cross-role renderings in 6.2, and that no set is `reviewed`.
+The mechanical part of these rules is held from now on by
+`assessments/tests/test_topic_set_wording_rules.py`: the forbidden forms (security register,
+transliteration spellings, the terms that stay in English), the gloss shape, and the Incident
+Response / Infrastructure as Code / Configuration Management / Secret / Virtualization renderings.
+The rest of 6.2 and whether a set is `reviewed` are not tested: the status flip is a person's
+action that the suite must not block.

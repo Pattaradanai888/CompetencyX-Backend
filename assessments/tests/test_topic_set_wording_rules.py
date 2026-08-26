@@ -3,9 +3,9 @@
 ADR-0004 decision 3 fixes the register of the Canonical Thai Wording: the
 working vocabulary of the role, ความปลอดภัย (never ความมั่นคงปลอดภัย), bare
 parenthetical glosses with canonically spelled proper nouns, and one spelling
-per transliterated word. Decision 1 keeps approval a human act: nothing an agent
-lands may carry ``review.status: reviewed``. These checks are the mechanical
-part of that gate; whether the Thai is *good* stays a person's call.
+per transliterated word. These checks are the mechanical part of that gate;
+whether the Thai is *good* stays a person's call, and so does flipping a set's
+``review.status`` to ``reviewed`` (decision 1) -- nothing here pins that status.
 """
 
 import re
@@ -50,24 +50,20 @@ def test_a_gloss_is_a_bare_parenthetical_of_at_most_three_names(entry):
     title_th = entry['title_th']
     for gloss in GLOSS.findall(title_th):
         assert not any(word in gloss for word in FORBIDDEN_INSIDE_GLOSS), f'{entry["set_key"]}: conversational gloss in {title_th!r}'
-        items = [item for item in re.split(r',\s*', gloss.split('--')[-1]) if item.strip()]
+        items = [item for item in re.split(r',\s*', gloss) if item.strip()]
         assert len(items) <= 3, f'{entry["set_key"]}: gloss lists {len(items)} names in {title_th!r}'
-
-
-@pytest.mark.parametrize('entry', AUTHORED_SETS, ids=SET_IDS)
-def test_no_set_is_marked_reviewed_by_an_agent(entry):
-    assert entry['review_status'] == 'draft', f"{entry['set_key']} is marked reviewed; that flip is a person's action"
 
 
 def test_the_same_concept_has_the_same_thai_across_roles():
     """One rendering per cross-role term (docs/topic-set-thai-review.md §6.2)."""
     titles = {entry['set_key']: entry['title_th'] for entry in AUTHORED_SETS}
 
-    def titled(prefix, *set_keys):
+    def not_prefixed(prefix, *set_keys):
+        """The sets among ``set_keys`` whose wording does not start with the decided rendering."""
         return {key: titles[key] for key in set_keys if not titles[key].startswith(prefix)}
 
     assert (
-        titled(
+        not_prefixed(
             'การรับมือ Incident',
             'cyber-security-engineer-analyst--incident-response',
             'devsecops-engineer--incident-response',
@@ -76,7 +72,7 @@ def test_the_same_concept_has_the_same_thai_across_roles():
         == {}
     )
     assert (
-        titled(
+        not_prefixed(
             'Infrastructure as Code',
             'data-engineer--infrastructure-as-code',
             'devops-engineer--infrastructure-provisioning',
@@ -85,8 +81,8 @@ def test_the_same_concept_has_the_same_thai_across_roles():
         )
         == {}
     )
-    assert titled('Configuration Management', 'devops-engineer--configuration-management') == {}
+    assert not_prefixed('Configuration Management', 'devops-engineer--configuration-management') == {}
     assert titles['postgresql-developer-dba--automation'].count('Configuration Management') == 1
-    assert titled('การจัดการ Secret ', 'devops-engineer--secret-management') == {}
+    assert not_prefixed('การจัดการ Secret ', 'devops-engineer--secret-management') == {}
     assert 'Virtualization' in titles['backend-developer--containers-and-virtualization']
     assert 'Virtualization' in titles['cyber-security-engineer-analyst--operating-systems']

@@ -80,7 +80,7 @@ sets:
     nodes: ['what-is-model-evaluation?', metrics-to-evaluate, confusion-matrix, accuracy, precision, recall, f1-score, roc-auc, log-loss, validation-techniques, k-fold-cross-validation, loocv]
   - key: neural-network-fundamentals
     title: Neural network fundamentals
-    title_th: พื้นฐานโครงข่ายประสาทเทียม (Neural Networks)
+    title_th: พื้นฐาน Neural Networks
     review: {status: draft}
     display_order: 14
     nodes: ['neural-network-(nn)-basics', 'perceptron,-multi-layer-perceptrons', activation-functions, forward-propagation, back-propagation, loss-functions]
