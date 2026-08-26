@@ -42,7 +42,10 @@ class AnswerSubmitSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     option_id = serializers.IntegerField(required=False)
     scale_value = serializers.IntegerField(required=False)
-    response_time_ms = serializers.IntegerField(required=False, min_value=0)
+    # The column is a PostgreSQL integer: without an upper bound SQLite tests
+    # would accept any value while PostgreSQL rejects the insert with
+    # "integer out of range" once it reaches the database.
+    response_time_ms = serializers.IntegerField(required=False, min_value=0, max_value=2147483647)
     confidence_indicator = serializers.ChoiceField(
         choices=['low', 'medium', 'high'],
         required=False,

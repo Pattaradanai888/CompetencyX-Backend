@@ -130,6 +130,23 @@ class CoreFlowTests(AssessmentFlowTestCase):
         self.assertEqual(bad_scale_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Use one of', bad_scale_response.json()['scale_value'][0])
 
+    def test_answer_submission_rejects_response_time_beyond_integer_range(self):
+        # ``response_time_ms`` lands in a PostgreSQL integer column, which
+        # rejects anything above 2**31 - 1 at insert time. SQLite (the test
+        # backend) would store it happily, so the serializer must enforce the
+        # bound before the value reaches the database.
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
+        question_payload = create_response.json()['current_question']
+
+        oversized_response = self.client.post(
+            reverse('assessment-session-answers', kwargs={'pk': create_response.json()['id']}),
+            {'question_id': question_payload['id'], 'scale_value': 1, 'response_time_ms': 2**31},
+            format='json',
+        )
+
+        self.assertEqual(oversized_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('response_time_ms', oversized_response.json())
+
     def test_session_language_defaults_to_english_and_rejects_unknown_language(self):
         create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
