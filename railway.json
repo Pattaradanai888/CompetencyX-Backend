@@ -5,6 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
+    "preDeployCommand": "python manage.py migrate --noinput && python manage.py sync_content",
     "healthcheckPath": "/api/v1/health/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
