@@ -14,7 +14,7 @@ sets:
     nodes: [css, tailwind-css]
   - key: javascript-and-interactivity
     title: JavaScript and Interactivity
-    title_th: JavaScript และการเพิ่มความโต้ตอบ (Interactivity)
+    title_th: JavaScript และการทำให้หน้าเว็บโต้ตอบกับผู้ใช้ได้
     review: {status: draft}
     display_order: 3
     nodes: [javascript, checkpoint---interactivity]

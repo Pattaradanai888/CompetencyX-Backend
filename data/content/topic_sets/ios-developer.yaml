@@ -56,7 +56,7 @@ sets:
     nodes: [navigation, view-transitions, 'navigation-controllers,-segues', navigation-stacks, pushing-presenting, modals-and-navigation, navigation-view, navigationlink, 'presenting---dismissing-views']
   - key: ui-design-and-accessibility
     title: UI design and accessibility
-    title_th: การออกแบบ UI ตาม HIG และการเข้าถึง (Accessibility)
+    title_th: การออกแบบ UI ตาม HIG และ Accessibility
     review: {status: draft}
     display_order: 10
     nodes: [ui-design, hig, accessibility, accessibility-inspector, voice-over, dynamic-type]
@@ -68,7 +68,7 @@ sets:
     nodes: [architectural-patterns, mvc, mvp, mvvm, 'mvvm-c', viper, tca]
   - key: reactive-programming
     title: Reactive programming
-    title_th: การเขียนโปรแกรมเชิงปฏิกิริยา (Combine, RxSwift)
+    title_th: Reactive Programming (Combine, RxSwift)
     review: {status: draft}
     display_order: 12
     nodes: [reactive-programming, combine, 'publishers---subscribers', operators-and-pipelines, combine-and-mvvm, rxswift, observables-and-observers, subjects, rxswift-with-mvvm, operators, schedulers]
@@ -116,7 +116,7 @@ sets:
     nodes: [code-quality-tools, swiftlint, swiftformat, tailor, unit-and-ui-testing, xctest, xcuitest, test-plan-and-coverage]
   - key: ci-cd-and-distribution
     title: Version control, CI/CD, and App Store distribution
-    title_th: ระบบควบคุมเวอร์ชัน CI/CD และการเผยแพร่บน App Store
+    title_th: ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store
     review: {status: draft}
     display_order: 20
     nodes: [version-control, git, github, 'ci---cd', jenkins, circleci, github-actions, gitlab, azure-devops, fastlane, testflight, app-store-distribution, 'app-store-optimization-(aso)']

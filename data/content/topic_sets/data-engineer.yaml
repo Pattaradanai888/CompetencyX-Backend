@@ -20,19 +20,19 @@ sets:
     nodes: [programming-skills, python, java, scala, go, data-structures-and-algorithms, git-and-github, linux-basics, networking-fundamentals, distributed-systems-basics]
   - key: data-sources
     title: Sources of data
-    title_th: แหล่งที่มาของข้อมูล (API, Database, Logs, IoT)
+    title_th: แหล่งที่มาของข้อมูล (API, Database, IoT)
     review: {status: draft}
     display_order: 4
     nodes: [sources-of-data, apis, database, mobile-apps, logs, iot]
   - key: data-modelling
     title: Data modelling
-    title_th: การออกแบบแบบจำลองข้อมูล (Star Schema, SCD)
+    title_th: การออกแบบ Data Model (Star Schema, SCD)
     review: {status: draft}
     display_order: 5
     nodes: [database-fundamentals, data-collection-considerations, data-normalization, data-modelling-techniques, star-vs-snowflake-schema, 'slowly-changing-dimension---scd']
   - key: database-concepts
     title: Core database concepts
-    title_th: แนวคิดหลักของฐานข้อมูล (SQL, Index, Transaction, CAP)
+    title_th: แนวคิดหลักของฐานข้อมูล (SQL, Index, Transaction)
     review: {status: draft}
     display_order: 6
     nodes: [indexing, transactions, cap-theorem, oltp-vs-olap, horizontal-vs-vertical-scaling]
@@ -44,7 +44,7 @@ sets:
     nodes: [relational-databases, mysql, postgresql, mariadb, aurora-db, oracle, ms-sql]
   - key: nosql-databases
     title: NoSQL databases
-    title_th: ฐานข้อมูล NoSQL (Document, Key-Value, Column, Graph)
+    title_th: ฐานข้อมูล NoSQL (Document, Key-Value, Graph)
     review: {status: draft}
     display_order: 8
     nodes: [nosql-databsases, document, mongodb, elasticsearch, cosmosdb, couchdb, column, cassandra, bigtable, hbase, graph, neo4j, neptune, key-value, redis, memcached, dynamodb]
@@ -86,13 +86,13 @@ sets:
     nodes: [cluster-computing-basics, what-is-cluster-computing, distributed-file-systems, job-scheduling, cluster-management-tools, apache-hadoop-yarn, yarn, hdfs, big-data-tools, apache-spark, mapreduce]
   - key: containers-and-orchestration
     title: Containers, orchestration, and CI/CD
-    title_th: คอนเทนเนอร์ การจัดการคลัสเตอร์ และ CI/CD (Docker, Kubernetes)
+    title_th: คอนเทนเนอร์ การจัดการคอนเทนเนอร์ และ CI/CD (Docker, Kubernetes)
     review: {status: draft}
     display_order: 15
     nodes: [containers-and-orchestration, docker, kubernetes, google-cloud-gke, aws-eks, 'ci-cd', github-actions, gitlab-ci, circle-ci, argocd]
   - key: infrastructure-as-code
     title: Infrastructure as code
-    title_th: การจัดการโครงสร้างพื้นฐานด้วยโค้ด (Terraform, IaC)
+    title_th: Infrastructure as Code (Terraform, OpenTofu, AWS CDK)
     review: {status: draft}
     display_order: 16
     nodes: ['infrastructure-as-code---iac', declarative-vs-imperative, idempotency, reusability, environmental-management, terraform, opentofu, aws-cdk, 'google-deployment--mgr.']

@@ -74,7 +74,7 @@ sets:
     nodes: [multimodal-ai, multimodal-ai-usecases, image-understanding, image-generation, video-understanding, openai-vision-api, dall-e-api]
   - key: audio-and-speech
     title: Audio and speech processing
-    title_th: การประมวลผลเสียงและการพูด (Speech-to-Text, Text-to-Speech)
+    title_th: การประมวลผลเสียงและเสียงพูด (Speech-to-Text, Text-to-Speech)
     review: {status: draft}
     display_order: 13
     nodes: [audio-processing, text-to-speech, speech-to-text, whisper-api]

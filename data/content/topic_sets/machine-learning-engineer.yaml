@@ -8,7 +8,7 @@ sets:
     nodes: [linear-algebra, matrix-and-matrix-operations, 'scalars,-vectors,-tensors', singular-value-decomposition, 'determinants,-inverse-of-matrix', 'eigenvalues,-diagonalization']
   - key: calculus-and-discrete-mathematics
     title: Calculus and discrete mathematics
-    title_th: แคลคูลัสและคณิตศาสตร์ไม่ต่อเนื่อง (Calculus, Discrete Mathematics)
+    title_th: แคลคูลัสและคณิตศาสตร์ดิสครีต (Calculus, Discrete Mathematics)
     review: {status: draft}
     display_order: 2
     nodes: [calculus, chain-rule-of-derivation, 'derivatives,-partial-derivatives', 'gradient,-jacobian,-hessian', discrete-mathematics]
@@ -110,7 +110,7 @@ sets:
     nodes: [natural-language-processing, tokenization, lemmatization, stemming, embeddings]
   - key: ml-frameworks
     title: ML and deep learning frameworks
-    title_th: Framework สำหรับ Machine Learning และ Deep Learning (scikit-learn, TensorFlow, PyTorch)
+    title_th: เฟรมเวิร์ก Machine Learning และ Deep Learning (scikit-learn, TensorFlow, PyTorch)
     review: {status: draft}
     display_order: 19
     nodes: [deep-learning-libraries, tensorflow, keras, pytorch, scikit-learn, data-preparation, data-loading, train---test-data, model-selection, tuning, prediction]

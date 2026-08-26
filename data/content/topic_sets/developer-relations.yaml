@@ -110,7 +110,7 @@ sets:
     nodes: [support, forums, issue-tracking, faqs, surveys, feedback-collection]
   - key: metrics-and-analytics
     title: Metrics, analytics, and reporting
-    title_th: ตัวชี้วัด การวิเคราะห์ผล และการรายงานต่อผู้มีส่วนได้ส่วนเสีย
+    title_th: ตัวชี้วัด การวิเคราะห์ผล และการรายงานต่อ Stakeholder
     review: {status: draft}
     display_order: 19
     nodes: [key-metrics, developer-satisfaction, community-growth, engagement-rates, content-performance, social-media-analytics, platform-specific-analytics, analytics-and-optimization, data-driven-strategy-shift, tools, google-analytics, reporting, regular-reports, data-visualization, insights-and-recommendations]

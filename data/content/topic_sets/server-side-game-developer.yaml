@@ -14,7 +14,7 @@ sets:
     nodes: [tcp, udp, tcp-vs-udp, ordered-vs-unordered, heavy-vs-lightweight, packet-vs-datagram, reliable-vs-unreliable, streaming-vs-broadcast, datagram, packet-structure, segment-structure, function, datagram-construction]
   - key: transport-mechanics
     title: Reliability, Flow Control and Congestion Control
-    title_th: กลไกความน่าเชื่อถือ Flow Control และ Congestion Control
+    title_th: กลไก Reliability, Flow Control และ Congestion Control
     review: {status: draft}
     display_order: 3
     nodes: [connection, resource-usage, data-transfer, max-segment-scaling, max-segment-size, window-scaling, timestamp, out-of-band-data, selective-ack., veto, reliable-transmission, congestion-control, flow-control, checksum, reliability, error-detection]
@@ -80,7 +80,7 @@ sets:
     nodes: [programming-techniques, design-patterns, tdd, dependency-injection, functional-programming, dump-analysis]
   - key: cloud-and-deployment
     title: Cloud Infrastructure and Containers
-    title_th: คลาวด์และการดีพลอยระบบ (AWS, Docker, Kubernetes)
+    title_th: คลาวด์และการ Deploy ระบบ (AWS, Docker, Kubernetes)
     review: {status: draft}
     display_order: 14
     nodes: [cloud, aws, azure, gcp, serverless, kubernetes, containerization, docker, docker-compose]

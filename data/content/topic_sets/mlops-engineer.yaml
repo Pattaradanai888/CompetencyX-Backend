@@ -44,7 +44,7 @@ sets:
     nodes: [cloud-computing, aws---azure---gcp, cloud-native-ml-services]
   - key: containerization
     title: Containerization
-    title_th: การใช้งาน Container (Docker, Kubernetes)
+    title_th: การใช้งานคอนเทนเนอร์ (Docker, Kubernetes)
     review: {status: draft}
     display_order: 8
     nodes: [containerization, docker, kubernetes]
@@ -56,19 +56,19 @@ sets:
     nodes: [ci-cd]
   - key: infrastructure-as-code
     title: Infrastructure as Code
-    title_th: การจัดการ Infrastructure เป็นโค้ด (Infrastructure as Code)
+    title_th: Infrastructure as Code
     review: {status: draft}
     display_order: 10
     nodes: [infrastructure-as-code]
   - key: workflow-orchestration
     title: Workflow orchestration
-    title_th: การ Orchestrate Workflow ด้วยเครื่องมืออย่าง Airflow
+    title_th: การทำ Workflow Orchestration (Airflow)
     review: {status: draft}
     display_order: 11
     nodes: [orchestration, airflow]
   - key: experiment-tracking
     title: Experiment tracking and model registry
-    title_th: การติดตามผลการทดลองและ Model Registry (เช่น MLflow)
+    title_th: การติดตามผลการทดลองและ Model Registry (MLflow)
     review: {status: draft}
     display_order: 12
     nodes: [experiment-tracking-and-model-registry]

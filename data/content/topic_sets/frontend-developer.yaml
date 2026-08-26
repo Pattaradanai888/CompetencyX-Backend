@@ -8,7 +8,7 @@ sets:
     nodes: [internet, 'how-does-the-internet-work?', 'what-is-http?', 'what-is-domain-name?', 'what-is-hosting?', 'dns-and-how-it-works?', 'browsers-and-how-they-work?']
   - key: html-and-accessibility
     title: HTML, Accessibility and SEO
-    title_th: HTML Semantic ฟอร์ม และ Accessibility
+    title_th: Semantic HTML, ฟอร์ม, Accessibility และพื้นฐาน SEO
     review: {status: draft}
     display_order: 2
     nodes: [html, writing-semantic-html, forms-and-validations, accessibility, seo-basics]
@@ -56,7 +56,7 @@ sets:
     nodes: [build-tools, module-bundlers, vite, esbuild, webpack, rollup, parcel, swc, linters-and-formatters, prettier, eslint]
   - key: frontend-testing
     title: Frontend testing
-    title_th: การทดสอบซอฟต์แวร์ฝั่ง Frontend (Vitest, Jest, Cypress, Playwright)
+    title_th: การทดสอบซอฟต์แวร์ฝั่ง Frontend (Vitest, Cypress, Playwright)
     review: {status: draft}
     display_order: 10
     nodes: [testing, vitest, cypress, playwright, jest]

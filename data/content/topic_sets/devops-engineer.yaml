@@ -26,7 +26,7 @@ sets:
     nodes: [version-control-systems, git, vcs-hosting, github, gitlab, bitbucket]
   - key: networking-and-protocols
     title: Networking and protocols
-    title_th: เครือข่ายและโปรโตคอล (DNS, HTTPS, SSH, SSL/TLS)
+    title_th: เครือข่ายและโปรโตคอล (DNS, SSH, TLS)
     review: {status: draft}
     display_order: 5
     nodes: [networking-and-protocols, osi-model, dns, http, https, 'ssl---tls', ssh, 'ftp---sftp']
@@ -62,13 +62,13 @@ sets:
     nodes: [cloud-providers, aws, azure, google-cloud, alibaba-cloud, serverless, aws-lambda, azure-functions, gcp-functions]
   - key: infrastructure-provisioning
     title: Infrastructure provisioning
-    title_th: การจัดเตรียมโครงสร้างพื้นฐานด้วยโค้ด (Terraform, Pulumi)
+    title_th: Infrastructure as Code (Terraform, Pulumi, CloudFormation)
     review: {status: draft}
     display_order: 11
     nodes: [provisioning, terraform, pulumi, cloudformation, aws-cdk]
   - key: configuration-management
     title: Configuration management
-    title_th: การจัดการคอนฟิกอัตโนมัติ (Ansible, Chef, Puppet)
+    title_th: Configuration Management (Ansible, Chef, Puppet)
     review: {status: draft}
     display_order: 12
     nodes: [configuration-management, ansible, chef, puppet]
@@ -80,7 +80,7 @@ sets:
     nodes: ['ci---cd-tools', jenkins, github-actions, gitlab-ci, circle-ci, drone, travis-ci, teamcity, gitops, argocd, fluxcd]
   - key: secret-management
     title: Secret management
-    title_th: การจัดการความลับและข้อมูลอ่อนไหว (Vault, Sealed Secrets)
+    title_th: การจัดการ Secret และข้อมูลอ่อนไหว (Vault, Sealed Secrets)
     review: {status: draft}
     display_order: 14
     nodes: [secret-management, vault, sealed-secrets, sops, cloud-specific-tools]

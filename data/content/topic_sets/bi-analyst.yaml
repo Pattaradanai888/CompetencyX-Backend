@@ -8,7 +8,7 @@ sets:
     nodes: [introduction, 'what-is-bi?', 'why-bi-matters?', bi-analyst-vs-other-roles, responsibilities, skills, types-of-bi-operations, operational-bi, tactical-bi, strategic-bi]
   - key: metrics-and-business-functions
     title: Metrics, KPIs, and business functions
-    title_th: Metrics, KPI และหน้าที่สำคัญของธุรกิจ
+    title_th: Metrics, KPI และสายงานหลักในธุรกิจ (Finance, Marketing, HR)
     review: {status: draft}
     display_order: 2
     nodes: [metrics-and-kpis, key-business-functions, finance, marketing, operations, hr, stakeholder-identification]
@@ -44,7 +44,7 @@ sets:
     nodes: [sql, sql-fundamentals, basic-queries, advanced-queries, window-functions, performance, popular-databases, postgresql, oracle, mysql, sqlite]
   - key: analytics-tools
     title: Analytics tools (Excel, Python, R)
-    title_th: เครื่องมือวิเคราะห์ข้อมูล (Excel, Python, R, Pandas)
+    title_th: เครื่องมือวิเคราะห์ข้อมูล (Excel, Python, R)
     review: {status: draft}
     display_order: 8
     nodes: [programming-languages, python, r, pandas, dplyr, excel]
@@ -62,13 +62,13 @@ sets:
     nodes: [data-architectures, data-lake, data-warehouse, data-mart, cloud-bi-ecosystem, cloud-computing-basics, cloud-data-warehouses, 'providers:-aws,-gcp,-azure', data-lineage]
   - key: data-modeling-for-bi
     title: Dimensional data modeling for BI
-    title_th: การออกแบบ Data Model เพื่องาน BI (Star Schema, Fact และ Dimension Tables)
+    title_th: การออกแบบ Data Model เพื่องาน BI (Star Schema, Fact Table, Dimension Table)
     review: {status: draft}
     display_order: 11
     nodes: [data-modeling-for-bi, star-vs-snowflake-schema, normalization-vs-denormalization, fact-vs-dimension-tables, calculated-fields-and-measures]
   - key: bi-platforms
     title: BI platforms (Power BI, Tableau, Looker)
-    title_th: แพลตฟอร์ม BI (Power BI, Tableau, Looker, Qlik)
+    title_th: แพลตฟอร์ม BI (Power BI, Tableau, Looker)
     review: {status: draft}
     display_order: 12
     nodes: [bi-platforms, power-bi, qlik, tableau, looker]

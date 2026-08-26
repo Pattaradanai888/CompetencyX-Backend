@@ -32,13 +32,13 @@ sets:
     nodes: [exploratory-data-analysis]
   - key: machine-learning
     title: Machine learning
-    title_th: การเรียนรู้ของเครื่อง (Machine Learning)
+    title_th: Machine Learning
     review: {status: draft}
     display_order: 6
     nodes: [machine-learning]
   - key: deep-learning
     title: Deep learning
-    title_th: การเรียนรู้เชิงลึก (Deep Learning)
+    title_th: Deep Learning
     review: {status: draft}
     display_order: 7
     nodes: [deep-learning]

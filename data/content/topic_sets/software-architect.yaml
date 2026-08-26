@@ -20,7 +20,7 @@ sets:
     nodes: [important-skills-to-learn, communication, documentation, how-to-code, uml]
   - key: programming-languages
     title: Programming languages
-    title_th: ภาษาโปรแกรมที่สถาปนิกซอฟต์แวร์ควรรู้
+    title_th: ภาษาโปรแกรมสำหรับงานสถาปัตยกรรมซอฟต์แวร์
     review: {status: draft}
     display_order: 4
     nodes: [technical-skills, programming-languages, 'java---kotlin---scala', python, ruby, go, 'javascript---typescript', '.net-framework-based']
@@ -38,7 +38,7 @@ sets:
     nodes: [patterns-and-design-principles, design-and-architecture, solid, ddd, tdd, 'mvc,-mvp,-mvvm']
   - key: distributed-data-patterns
     title: Distributed data patterns
-    title_th: แพตเทิร์นข้อมูลในระบบกระจาย (CQRS, CAP Theorem)
+    title_th: แพตเทิร์นข้อมูลในระบบแบบกระจาย (CQRS, CAP Theorem)
     review: {status: draft}
     display_order: 7
     nodes: ['cqrs,-eventual-consistency', actors, 'acid,-cap-theorem']
@@ -74,13 +74,13 @@ sets:
     nodes: [apache-spark, hadoop, 'hadoop,-spark,-mapreduce']
   - key: web-and-mobile
     title: Web and mobile architecture
-    title_th: สถาปัตยกรรมฝั่งเว็บและโมบาย (SPA, SSR, Microfrontends)
+    title_th: สถาปัตยกรรมฝั่งเว็บและมือถือ (SPA, SSR, Microfrontends)
     review: {status: draft}
     display_order: 13
     nodes: ['web,-mobile', 'react,-vue,-angular', 'spa,-ssr,-ssg', microfrontends, w3c-and-whatwg]
   - key: operations-knowledge
     title: Operations knowledge
-    title_th: ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD, IaC)
+    title_th: ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD)
     review: {status: draft}
     display_order: 14
     nodes: [operations-knowledge, infrastructure-as-code, cloud-providers, serverless-concepts, 'linux---unix', service-mesh, 'ci---cd', containers, cloud-design-patterns]
@@ -98,7 +98,7 @@ sets:
     nodes: [tools, git, github, slack, trello, atlassian-tools]
   - key: architecture-frameworks
     title: Architecture frameworks
-    title_th: กรอบงานสถาปัตยกรรมองค์กร (TOGAF, IAF, BABOK)
+    title_th: เฟรมเวิร์กสถาปัตยกรรมองค์กร (TOGAF, IAF, BABOK)
     review: {status: draft}
     display_order: 17
     nodes: [frameworks, togaf, iaf, babok, 'emc-dms']

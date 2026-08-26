@@ -8,7 +8,7 @@ sets:
     nodes: [game-mathematics, linear-algebra, matrix, linear-transformation, affine-space, affine-transformation, vector, orientation, quaternion, euler-angle]
   - key: curves-and-animation
     title: Curves and Animation
-    title_th: เส้นโค้งและอนิเมชัน (Spline, Bezier)
+    title_th: เส้นโค้งและแอนิเมชัน (Spline, Bezier)
     review: {status: draft}
     display_order: 2
     nodes: [curve, spline, hermite, bezier, catmull-rom, computer-animation]
@@ -92,7 +92,7 @@ sets:
     nodes: [game-ai, decision-making, decision-tree, state-machine, behavior-tree, fuzzy-logic, markov-system, goal-oriented-behavior, movement, board-game, minimax, ab-pruning, mcts]
   - key: game-ai-learning
     title: Game AI learning
-    title_th: การเรียนรู้ของ AI ในเกม (Machine Learning, Reinforcement Learning)
+    title_th: Machine Learning และ Reinforcement Learning ในเกม
     review: {status: draft}
     display_order: 16
     nodes: [decision-learning, learning, naive-bayes-classifier, decision-tree-learning, deep-learning, artificial-neural-network, reinforcements-learning]

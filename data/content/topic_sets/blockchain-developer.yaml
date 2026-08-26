@@ -68,7 +68,7 @@ sets:
     nodes: [dapps, architecture, testing, decentralized-storage, storage]
   - key: web-development-for-web3
     title: Web development for Web3 (JavaScript, React, ethers.js)
-    title_th: การพัฒนาเว็บสำหรับ Web3 (JavaScript, React, ethers.js, web3.js)
+    title_th: การพัฒนาเว็บสำหรับ Web3 (React, ethers.js, web3.js)
     review: {status: draft}
     display_order: 12
     nodes: [supporting-languages, javascript, python, go, frontend-frameworks, react, angular, vue, client-libraries, ethers.js, web3.js, moralis]

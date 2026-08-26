@@ -80,7 +80,7 @@ sets:
     nodes: [budget-planning, resource-forecasting, cost-optimization, vendor-management, vendor-relationships, technical-partnerships, technology-partnerships, external-collaboration]
   - key: culture-and-inclusion
     title: Team Culture and Inclusion
-    title_th: วัฒนธรรมทีมและการสร้างความครอบคลุม (Inclusion)
+    title_th: วัฒนธรรมทีมและการโอบรับความหลากหลาย (Inclusion)
     review: {status: draft}
     display_order: 14
     nodes: [company-culture, defining-and-enforcing-values, team-traditions-and-rituals, recognition-programs, social-connections, inclusive-environment-creation, bias-recognition---mitigation]
@@ -98,7 +98,7 @@ sets:
     nodes: [technical-documentation, architecture-documentation, process-documentation, decision-records]
   - key: incident-and-crisis
     title: Incident and Crisis Management
-    title_th: การจัดการเหตุการณ์และวิกฤต (Incident Management)
+    title_th: การรับมือ Incident และการจัดการวิกฤต (Incident Management)
     review: {status: draft}
     display_order: 17
     nodes: [incident-management, emergency-protocols, war-room-management, production-issues-management, post-incident-analysis, service-recovery]

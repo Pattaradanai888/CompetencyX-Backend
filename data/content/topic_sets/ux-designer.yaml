@@ -86,7 +86,7 @@ sets:
     nodes: [use-peer-comparisons, deploy-peer-comparisons, use-competition, social-sharing, make-commitment-to-friends, remind-of-prior-commitment-to-act, elicit-implementation-intentions]
   - key: incentives-and-rewards
     title: Incentives, rewards, and loss aversion
-    title_th: สิ่งจูงใจ รางวัล และการหลีกเลี่ยงการสูญเสีย
+    title_th: สิ่งจูงใจ รางวัล และ Loss Aversion
     review: {status: draft}
     display_order: 15
     nodes: [leverage-loss-aversion, make-reward-scarce, avoid-direct-payments, gamification, behavior-change-games]

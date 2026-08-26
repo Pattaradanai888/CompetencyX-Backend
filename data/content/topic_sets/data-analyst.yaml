@@ -50,7 +50,7 @@ sets:
     nodes: [descriptive-analysis, mean, median, mode, central-tendency, range, variance, standard-deviation, dispersion]
   - key: distributions
     title: Distributions and their shape
-    title_th: การแจกแจงของข้อมูลและรูปร่างการแจกแจง
+    title_th: การแจกแจงของข้อมูล (Skewness, Kurtosis)
     review: {status: draft}
     display_order: 9
     nodes: [distribution-space, skewness, kurtosis, visualizing-distributions]
@@ -92,7 +92,7 @@ sets:
     nodes: [decision-trees, naive-byes, k-means-clustering, knn, logistic-regression]
   - key: deep-learning
     title: Deep learning
-    title_th: การเรียนรู้เชิงลึก (Deep Learning, Neural Networks)
+    title_th: Deep Learning และ Neural Networks
     review: {status: draft}
     display_order: 16
     nodes: ['deep-learning-(optional)', neural-networks, cnns, rnn, tensorflow, pytorch, image-recognition, natural-language-processing]

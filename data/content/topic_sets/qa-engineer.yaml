@@ -80,7 +80,7 @@ sets:
     nodes: [security-testing, authentication---authorization, vulnerability-scanning, secrets-management, owasp-10, attack-vectors]
   - key: accessibility-testing
     title: Accessibility Testing
-    title_th: การทดสอบการเข้าถึงได้สำหรับทุกคน (Accessibility)
+    title_th: การทดสอบ Accessibility
     review: {status: draft}
     display_order: 14
     nodes: [accessibility-testing, accessibility-tests, wave, axe]

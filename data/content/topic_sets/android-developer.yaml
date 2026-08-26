@@ -44,7 +44,7 @@ sets:
     nodes: [interface-and-navigation, navigation-components, tasks-and-backstack, app-shortcuts]
   - key: architecture-patterns
     title: App architecture patterns (MVC, MVP, MVVM, MVI)
-    title_th: แพตเทิร์นสถาปัตยกรรมแอป Android (MVC, MVP, MVVM, MVI)
+    title_th: แพตเทิร์นสถาปัตยกรรมแอป Android (MVC, MVVM, MVI)
     review: {status: draft}
     display_order: 8
     nodes: [design-and-architecture, mvc, mvp, mvvm, mvi]
@@ -98,7 +98,7 @@ sets:
     nodes: [linting, ktlint, detekt, debugging, timber, leak-canary, chucker, jetpack-benchmark]
   - key: app-distribution
     title: App release and distribution
-    title_th: การเผยแพร่และ Distribution แอป Android (Google Play, Signed APK)
+    title_th: การเผยแพร่แอป Android (Google Play, Signed APK)
     review: {status: draft}
     display_order: 17
     nodes: [distribution, google-playstore, firebase-distribution, signed-apk]
