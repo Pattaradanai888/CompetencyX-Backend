@@ -8,7 +8,7 @@ sets:
     nodes: [human-decision-making, behavioral-science, behavioral-economics, nudge-theory, persuasive-technology, dual-process-theory, spectrum-of-thinking-interventions]
   - key: behavior-models
     title: Behavior and habit models
-    title_th: โมเดลพฤติกรรมและการสร้างนิสัย (Fogg, Hook Model)
+    title_th: โมเดลพฤติกรรมและการสร้างนิสัย (Fogg Behavior Model, Hook Model)
     review: {status: draft}
     display_order: 2
     nodes: [behavior-design, 'bj-fogg''s-behavior-model', 'bj-fogg''s-behavior-grid', create-action-funnel, 'nir-eyal''s-hook-model', cue-routine-reward-model]
@@ -38,7 +38,7 @@ sets:
     nodes: [customer-experience-map-by-mel-edwards, simple-flowchart, 'event-driven-process-chain-model-(epc)', 'business-process-model-and-notation-(bpmn)']
   - key: conceptual-design
     title: Conceptual design
-    title_th: การออกแบบเชิงแนวคิดและกลยุทธ์เปลี่ยนพฤติกรรม
+    title_th: การออกแบบเชิงแนวคิดและกลยุทธ์การเปลี่ยนพฤติกรรม
     review: {status: draft}
     display_order: 7
     nodes: [conceptual-design, behavior-change-strategies, support-conscious-action, educate-and-encourage-user, help-user-think-about-their-action]
@@ -56,7 +56,7 @@ sets:
     nodes: [cheating, defaulting, making-it-incidental, automate-the-act-of-repetition, default-everything, 'lessen-the-burden-of-action---info']
   - key: prototyping
     title: Prototyping and design tools
-    title_th: การทำต้นแบบและเครื่องมือออกแบบ (Figma, Sketch)
+    title_th: การทำ Prototype และเครื่องมือออกแบบ (Figma, Sketch, Balsamiq)
     review: {status: draft}
     display_order: 10
     nodes: [prototyping, good-layout-rules, figma, sketch, balsamiq]

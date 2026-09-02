@@ -20,7 +20,7 @@ sets:
     nodes: [css, making-layouts, responsive-design]
   - key: css-architecture
     title: CSS architecture and preprocessors
-    title_th: สถาปัตยกรรม CSS และ Preprocessors (Sass, Tailwind)
+    title_th: การจัดโครงสร้าง CSS, Preprocessor และ Tailwind (BEM, Sass, PostCSS)
     review: {status: draft}
     display_order: 4
     nodes: [writing-css, css-architecture, bem, css-preprocessors, sass, postcss, tailwind]
@@ -38,7 +38,7 @@ sets:
     nodes: [version-control-systems, git, vcs-hosting, github, gitlab, bitbucket]
   - key: package-managers
     title: Package managers
-    title_th: การจัดการแพ็กเกจ (npm, yarn, pnpm)
+    title_th: การจัดการแพ็กเกจ (npm, Yarn, pnpm)
     review: {status: draft}
     display_order: 7
     nodes: [package-managers, npm, yarn, pnpm]
@@ -50,7 +50,7 @@ sets:
     nodes: [angular, react, vue.js, svelte, solid-js, qwik]
   - key: build-tools-and-quality
     title: Build tools, bundlers and code quality
-    title_th: เครื่องมือ Build และคุณภาพโค้ด (Bundler, ESLint, Prettier)
+    title_th: เครื่องมือ Build, Bundler และคุณภาพโค้ด (Vite, Webpack, ESLint)
     review: {status: draft}
     display_order: 9
     nodes: [build-tools, module-bundlers, vite, esbuild, webpack, rollup, parcel, swc, linters-and-formatters, prettier, eslint]
@@ -62,13 +62,13 @@ sets:
     nodes: [testing, vitest, cypress, playwright, jest]
   - key: type-checking
     title: Type checking with TypeScript
-    title_th: การตรวจสอบชนิดข้อมูลด้วย TypeScript
+    title_th: การเขียน TypeScript และการทำ Type Checking
     review: {status: draft}
     display_order: 11
     nodes: [type-checkers, typescript]
   - key: web-security-and-auth
     title: Web security and authentication
-    title_th: ความปลอดภัยของเว็บแอปพลิเคชันและการยืนยันตัวตน
+    title_th: ความปลอดภัยของเว็บแอปพลิเคชันและการยืนยันตัวตน (OWASP, CORS, HTTPS)
     review: {status: draft}
     display_order: 12
     nodes: [web-security-basics, owasp-security-risks, cors, https, content-security-policy, authentication-strategies]
@@ -86,7 +86,7 @@ sets:
     nodes: [graphql, apollo, relay-modern]
   - key: ssr-and-routing
     title: Server-side rendering and routing
-    title_th: การเรนเดอร์ฝั่งเซิร์ฟเวอร์ (SSR) และ Routing
+    title_th: การทำ SSR และ Routing (Next.js, Nuxt, React Router)
     review: {status: draft}
     display_order: 15
     nodes: [ssr, react-router, next.js, nuxt.js, svelte-kit]
@@ -110,7 +110,7 @@ sets:
     nodes: [prpl-pattern, rail-model, performance-metrics, using-lighthouse, using-devtools]
   - key: real-time-communication
     title: Real-time communication
-    title_th: การสื่อสารแบบเรียลไทม์ (WebSockets, SSE)
+    title_th: การสื่อสารแบบเรียลไทม์ (WebSocket, SSE)
     review: {status: draft}
     display_order: 19
     nodes: [web-sockets, server-sent-events]

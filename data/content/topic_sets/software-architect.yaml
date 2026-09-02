@@ -92,7 +92,7 @@ sets:
     nodes: [networks, 'tcp-ip-model', osi, 'http,-https', proxies, firewalls]
   - key: collaboration-tools
     title: Collaboration tools
-    title_th: เครื่องมือทำงานร่วมกัน (Git, Jira, Slack)
+    title_th: เครื่องมือสำหรับทำงานร่วมกันในทีม (Git, Jira, Slack)
     review: {status: draft}
     display_order: 16
     nodes: [tools, git, github, slack, trello, atlassian-tools]

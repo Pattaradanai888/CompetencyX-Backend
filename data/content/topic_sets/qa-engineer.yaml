@@ -8,7 +8,7 @@ sets:
     nodes: ['what-is-quality-assurance?', qa-mindset, testing-approaches, test-oracles, test-prioritization]
   - key: web-technology-fundamentals
     title: Web Technology Fundamentals
-    title_th: พื้นฐานเว็บเทคโนโลยีสำหรับงาน QA (HTML, CSS, JavaScript)
+    title_th: พื้นฐานเทคโนโลยีเว็บสำหรับงาน QA (HTML, CSS, JavaScript)
     review: {status: draft}
     display_order: 2
     nodes: ['html,-css,-javascript', browser---dev-tools, ajax, caching, 'swas,-pwas,-jamstack', csr-vs-ssr, responsive-vs-adaptive, chrome-devtools]
@@ -20,7 +20,7 @@ sets:
     nodes: [testing-techniques, white-box-testing, gray-box-testing, black-box-testing, unit-testing, integration-testing]
   - key: functional-testing
     title: Functional Testing Types
-    title_th: การทดสอบเชิงฟังก์ชัน (Smoke, Regression, UAT)
+    title_th: การทดสอบ Functional (Smoke, Regression, UAT)
     review: {status: draft}
     display_order: 4
     nodes: [functional-testing, smoke-testing, sanity-testing, regression-testing, exploratory-testing, uat]
@@ -50,7 +50,7 @@ sets:
     nodes: [frontend-automation, selenium, selenium-ide, webdriver.io, ghost-inspector, bug-magnet, qa-wolf, cypress, playwright, puppeteer, jasmine, jest, nightwatch, robot]
   - key: api-backend-test-automation
     title: API and Backend Test Automation
-    title_th: การทดสอบ API และแบ็กเอนด์แบบอัตโนมัติ (Postman, REST Assured)
+    title_th: การทำ Test Automation สำหรับ API และ Backend (Postman, REST Assured)
     review: {status: draft}
     display_order: 9
     nodes: [backend-automation, soap-ui, karateframework, postman---newman, rest-assured, junit]
@@ -68,7 +68,7 @@ sets:
     nodes: [headless-testing, zombie.js, headless-chrome, headless-fox, html-unit]
   - key: performance-testing-tools
     title: Load and Performance Testing Tools
-    title_th: เครื่องมือทดสอบ Load และ Performance (JMeter, K6)
+    title_th: เครื่องมือทดสอบ Load และ Performance (JMeter, k6)
     review: {status: draft}
     display_order: 12
     nodes: [load-and-performance-testing, lighthouse, webpage-test, gatling, k6, artillery, vegeta, jmeter, locust]

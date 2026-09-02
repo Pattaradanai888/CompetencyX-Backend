@@ -32,7 +32,7 @@ sets:
     nodes: [xcode, installing, preferences, new-project, interface-overview, toolbar, navigators, editors, project-files, groups]
   - key: debugging-and-profiling
     title: Debugging and profiling
-    title_th: การดีบักและวิเคราะห์ประสิทธิภาพ (Instruments)
+    title_th: การดีบักและทำ Profiling (Xcode Debugger, Instruments)
     review: {status: draft}
     display_order: 6
     nodes: [debugging-techniques, xcode-debugger, breakpoints, debug-navigator, stepping, profiling-instruments]
@@ -50,7 +50,7 @@ sets:
     nodes: [swiftui, declarative-syntax, building-interfaces, views-and-modifiers, state-management, data-binding]
   - key: navigation
     title: Navigation and view transitions
-    title_th: การนำทางระหว่างหน้าจอและการเปลี่ยนหน้า
+    title_th: การนำทางระหว่างหน้าจอ (UINavigationController, Segue, NavigationStack)
     review: {status: draft}
     display_order: 9
     nodes: [navigation, view-transitions, 'navigation-controllers,-segues', navigation-stacks, pushing-presenting, modals-and-navigation, navigation-view, navigationlink, 'presenting---dismissing-views']
@@ -80,19 +80,19 @@ sets:
     nodes: [delegate-pattern, implementing-delegates, callbacks, closures, understanding-and-using-closures, 'capturing-values-and-memory-mgmt.', callback-hell]
   - key: concurrency
     title: Concurrency and multithreading
-    title_th: การทำงานพร้อมกันและมัลติเธรด (GCD, async/await)
+    title_th: การเขียนโปรแกรม Concurrency และ Multithreading (GCD, async/await)
     review: {status: draft}
     display_order: 14
     nodes: [concurrency-and-multithreading, 'concurrency-(gcd,-async-await)', gcd, operation-queues, 'async---await', concurrency]
   - key: networking
     title: Networking
-    title_th: การเชื่อมต่อเครือข่ายและเรียกใช้ API (URLSession, REST)
+    title_th: การเชื่อมต่อเครือข่ายและเรียกใช้ API (URLSession, Alamofire, REST)
     review: {status: draft}
     display_order: 15
     nodes: [networking, 'http---https', urlsession, alamofire, rest, graphql, 'json---xml', parsing, serializing]
   - key: data-persistence
     title: Data persistence
-    title_th: การจัดเก็บข้อมูลในเครื่อง (Core Data, Keychain)
+    title_th: การจัดเก็บข้อมูลบนเครื่อง (Core Data, UserDefaults, Keychain)
     review: {status: draft}
     display_order: 16
     nodes: [data-persistence, core-data, user-defaults, keychain, file-system, sqlite]
@@ -116,7 +116,7 @@ sets:
     nodes: [code-quality-tools, swiftlint, swiftformat, tailor, unit-and-ui-testing, xctest, xcuitest, test-plan-and-coverage]
   - key: ci-cd-and-distribution
     title: Version control, CI/CD, and App Store distribution
-    title_th: ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store
+    title_th: ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store (Git, Fastlane, TestFlight)
     review: {status: draft}
     display_order: 20
     nodes: [version-control, git, github, 'ci---cd', jenkins, circleci, github-actions, gitlab, azure-devops, fastlane, testflight, app-store-distribution, 'app-store-optimization-(aso)']

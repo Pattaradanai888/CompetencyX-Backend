@@ -32,7 +32,7 @@ sets:
     nodes: [database-fundamentals, data-collection-considerations, data-normalization, data-modelling-techniques, star-vs-snowflake-schema, 'slowly-changing-dimension---scd']
   - key: database-concepts
     title: Core database concepts
-    title_th: แนวคิดหลักของฐานข้อมูล (SQL, Index, Transaction)
+    title_th: แนวคิดหลักของฐานข้อมูล (Index, Transaction, OLTP/OLAP)
     review: {status: draft}
     display_order: 6
     nodes: [indexing, transactions, cap-theorem, oltp-vs-olap, horizontal-vs-vertical-scaling]
@@ -50,7 +50,7 @@ sets:
     nodes: [nosql-databsases, document, mongodb, elasticsearch, cosmosdb, couchdb, column, cassandra, bigtable, hbase, graph, neo4j, neptune, key-value, redis, memcached, dynamodb]
   - key: data-warehousing
     title: Data warehousing
-    title_th: คลังข้อมูล (Data Warehouse, BigQuery, Snowflake)
+    title_th: Data Warehouse (BigQuery, Snowflake, Redshift)
     review: {status: draft}
     display_order: 9
     nodes: [data-warehouse, 'what-is-data-warehouse?', data-warehousing-architectures, data-mart, google-bigquery, snowflake, amazon-redshift]
@@ -86,7 +86,7 @@ sets:
     nodes: [cluster-computing-basics, what-is-cluster-computing, distributed-file-systems, job-scheduling, cluster-management-tools, apache-hadoop-yarn, yarn, hdfs, big-data-tools, apache-spark, mapreduce]
   - key: containers-and-orchestration
     title: Containers, orchestration, and CI/CD
-    title_th: คอนเทนเนอร์ การจัดการคอนเทนเนอร์ และ CI/CD (Docker, Kubernetes)
+    title_th: การใช้งานและจัดการคอนเทนเนอร์ และ CI/CD (Docker, Kubernetes)
     review: {status: draft}
     display_order: 15
     nodes: [containers-and-orchestration, docker, kubernetes, google-cloud-gke, aws-eks, 'ci-cd', github-actions, gitlab-ci, circle-ci, argocd]

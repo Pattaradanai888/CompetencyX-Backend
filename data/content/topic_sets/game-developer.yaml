@@ -14,13 +14,13 @@ sets:
     nodes: [curve, spline, hermite, bezier, catmull-rom, computer-animation]
   - key: game-programming-languages
     title: Game programming languages
-    title_th: ภาษาโปรแกรมสำหรับการพัฒนาเกม (C++, C#, Rust)
+    title_th: ภาษาสำหรับพัฒนาเกม (C++, C#, GDScript)
     review: {status: draft}
     display_order: 3
     nodes: [programming-languages, 'c-c++', 'c#', gdscript, rust, python]
   - key: graphics-fundamentals
     title: Computer Graphics Fundamentals
-    title_th: คอมพิวเตอร์กราฟิกพื้นฐาน (Graphics Pipeline, Rasterization)
+    title_th: คอมพิวเตอร์กราฟิกส์พื้นฐาน (Graphics Pipeline, Rasterization)
     review: {status: draft}
     display_order: 4
     nodes: [computer-graphics, graphics-pipeline, rasterization, ray-tracing, sampling, projection, perspective, orthogonal]
@@ -44,7 +44,7 @@ sets:
     nodes: [rendering-equation, reflection, specular, diffuse, mapping, texture, bump, parallax, horizon, translucency-and-transparency, conservation-of-energy, metallicity, microsurface-scattering]
   - key: color-and-tone
     title: Color and tone reproduction
-    title_th: สีและการแมปโทนสี (Color, Tone Reproduction)
+    title_th: สี การรับรู้ภาพ และ Tone Reproduction
     review: {status: draft}
     display_order: 8
     nodes: [color, visual-perception, tone-reproduction]
@@ -56,7 +56,7 @@ sets:
     nodes: [lighting-and-shadow, light, light-source, directional, point, spot, infinite, shadow, shadow-map, 2d, cube, cascaded, stencil-shadow]
   - key: visibility-and-culling
     title: Visibility and culling
-    title_th: การ Culling และการกำหนด Visibility (Occlusion, Frustum)
+    title_th: การทำ Culling และ Visibility (Frustum Culling, Occlusion Culling)
     review: {status: draft}
     display_order: 10
     nodes: [visibility-and-occlusion, occluder, culling, clipping, fog, frustum]
@@ -74,7 +74,7 @@ sets:
     nodes: [geometry, intersection, convexity, convex, convex-hull, convex-decomposition, bounding-volume, polygon, polyhedron]
   - key: game-physics
     title: Game physics and dynamics
-    title_th: ฟิสิกส์เกมและพลศาสตร์ (Game Physics)
+    title_th: ฟิสิกส์ในเกมและ Dynamics (Force, Friction, Joint)
     review: {status: draft}
     display_order: 13
     nodes: [game-physics, dynamics, force, acceleration, linear-velocity, angular-velocity, friction, restitution, buoyancy, center-of-mass, moment-of-inertia, joints]

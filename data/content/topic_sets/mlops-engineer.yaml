@@ -38,7 +38,7 @@ sets:
     nodes: [data-lakes-and-warehouses, kafka, spark, flink]
   - key: cloud-computing
     title: Cloud computing and managed ML services
-    title_th: การใช้งาน Cloud (AWS, Azure, GCP) และบริการ ML บนคลาวด์
+    title_th: การใช้งานคลาวด์และบริการ ML แบบ Managed (AWS, Azure, GCP)
     review: {status: draft}
     display_order: 7
     nodes: [cloud-computing, aws---azure---gcp, cloud-native-ml-services]
@@ -68,7 +68,7 @@ sets:
     nodes: [orchestration, airflow]
   - key: experiment-tracking
     title: Experiment tracking and model registry
-    title_th: การติดตามผลการทดลองและ Model Registry (MLflow)
+    title_th: การทำ Experiment Tracking และ Model Registry (MLflow)
     review: {status: draft}
     display_order: 12
     nodes: [experiment-tracking-and-model-registry]

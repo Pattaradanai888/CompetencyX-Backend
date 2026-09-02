@@ -62,13 +62,13 @@ sets:
     nodes: [user-testing, remote-user-testing, usability-testing, feedback-loops, minimum-viable-product-(mvp)]
   - key: product-requirements
     title: Product Requirements and PRDs
-    title_th: การเขียนความต้องการของผลิตภัณฑ์ (PRD, User Stories)
+    title_th: การเขียนเอกสาร Product Requirements (PRD, User Story)
     review: {status: draft}
     display_order: 11
     nodes: [product-requirements, writing-prds, user-stories, job-stories]
   - key: product-roadmapping
     title: Product Roadmapping
-    title_th: การวางแผน Product Roadmap (Notion, Aha)
+    title_th: การวางแผน Product Roadmap (Notion, Aha!, Productboard)
     review: {status: draft}
     display_order: 12
     nodes: [product-roadmap, creating-a-roadmap, continuous-roadmapping, outcome-based-roadmaps, communicating-the-roadmap, roadmapping-tools, notion, aha, product-board]
@@ -98,7 +98,7 @@ sets:
     nodes: [growth-hacking, growth-strategies, scaling-products, platform-thinking, internationalization]
   - key: product-metrics-and-analytics
     title: Product Metrics, Analytics and Data-Driven Decisions
-    title_th: ตัวชี้วัดผลิตภัณฑ์และการตัดสินใจด้วยข้อมูล (Metrics, A/B Testing, AI)
+    title_th: Product Metrics, Analytics และการตัดสินใจด้วยข้อมูล (Amplitude, Heap, A/B Testing)
     review: {status: draft}
     display_order: 17
     nodes: [key-product-metrics, dau-(daily-active-users), mau-(monthly-active-users), conversion-rate, retention-rate, churn-rate, ltv-(lifetime-value), cac-(customer-acquisition-cost), north-star-metric, data-driven-decision-making, a-b-testing, cohort-analysis, analytics-tools, amplitude, heap, looker, advanced-analysis, predictive-analytics, ml-in-product-mgmt., ai-in-product-mgmt.]
@@ -116,7 +116,7 @@ sets:
     nodes: [identifying-risks, risk-register, risk-identification-techniques, risk-assessment, qualitative-risk-assessment, quantitative-risk-assessment, mitigation-strategies, risk-audits, risk-mitigation, contingency-planning, monitoring-and-controlling-risks, risk-monitoring-tools]
   - key: leadership-and-influence
     title: Leadership and Working with Engineering Teams
-    title_th: ภาวะผู้นำและการทำงานร่วมกับทีมวิศวกรรม
+    title_th: ภาวะผู้นำและการทำงานร่วมกับทีม Engineering
     review: {status: draft}
     display_order: 20
     nodes: [leadership-and-influence, building-and-leading-teams, influencing-without-authority, emotional-intelligence, working-with-engineering-teams]

@@ -2,7 +2,7 @@ role_slug: bi-analyst
 sets:
   - key: bi-foundations
     title: Business Intelligence foundations and the BI analyst role
-    title_th: พื้นฐาน Business Intelligence และบทบาทนักวิเคราะห์ BI
+    title_th: พื้นฐาน Business Intelligence และบทบาทของ BI Analyst
     review: {status: draft}
     display_order: 1
     nodes: [introduction, 'what-is-bi?', 'why-bi-matters?', bi-analyst-vs-other-roles, responsibilities, skills, types-of-bi-operations, operational-bi, tactical-bi, strategic-bi]
@@ -38,7 +38,7 @@ sets:
     nodes: [inferential-statistics, confidence-intervals, statistical-tests, p-value, types-of-errors, hypothesis-testing, correlation-analysis, correlation-vs-causation, regression-analysis, linear-regression, beyond-linear-regression]
   - key: sql-and-databases
     title: SQL and relational databases
-    title_th: SQL และฐานข้อมูลเชิงสัมพันธ์ (Relational Databases)
+    title_th: SQL และฐานข้อมูลเชิงสัมพันธ์ (PostgreSQL, MySQL, Oracle)
     review: {status: draft}
     display_order: 7
     nodes: [sql, sql-fundamentals, basic-queries, advanced-queries, window-functions, performance, popular-databases, postgresql, oracle, mysql, sqlite]
@@ -56,7 +56,7 @@ sets:
     nodes: [data-cleaning, duplicates, missing-values, outliers, standardisation, data-transformation-techniques, data-quality, etl-basics, etl-tools, airflow, dbt]
   - key: data-warehousing-and-cloud
     title: Data warehousing and cloud data platforms
-    title_th: Data Warehouse และแพลตฟอร์มข้อมูลบน Cloud (AWS, GCP, Azure)
+    title_th: Data Warehouse และแพลตฟอร์มข้อมูลบนคลาวด์ (AWS, GCP, Azure)
     review: {status: draft}
     display_order: 10
     nodes: [data-architectures, data-lake, data-warehouse, data-mart, cloud-bi-ecosystem, cloud-computing-basics, cloud-data-warehouses, 'providers:-aws,-gcp,-azure', data-lineage]

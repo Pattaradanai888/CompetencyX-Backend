@@ -1,6 +1,6 @@
 # Assessable Topic Set review — Canonical Thai wording and grouping
 
-**Reviewed:** 2026-08-26, against all 26 files in `data/content/topic_sets/` (459 sets; 456 after #16). A second full pass on 2026-09-02 is recorded in §7.
+**Reviewed:** 2026-08-26, against all 26 files in `data/content/topic_sets/` (459 sets; 456 after #16). A second full pass on 2026-09-02 is recorded in §7, and a six-role review panel the same day in §8.
 
 **Status: triage, not approval.** `CONTEXT.md` makes the Canonical Thai wording the
 authoritative definition of what an item means, and issue #7 states that the final review
@@ -400,3 +400,128 @@ Why, grouped:
 Flip `review.status` to `reviewed` per set, or per file, after reading. Nothing in this
 document, and nothing an agent runs, does that. Once every set is reviewed,
 `validate_topic_set_catalog --strict` passes and issue #7 can close.
+
+---
+
+## 8. Role-based review panel — 2026-09-02, six reviewers in parallel
+
+**Applied:** 2026-09-02, on top of §7. Six agents each took a role and read only the files in
+that role's domain, against ADR-0004 decision 3, §6.2 and §7: a security practitioner
+(cyber, devsecops, plus the security sets of six other files), a data/ML practitioner (7
+files), a backend/infra practitioner (7 files), a client-side developer (frontend, android,
+ios, game), a product/people/content lead (PM, EM, DevRel, technical writer, UX, QA), and a
+Thai copy editor who read all 456 titles for spelling, grammar and spacing only. Every set is
+still `review: {status: draft}`; this panel prepares the approval, it is not the approval.
+
+Raw findings: 82 (8 · 15 · 18 · 12 · 13 · 16), with overlaps where two reviewers flagged the
+same set. The copy editor confirmed the transliteration spelling of every suspect word
+(แอปพลิเคชัน, เฟรมเวิร์ก, คอนเทนเนอร์, อินเทอร์เฟซ, แพตเทิร์น, เวอร์ชัน …), ไม้ยมก spacing and
+Thai/English spacing across all 26 files.
+
+### 8.1 Applied — 72 sets
+
+Reasons, in the order they recur: a gloss that re-translated the Thai instead of naming the
+tools the nodes list (backup, SQL, SSR, physics); a gloss item that is a category, not a
+name (Bundler, IDE, AI Code Editors, Top/Mid/Bottom); a product name misspelt (Aha!, k6,
+Argo CD, WebSocket, Yarn); Thai whose meaning drifted (เพิ่มเติม for *advanced*, ด้วยตัวเอง
+clashing with the question's own ได้เอง, อื่น ๆ with no referent, bare Oracle reading as the
+database, ทีมวิศวกรรม reading as a civil-engineering department); a calque nobody says
+(โมเดลข้อมูลลำดับ, การเข้าถึงข้อมูลพร้อมกัน, ชนิดข้อมูล, การจัดการกุญแจ, วงจรชีวิต for Android
+Lifecycle); two glosses in one title; and the one settled rendering that a set had missed
+(การเฝ้าระวัง for monitoring, แบ็กเอนด์ where the catalog writes Backend, คลาวด์ where it
+writes คลาวด์).
+
+| File · set | Before | After |
+| --- | --- | --- |
+| cyber-security-engineer-analyst · `security-operations-practices` | การปฏิบัติงานด้านความปลอดภัย (Threat Hunting, Forensics) | งาน Security Operations (Threat Hunting, Vulnerability Management, Pentest) |
+| devsecops-engineer · `applied-cryptography` | การเข้ารหัสลับและการจัดการกุญแจ (Encryption, Hashing, PKI) | การเข้ารหัสลับและ Key Management (Hashing, KMS, PKI) |
+| devsecops-engineer · `governance-risk-compliance` | การกำกับดูแล ความเสี่ยง และการปฏิบัติตามมาตรฐาน (GRC: SOC 2, ISO 27001, NIST) | การกำกับดูแล ความเสี่ยง และ Compliance (SOC 2, ISO 27001, NIST) |
+| cyber-security-engineer-analyst · `network-devices-and-topologies` | อุปกรณ์เครือข่ายและรูปแบบการเชื่อมต่อ (Router, VLAN, VPN) | อุปกรณ์เครือข่ายและ Network Topology (Router, VLAN, VPN) |
+| devsecops-engineer · `supply-chain-security` | ความปลอดภัยของ Supply Chain และ Dependency | ความปลอดภัยของ Software Supply Chain และ Dependency (SBOM) |
+| cyber-security-engineer-analyst · `security-tooling` | แพลตฟอร์มความปลอดภัยและแหล่งข้อมูล Log (SIEM, SOAR, Kali Linux) | แพลตฟอร์มด้านความปลอดภัยและ Log Source (SIEM, SOAR, Kali Linux) |
+| cyber-security-engineer-analyst · `cloud-security` | ความรู้ด้านคลาวด์และความปลอดภัยบนคลาวด์ (SaaS, IaaS, AWS) | ทักษะด้านคลาวด์และความปลอดภัยบนคลาวด์ (AWS, Azure, GCP) |
+| cyber-security-engineer-analyst · `command-line-and-analysis-tools` | เครื่องมือ Command Line และการตรวจสอบแก้ปัญหาเครือข่าย (grep, nmap, tcpdump) | เครื่องมือ Command Line และการตรวจสอบและแก้ปัญหาเครือข่าย (grep, nmap, tcpdump) |
+| cyber-security-engineer-analyst · `network-attacks` | การโจมตีเครือข่าย, Credential และเครือข่ายไร้สาย (MITM, DDoS, Evil Twin) | การโจมตีเครือข่าย เครือข่ายไร้สาย และ Credential (MITM, DDoS, Evil Twin) |
+| data-engineer · `data-warehousing` | คลังข้อมูล (Data Warehouse, BigQuery, Snowflake) | Data Warehouse (BigQuery, Snowflake, Redshift) |
+| machine-learning-engineer · `deep-learning-architectures` | สถาปัตยกรรม Deep Learning เพิ่มเติม (GANs, Autoencoders) | สถาปัตยกรรม Deep Learning ขั้นสูง (GAN, Autoencoder) |
+| ai-engineer · `open-source-and-local-models` | โมเดล Open Source และการรันโมเดลด้วยตัวเอง (Ollama) | โมเดล Open Source และการรันโมเดลแบบ Local (Ollama) |
+| data-engineer · `database-concepts` | แนวคิดหลักของฐานข้อมูล (SQL, Index, Transaction) | แนวคิดหลักของฐานข้อมูล (Index, Transaction, OLTP/OLAP) |
+| bi-analyst · `sql-and-databases` | SQL และฐานข้อมูลเชิงสัมพันธ์ (Relational Databases) | SQL และฐานข้อมูลเชิงสัมพันธ์ (PostgreSQL, MySQL, Oracle) |
+| bi-analyst · `bi-foundations` | พื้นฐาน Business Intelligence และบทบาทนักวิเคราะห์ BI | พื้นฐาน Business Intelligence และบทบาทของ BI Analyst |
+| machine-learning-engineer · `sequence-models-and-transformers` | โมเดลข้อมูลลำดับและ Transformers (RNN, LSTM, Attention) | Sequence Models และ Transformers (RNN, LSTM, Attention) |
+| machine-learning-engineer · `model-evaluation-and-validation` | การประเมินผลและ Validation โมเดล (Metrics, Cross-Validation) | การประเมินผลโมเดลและ Validation (Metrics, Cross-Validation) |
+| ai-engineer · `hugging-face` | ระบบนิเวศ Hugging Face | การใช้งาน Hugging Face (Hub, Transformers, Inference SDK) |
+| ai-engineer · `ai-development-tools` | เครื่องมือพัฒนาซอฟต์แวร์ที่มี AI ช่วย (AI Code Editors, Copilot) | เครื่องมือพัฒนาซอฟต์แวร์ที่มี AI ช่วย (GitHub Copilot, Cursor) |
+| mlops-engineer · `cloud-computing` | การใช้งาน Cloud (AWS, Azure, GCP) และบริการ ML บนคลาวด์ | การใช้งานคลาวด์และบริการ ML แบบ Managed (AWS, Azure, GCP) |
+| mlops-engineer · `experiment-tracking` | การติดตามผลการทดลองและ Model Registry (MLflow) | การทำ Experiment Tracking และ Model Registry (MLflow) |
+| bi-analyst · `data-warehousing-and-cloud` | Data Warehouse และแพลตฟอร์มข้อมูลบน Cloud (AWS, GCP, Azure) | Data Warehouse และแพลตฟอร์มข้อมูลบนคลาวด์ (AWS, GCP, Azure) |
+| data-engineer · `containers-and-orchestration` | คอนเทนเนอร์ การจัดการคอนเทนเนอร์ และ CI/CD (Docker, Kubernetes) | การใช้งานและจัดการคอนเทนเนอร์ และ CI/CD (Docker, Kubernetes) |
+| frontend-developer · `css-architecture` | สถาปัตยกรรม CSS และ Preprocessors (Sass, Tailwind) | การจัดโครงสร้าง CSS, Preprocessor และ Tailwind (BEM, Sass, PostCSS) |
+| frontend-developer · `build-tools-and-quality` | เครื่องมือ Build และคุณภาพโค้ด (Bundler, ESLint, Prettier) | เครื่องมือ Build, Bundler และคุณภาพโค้ด (Vite, Webpack, ESLint) |
+| frontend-developer · `type-checking` | การตรวจสอบชนิดข้อมูลด้วย TypeScript | การเขียน TypeScript และการทำ Type Checking |
+| frontend-developer · `web-security-and-auth` | ความปลอดภัยของเว็บแอปพลิเคชันและการยืนยันตัวตน | ความปลอดภัยของเว็บแอปพลิเคชันและการยืนยันตัวตน (OWASP, CORS, HTTPS) |
+| frontend-developer · `ssr-and-routing` | การเรนเดอร์ฝั่งเซิร์ฟเวอร์ (SSR) และ Routing | การทำ SSR และ Routing (Next.js, Nuxt, React Router) |
+| frontend-developer · `package-managers` | การจัดการแพ็กเกจ (npm, yarn, pnpm) | การจัดการแพ็กเกจ (npm, Yarn, pnpm) |
+| frontend-developer · `real-time-communication` | การสื่อสารแบบเรียลไทม์ (WebSockets, SSE) | การสื่อสารแบบเรียลไทม์ (WebSocket, SSE) |
+| backend-developer · `real-time-communication` | การสื่อสารแบบเรียลไทม์ (WebSockets, SSE) | การสื่อสารแบบเรียลไทม์ (WebSocket, SSE) |
+| android-developer · `android-fundamentals` | พื้นฐานการพัฒนาแอป Android (IDE, Gradle, OOP) | พื้นฐานการพัฒนาแอป Android (Android Studio, Gradle, OOP) |
+| android-developer · `app-components` | App Components และวงจรชีวิตของแอป Android (Activity, Service, Intent) | App Components และ Lifecycle ของแอป Android (Activity, Service, Intent) |
+| android-developer · `firebase-and-google-services` | การใช้งาน Firebase และบริการของ Google | การใช้งาน Firebase และบริการของ Google (Crashlytics, FCM, Google Maps) |
+| android-developer · `networking` | การเชื่อมต่อ Network และ API (Retrofit, OkHttp) | การเชื่อมต่อเครือข่ายและ API (Retrofit, OkHttp) |
+| ios-developer · `debugging-and-profiling` | การดีบักและวิเคราะห์ประสิทธิภาพ (Instruments) | การดีบักและทำ Profiling (Xcode Debugger, Instruments) |
+| ios-developer · `navigation` | การนำทางระหว่างหน้าจอและการเปลี่ยนหน้า | การนำทางระหว่างหน้าจอ (UINavigationController, Segue, NavigationStack) |
+| ios-developer · `concurrency` | การทำงานพร้อมกันและมัลติเธรด (GCD, async/await) | การเขียนโปรแกรม Concurrency และ Multithreading (GCD, async/await) |
+| ios-developer · `networking` | การเชื่อมต่อเครือข่ายและเรียกใช้ API (URLSession, REST) | การเชื่อมต่อเครือข่ายและเรียกใช้ API (URLSession, Alamofire, REST) |
+| ios-developer · `data-persistence` | การจัดเก็บข้อมูลในเครื่อง (Core Data, Keychain) | การจัดเก็บข้อมูลบนเครื่อง (Core Data, UserDefaults, Keychain) |
+| ios-developer · `ci-cd-and-distribution` | ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store | ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store (Git, Fastlane, TestFlight) |
+| game-developer · `game-programming-languages` | ภาษาโปรแกรมสำหรับการพัฒนาเกม (C++, C#, Rust) | ภาษาสำหรับพัฒนาเกม (C++, C#, GDScript) |
+| game-developer · `visibility-and-culling` | การ Culling และการกำหนด Visibility (Occlusion, Frustum) | การทำ Culling และ Visibility (Frustum Culling, Occlusion Culling) |
+| game-developer · `game-physics` | ฟิสิกส์เกมและพลศาสตร์ (Game Physics) | ฟิสิกส์ในเกมและ Dynamics (Force, Friction, Joint) |
+| game-developer · `color-and-tone` | สีและการแมปโทนสี (Color, Tone Reproduction) | สี การรับรู้ภาพ และ Tone Reproduction |
+| game-developer · `graphics-fundamentals` | คอมพิวเตอร์กราฟิกพื้นฐาน (Graphics Pipeline, Rasterization) | คอมพิวเตอร์กราฟิกส์พื้นฐาน (Graphics Pipeline, Rasterization) |
+| blockchain-developer · `blockchain-platforms` | Blockchain Platforms อื่น ๆ (Bitcoin, Solana, Cardano) | แพลตฟอร์ม Blockchain นอกเหนือจาก EVM (Bitcoin, Solana, Cardano) |
+| blockchain-developer · `oracles` | Oracle และ Hybrid Smart Contract (Chainlink) | Blockchain Oracle และ Hybrid Smart Contract (Chainlink) |
+| postgresql-developer-dba · `query-performance` | การปรับแต่งประสิทธิภาพ Query (EXPLAIN, pg_stat_statements) และ Connection Pooling (PgBouncer) | การปรับแต่งประสิทธิภาพ Query และ Connection Pooling (EXPLAIN, pg_stat_statements, PgBouncer) |
+| postgresql-developer-dba · `transactions-and-concurrency` | การจัดการ Transactions และการเข้าถึงข้อมูลพร้อมกัน (ACID, MVCC, Locks) | การจัดการ Transaction และ Concurrency (ACID, MVCC, Locks) |
+| postgresql-developer-dba · `backup-restore-and-upgrades` | การสำรองข้อมูล การกู้คืน และการอัปเกรดเวอร์ชัน (Backup, pg_upgrade) | การสำรองข้อมูล การกู้คืน และการอัปเกรดเวอร์ชัน (pg_dump, pgBackRest, pg_upgrade) |
+| devops-engineer · `ci-cd` | ระบบ CI/CD และ GitOps (Jenkins, GitHub Actions, ArgoCD) | ระบบ CI/CD และ GitOps (Jenkins, GitHub Actions, Argo CD) |
+| devops-engineer · `application-monitoring` | การติดตามแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger) | การเฝ้าระวังแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger) |
+| backend-developer · `backend-programming-languages` | ภาษาโปรแกรมสำหรับงานแบ็กเอนด์ | ภาษาโปรแกรมสำหรับงาน Backend |
+| backend-developer · `authentication-and-authorization` | การยืนยันตัวตนและการกำหนดสิทธิ์การเข้าถึง | การยืนยันตัวตนและการกำหนดสิทธิ์การเข้าถึง (JWT, OAuth, OpenID) |
+| backend-developer · `nosql-and-specialty-databases` | ฐานข้อมูล NoSQL และฐานข้อมูลเฉพาะงาน | ฐานข้อมูล NoSQL และฐานข้อมูลเฉพาะทาง (MongoDB, Redis, Neo4j) |
+| backend-developer · `search-engines` | เสิร์ชเอนจิน (Elasticsearch, Solr) | ระบบค้นหาข้อมูล (Elasticsearch, Solr) |
+| software-architect · `collaboration-tools` | เครื่องมือทำงานร่วมกัน (Git, Jira, Slack) | เครื่องมือสำหรับทำงานร่วมกันในทีม (Git, Jira, Slack) |
+| product-manager · `product-roadmapping` | การวางแผน Product Roadmap (Notion, Aha) | การวางแผน Product Roadmap (Notion, Aha!, Productboard) |
+| product-manager · `product-metrics-and-analytics` | ตัวชี้วัดผลิตภัณฑ์และการตัดสินใจด้วยข้อมูล (Metrics, A/B Testing, AI) | Product Metrics, Analytics และการตัดสินใจด้วยข้อมูล (Amplitude, Heap, A/B Testing) |
+| product-manager · `product-requirements` | การเขียนความต้องการของผลิตภัณฑ์ (PRD, User Stories) | การเขียนเอกสาร Product Requirements (PRD, User Story) |
+| product-manager · `leadership-and-influence` | ภาวะผู้นำและการทำงานร่วมกับทีมวิศวกรรม | ภาวะผู้นำและการทำงานร่วมกับทีม Engineering |
+| engineering-manager · `customer-focus` | การมุ่งเน้นลูกค้าและการสนับสนุนด้านเทคนิค | การให้ความสำคัญกับลูกค้าและงาน Technical Support |
+| technical-writer · `technical-writing-foundations` | พื้นฐานอาชีพนักเขียนเชิงเทคนิค (Technical Writing) | พื้นฐานงาน Technical Writing และบทบาท Technical Writer |
+| technical-writer · `funnel-content` | เนื้อหาตามลำดับขั้นของ Funnel (Top, Mid, Bottom) | เนื้อหาตามแต่ละขั้นของ Funnel (TOFU, MOFU, BOFU) |
+| ux-designer · `prototyping` | การทำต้นแบบและเครื่องมือออกแบบ (Figma, Sketch) | การทำ Prototype และเครื่องมือออกแบบ (Figma, Sketch, Balsamiq) |
+| ux-designer · `behavior-models` | โมเดลพฤติกรรมและการสร้างนิสัย (Fogg, Hook Model) | โมเดลพฤติกรรมและการสร้างนิสัย (Fogg Behavior Model, Hook Model) |
+| ux-designer · `conceptual-design` | การออกแบบเชิงแนวคิดและกลยุทธ์เปลี่ยนพฤติกรรม | การออกแบบเชิงแนวคิดและกลยุทธ์การเปลี่ยนพฤติกรรม |
+| qa-engineer · `web-technology-fundamentals` | พื้นฐานเว็บเทคโนโลยีสำหรับงาน QA (HTML, CSS, JavaScript) | พื้นฐานเทคโนโลยีเว็บสำหรับงาน QA (HTML, CSS, JavaScript) |
+| qa-engineer · `functional-testing` | การทดสอบเชิงฟังก์ชัน (Smoke, Regression, UAT) | การทดสอบ Functional (Smoke, Regression, UAT) |
+| qa-engineer · `api-backend-test-automation` | การทดสอบ API และแบ็กเอนด์แบบอัตโนมัติ (Postman, REST Assured) | การทำ Test Automation สำหรับ API และ Backend (Postman, REST Assured) |
+| qa-engineer · `performance-testing-tools` | เครื่องมือทดสอบ Load และ Performance (JMeter, K6) | เครื่องมือทดสอบ Load และ Performance (JMeter, k6) |
+
+### 8.2 Rejected, with the reason
+
+| Finding | Decision |
+| --- | --- |
+| Data/ML reviewer: render *monitoring* as Monitoring in English (data-engineer, mlops) | **Rejected.** การเฝ้าระวัง is used in eight sets across seven files and the backend reviewer asked for the opposite change on the same ground. Consistency wins; the devops `application-monitoring` set was aligned *to* การเฝ้าระวัง instead. |
+| Client-side reviewer: ios `networking` as การเชื่อมต่อ Network | **Rejected**, and android aligned the other way. The copy editor flagged android's Network as the outlier; เครือข่าย is the catalog's rendering everywhere else. |
+| Data/ML reviewer: ai-data-scientist `mlops` as Model Lifecycle | **Rejected.** วงจรชีวิตโมเดล is natural Thai and the term is not on the English list; low confidence from the reviewer. |
+| Copy editor: drop the comma in ios `ci-cd-and-distribution` | **Rejected.** §4 item 9 added it so ระบบควบคุมเวอร์ชัน CI/CD does not parse as "the CI/CD version-control system". |
+| Copy editor: align ธรรมาภิบาลข้อมูล and การกำกับดูแล | **Rejected.** Settled in §6.2 and §7.2 as two constructs. |
+| Security reviewer: Troubleshoot in English for cyber `command-line-and-analysis-tools` | **Rejected** in favour of the copy editor's grammar fix, which keeps the Thai and adds the missing และ. |
+| Client-side reviewer: คุณภาพของโค้ด vs คุณภาพโค้ด | **Not applied.** Both are grammatical; noted for the approver. |
+| Data/ML reviewer: plural inconsistency in glosses (APIs vs API) | **Not applied.** Gloss items are names, and both forms are in use; noted for the approver. |
+| Security reviewer: cyber `secure-protocols` | Not raised as a change; the reviewer confirmed the §7.2 decision. |
+
+### 8.3 What the approver still has to do
+
+Unchanged from §7.3: flip `review.status` to `reviewed` per set after reading. The panel
+has read every set at least twice (domain reviewer plus copy editor); §7.1 and §8.1 list
+the 96 wordings that changed today, and the remaining 360 were confirmed as written by both.

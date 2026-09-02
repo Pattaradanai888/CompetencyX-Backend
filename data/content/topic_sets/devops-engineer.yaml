@@ -74,7 +74,7 @@ sets:
     nodes: [configuration-management, ansible, chef, puppet]
   - key: ci-cd
     title: CI/CD pipelines and GitOps
-    title_th: ระบบ CI/CD และ GitOps (Jenkins, GitHub Actions, ArgoCD)
+    title_th: ระบบ CI/CD และ GitOps (Jenkins, GitHub Actions, Argo CD)
     review: {status: draft}
     display_order: 13
     nodes: ['ci---cd-tools', jenkins, github-actions, gitlab-ci, circle-ci, drone, travis-ci, teamcity, gitops, argocd, fluxcd]
@@ -98,7 +98,7 @@ sets:
     nodes: [infrastructure-monitoring, prometheus, grafana, zabbix, datadog, new-relic]
   - key: application-monitoring
     title: Application monitoring and tracing
-    title_th: การติดตามแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger)
+    title_th: การเฝ้าระวังแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger)
     review: {status: draft}
     display_order: 17
     nodes: [application-monitoring, opentelemetry, jaeger]

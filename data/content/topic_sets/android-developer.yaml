@@ -2,7 +2,7 @@ role_slug: android-developer
 sets:
   - key: android-fundamentals
     title: Android development fundamentals
-    title_th: พื้นฐานการพัฒนาแอป Android (IDE, Gradle, OOP)
+    title_th: พื้นฐานการพัฒนาแอป Android (Android Studio, Gradle, OOP)
     review: {status: draft}
     display_order: 1
     nodes: [the-fundamentals, development-ide, basics-of-kotlin, basics-of-oop, data-structures-and-algorithms, 'what-is-and-how-to-use-gradle?', create-a-basic-hello-world-app]
@@ -20,7 +20,7 @@ sets:
     nodes: [version-control, git, github, bitbucket, gitlab]
   - key: app-components
     title: Android app components and lifecycle
-    title_th: App Components และวงจรชีวิตของแอป Android (Activity, Service, Intent)
+    title_th: App Components และ Lifecycle ของแอป Android (Activity, Service, Intent)
     review: {status: draft}
     display_order: 4
     nodes: [app-components, activity, activity-lifecycle, state-changes, services, content-provider, broadcast-receiver, intent, implicit-intents, explicit-intents, intent-filters]
@@ -74,13 +74,13 @@ sets:
     nodes: [storage, shared-preferences, datastore, room-database, file-system]
   - key: networking
     title: Networking and API integration
-    title_th: การเชื่อมต่อ Network และ API (Retrofit, OkHttp)
+    title_th: การเชื่อมต่อเครือข่ายและ API (Retrofit, OkHttp)
     review: {status: draft}
     display_order: 13
     nodes: [network, retro, okhttp, apollo-android]
   - key: firebase-and-google-services
     title: Firebase and Google services
-    title_th: การใช้งาน Firebase และบริการของ Google
+    title_th: การใช้งาน Firebase และบริการของ Google (Crashlytics, FCM, Google Maps)
     review: {status: draft}
     display_order: 14
     nodes: [common-services, authentication, crashlytics, remote-config, cloud-messaging, firestore, google-admob, google-play-services, google-maps]

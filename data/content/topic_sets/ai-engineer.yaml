@@ -26,13 +26,13 @@ sets:
     nodes: [prompt-engineering, writing-prompts, robust-prompt-engineering, maximum-tokens, token-counting, constraining-outputs-and-inputs]
   - key: hugging-face
     title: Hugging Face ecosystem
-    title_th: ระบบนิเวศ Hugging Face
+    title_th: การใช้งาน Hugging Face (Hub, Transformers, Inference SDK)
     review: {status: draft}
     display_order: 5
     nodes: [hugging-face, hugging-face-hub, hugging-face-tasks, inference-sdk, transformers.js]
   - key: open-source-and-local-models
     title: Open-source and local model deployment
-    title_th: โมเดล Open Source และการรันโมเดลด้วยตัวเอง (Ollama)
+    title_th: โมเดล Open Source และการรันโมเดลแบบ Local (Ollama)
     review: {status: draft}
     display_order: 6
     nodes: [opensource-ai, open-vs-closed-source-models, popular-open-source-models, ollama, ollama-models, ollama-sdk]
@@ -86,7 +86,7 @@ sets:
     nodes: [ai-safety-and-ethics, prompt-injection-attacks, security-and-privacy-concerns, conducting-adversarial-testing, openai-moderation-api, adding-end-user-ids-in-prompts, bias-and-fairness, know-your-customers---usecases]
   - key: ai-development-tools
     title: AI-assisted development tools
-    title_th: เครื่องมือพัฒนาซอฟต์แวร์ที่มี AI ช่วย (AI Code Editors, Copilot)
+    title_th: เครื่องมือพัฒนาซอฟต์แวร์ที่มี AI ช่วย (GitHub Copilot, Cursor)
     review: {status: draft}
     display_order: 15
     nodes: [development-tools, ai-code-editors, code-completion-tools]

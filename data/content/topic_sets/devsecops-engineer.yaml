@@ -14,7 +14,7 @@ sets:
     nodes: [networking-basics, dns, http]
   - key: applied-cryptography
     title: Applied Cryptography and PKI
-    title_th: การเข้ารหัสลับและการจัดการกุญแจ (Encryption, Hashing, PKI)
+    title_th: การเข้ารหัสลับและ Key Management (Hashing, KMS, PKI)
     review: {status: draft}
     display_order: 3
     nodes: [encryption, symmetric, asymmetric, cryptographic-hashing, bcrypt, sha-256, key-management-service, pki-design-and-failover, certificate-lifecycle]
@@ -62,7 +62,7 @@ sets:
     nodes: [container-security, docker, kubernetes, image-scanning]
   - key: supply-chain-security
     title: Software Supply Chain Security
-    title_th: ความปลอดภัยของ Supply Chain และ Dependency
+    title_th: ความปลอดภัยของ Software Supply Chain และ Dependency (SBOM)
     review: {status: draft}
     display_order: 11
     nodes: [supply-chain-security, sboms, dependency-risk-management, build-pipeline-hardening, automated-patching]
@@ -80,7 +80,7 @@ sets:
     nodes: [incident-response, ir-lifecycle, forensics, containment, root-cause-analysis, response-strategy, endpoint-detection]
   - key: governance-risk-compliance
     title: Governance, Risk and Compliance
-    title_th: 'การกำกับดูแล ความเสี่ยง และการปฏิบัติตามมาตรฐาน (GRC: SOC 2, ISO 27001, NIST)'
+    title_th: การกำกับดูแล ความเสี่ยง และ Compliance (SOC 2, ISO 27001, NIST)
     review: {status: draft}
     display_order: 14
     nodes: [soc-2, iso-27001, nist, audit-and-compliance-mapping, risk-quantification]

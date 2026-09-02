@@ -74,7 +74,7 @@ sets:
     nodes: ['what-is-reinforcement-learning?', reinforcement-learning, policy-gradient, actor-critic-methods, deep-q-networks, q-learning]
   - key: model-evaluation-and-validation
     title: Model evaluation and validation
-    title_th: การประเมินผลและ Validation โมเดล (Metrics, Cross-Validation)
+    title_th: การประเมินผลโมเดลและ Validation (Metrics, Cross-Validation)
     review: {status: draft}
     display_order: 13
     nodes: ['what-is-model-evaluation?', metrics-to-evaluate, confusion-matrix, accuracy, precision, recall, f1-score, roc-auc, log-loss, validation-techniques, k-fold-cross-validation, loocv]
@@ -92,13 +92,13 @@ sets:
     nodes: [convolutional-neural-network, convolution, pooling, strides, padding, applications-of-cnns, image-classification, image-segmentation, image-and-video-recognition]
   - key: sequence-models-and-transformers
     title: Sequence models and Transformers
-    title_th: โมเดลข้อมูลลำดับและ Transformers (RNN, LSTM, Attention)
+    title_th: Sequence Models และ Transformers (RNN, LSTM, Attention)
     review: {status: draft}
     display_order: 16
     nodes: [recurrent-neural-networks, rnn, lstm, gru, attention-mechanisms, attention-models, self-attention, multi-head-attention, transformers]
   - key: deep-learning-architectures
     title: Advanced deep learning architectures
-    title_th: สถาปัตยกรรม Deep Learning เพิ่มเติม (GANs, Autoencoders)
+    title_th: สถาปัตยกรรม Deep Learning ขั้นสูง (GAN, Autoencoder)
     review: {status: draft}
     display_order: 17
     nodes: [deep-learning-architectures, generative-adversarial-networks, autoencoders]

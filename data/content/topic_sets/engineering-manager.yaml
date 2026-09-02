@@ -110,7 +110,7 @@ sets:
     nodes: [contingency-planning, disaster-recovery, business-continuity, security-incident-handling]
   - key: customer-focus
     title: Customer Focus and Technical Support
-    title_th: การมุ่งเน้นลูกค้าและการสนับสนุนด้านเทคนิค
+    title_th: การให้ความสำคัญกับลูกค้าและงาน Technical Support
     review: {status: draft}
     display_order: 19
     nodes: [customer-feedback-integration, technical-customer-support, customer-success-alignment]

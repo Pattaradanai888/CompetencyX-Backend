@@ -26,7 +26,7 @@ sets:
     nodes: [evm-based, ethereum, polygon, bnb-chain, gnosis-chain, avalanche, fantom, moonbeam---moonriver, everscale, gosh, ton, venom, ethereum-2.0]
   - key: blockchain-platforms
     title: Other blockchain platforms (Bitcoin, Solana, Cardano)
-    title_th: Blockchain Platforms อื่น ๆ (Bitcoin, Solana, Cardano)
+    title_th: แพลตฟอร์ม Blockchain นอกเหนือจาก EVM (Bitcoin, Solana, Cardano)
     review: {status: draft}
     display_order: 5
     nodes: [solana, tvm-based, utxo-based, bitcoin, cardano, base, starknet, blockchain-interoperability]
@@ -80,7 +80,7 @@ sets:
     nodes: [client-nodes, geth, besu, nethermind, substrate, node-as-a-service, alchemy, infura, pokt-network, quicknode]
   - key: oracles
     title: Oracles and hybrid smart contracts
-    title_th: Oracle และ Hybrid Smart Contract (Chainlink)
+    title_th: Blockchain Oracle และ Hybrid Smart Contract (Chainlink)
     review: {status: draft}
     display_order: 14
     nodes: [oracles, hybrid-smart-contracts, chainlink, oracle-networks]

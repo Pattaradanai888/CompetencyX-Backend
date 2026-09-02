@@ -8,7 +8,7 @@ sets:
     nodes: [internet, 'how-does-the-internet-work?', 'what-is-http?', 'what-is-domain-name?', 'what-is-hosting?', 'dns-and-how-it-works?', 'browsers-and-how-they-work?']
   - key: backend-programming-languages
     title: Backend programming languages
-    title_th: ภาษาโปรแกรมสำหรับงานแบ็กเอนด์
+    title_th: ภาษาโปรแกรมสำหรับงาน Backend
     review: {status: draft}
     display_order: 2
     nodes: [php, go, javascript, java, python, 'c#', ruby, rust]
@@ -26,7 +26,7 @@ sets:
     nodes: [relational-databases, mysql, mariadb, ms-sql, oracle, postgresql, sqlite]
   - key: nosql-and-specialty-databases
     title: NoSQL and specialty databases
-    title_th: ฐานข้อมูล NoSQL และฐานข้อมูลเฉพาะงาน
+    title_th: ฐานข้อมูล NoSQL และฐานข้อมูลเฉพาะทาง (MongoDB, Redis, Neo4j)
     review: {status: draft}
     display_order: 5
     nodes: [nosql-databases, mongodb, couchdb, redis, rethinkdb, firebase, dynamodb, neo4j, cassandra, base, aws-neptune, influx-db, timescale]
@@ -56,19 +56,19 @@ sets:
     nodes: [message-brokers, rabbitmq, kafka]
   - key: search-engines
     title: Search engines
-    title_th: เสิร์ชเอนจิน (Elasticsearch, Solr)
+    title_th: ระบบค้นหาข้อมูล (Elasticsearch, Solr)
     review: {status: draft}
     display_order: 10
     nodes: [search-engines, elasticsearch, solr]
   - key: real-time-communication
     title: Real-time communication
-    title_th: การสื่อสารแบบเรียลไทม์ (WebSockets, SSE)
+    title_th: การสื่อสารแบบเรียลไทม์ (WebSocket, SSE)
     review: {status: draft}
     display_order: 11
     nodes: [real-time-data, server-sent-events, websockets, long-polling, short-polling]
   - key: authentication-and-authorization
     title: Authentication and authorization
-    title_th: การยืนยันตัวตนและการกำหนดสิทธิ์การเข้าถึง
+    title_th: การยืนยันตัวตนและการกำหนดสิทธิ์การเข้าถึง (JWT, OAuth, OpenID)
     review: {status: draft}
     display_order: 12
     nodes: [authentication, jwt, basic-authentication, token-authentication, oauth, cookie-based-auth, openid, saml]

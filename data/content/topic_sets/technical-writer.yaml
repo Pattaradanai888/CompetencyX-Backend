@@ -2,7 +2,7 @@ role_slug: technical-writer
 sets:
   - key: technical-writing-foundations
     title: Technical writing foundations
-    title_th: พื้นฐานอาชีพนักเขียนเชิงเทคนิค (Technical Writing)
+    title_th: พื้นฐานงาน Technical Writing และบทบาท Technical Writer
     review: {status: draft}
     display_order: 1
     nodes: [introduction, 'who-is-a-technical-writer?', 'what-is-technical-writing?', role-of-technical-writers-in-organizations, forms-of-technical-writing, growth-as-a-technical-writer]
@@ -62,7 +62,7 @@ sets:
     nodes: [technical-content-marketing, awareness-blog-posts, research-reports, white-papers, ebook, comparative-posts]
   - key: funnel-content
     title: Content across the funnel
-    title_th: เนื้อหาตามลำดับขั้นของ Funnel (Top, Mid, Bottom)
+    title_th: เนื้อหาตามแต่ละขั้นของ Funnel (TOFU, MOFU, BOFU)
     review: {status: draft}
     display_order: 11
     nodes: [top-funnel-content, pillar-content, mid-funnel-content, generic-gated-content, bottom-funnel-content]

@@ -50,7 +50,7 @@ sets:
     nodes: [indexes-and-their-usecases, b-tree, hash, gin, gist, sp-gist, brin]
   - key: transactions-and-concurrency
     title: Transactions and concurrency control
-    title_th: การจัดการ Transactions และการเข้าถึงข้อมูลพร้อมกัน (ACID, MVCC, Locks)
+    title_th: การจัดการ Transaction และ Concurrency (ACID, MVCC, Locks)
     review: {status: draft}
     display_order: 9
     nodes: [acid, transactions, mvcc, lock-management]
@@ -74,7 +74,7 @@ sets:
     nodes: [security, authentication-models, roles, ssl-settings, pg-hba.conf, object-privileges, grant---revoke, default-privileges, row-level-security, selinux, postgresql-anonymizer]
   - key: query-performance
     title: Query optimization and connection pooling
-    title_th: การปรับแต่งประสิทธิภาพ Query (EXPLAIN, pg_stat_statements) และ Connection Pooling (PgBouncer)
+    title_th: การปรับแต่งประสิทธิภาพ Query และ Connection Pooling (EXPLAIN, pg_stat_statements, PgBouncer)
     review: {status: draft}
     display_order: 13
     nodes: [query-planner, explain, depesz, pev2, explain.dalibo.com, tensor, pg-stat-activity, pg-stat-statements, pgcenter, pgbadger, pgcluu, pgbouncer, pgbouncer-alternatives]
@@ -110,7 +110,7 @@ sets:
     nodes: [replication, streaming-replication, logical-replication, using-logical-replication, patroni, patroni-alternatives, haproxy, consul, keepalived, etcd]
   - key: backup-restore-and-upgrades
     title: Backup, restore, and version upgrades
-    title_th: การสำรองข้อมูล การกู้คืน และการอัปเกรดเวอร์ชัน (Backup, pg_upgrade)
+    title_th: การสำรองข้อมูล การกู้คืน และการอัปเกรดเวอร์ชัน (pg_dump, pgBackRest, pg_upgrade)
     review: {status: draft}
     display_order: 19
     nodes: [pg-dump, pg-dumpall, pg-restore, pg-basebackup, pgbackrest, check-pgbackrest, barman, wal-g, pg-probackup, backup-validation-procedures, 'using-`pg-upgrade`', migration-related-tools]
