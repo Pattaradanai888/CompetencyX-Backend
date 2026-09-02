@@ -153,6 +153,78 @@ class TopicStatesTests(TopicSetFlowTestCase):
         self.assertIn('Internet and web protocols', held['statement'])
         for forbidden in ('passed', 'completed', 'verified', 'mastered', 'achieved'):
             self.assertNotIn(forbidden, held['statement'].lower())
+        # The Thai sentence is held to the same register: no pass, no
+        # completion, no mastery, no verification.
+        self.assertIn('Internet and web protocols', held['statement_th'])
+        for forbidden in ('ผ่าน', 'สำเร็จ', 'เชี่ยวชาญ', 'ยืนยัน', 'รับรอง'):
+            self.assertNotIn(forbidden, held['statement_th'])
+
+    def test_every_unit_carries_its_canonical_thai_wording(self):
+        """A Thai session reads Thai, so the Thai sentences travel with the entry.
+
+        The page cannot rebuild the reason itself: the prerequisite names the
+        sentence points at are resolved from the roadmap graph server-side.
+        """
+        AssessableTopicSet.objects.filter(key='data-storage').update(title_th='การจัดเก็บข้อมูล')
+        AssessableTopicSet.objects.filter(key='internet-and-web').update(title_th='อินเทอร์เน็ตและโปรโตคอลเว็บ')
+        sync_topic_skill_assessment_catalog()
+
+        session_id = self.create_session()
+        state = self.save_answers(session_id, by_set_key={'data-storage': 1, 'internet-and-web': 5}).json()
+
+        by_slug = {item['topic_slug']: item for item in state['topic_states']}
+        storage = by_slug[f'{self.backend_role.slug}--data-storage']
+        internet = by_slug[f'{self.backend_role.slug}--internet-and-web']
+
+        self.assertEqual(storage['topic_title_th'], 'การจัดเก็บข้อมูล')
+        self.assertIn('อินเทอร์เน็ตและโปรโตคอลเว็บ', internet['statement_th'])
+
+        suggestion = next(
+            item for item in state['recommended_topics'] if item['topic_slug'] == storage['topic_slug']
+        )
+        self.assertEqual(suggestion['topic_title_th'], 'การจัดเก็บข้อมูล')
+        self.assertIn('การจัดเก็บข้อมูล', suggestion['reason_th'])
+        # The English sentence stays alongside it rather than being replaced.
+        self.assertIn('Data storage', suggestion['reason'])
+
+    def test_a_set_whose_thai_wording_is_still_empty_says_so(self):
+        """English is never passed off as Thai: the page falls back on purpose."""
+        AssessableTopicSet.objects.filter(key='data-storage').update(title_th='')
+        sync_topic_skill_assessment_catalog()
+
+        session_id = self.create_session()
+        state = self.save_answers(session_id, by_set_key={'data-storage': 1, 'caching': 5}).json()
+
+        by_slug = {item['topic_slug']: item for item in state['topic_states']}
+        self.assertIsNone(by_slug[f'{self.backend_role.slug}--data-storage']['topic_title_th'])
+        self.assertEqual(by_slug[f'{self.backend_role.slug}--caching']['topic_title_th'], 'Caching')
+        suggestion = next(
+            item for item in state['recommended_topics'] if item['topic_slug'] == f'{self.backend_role.slug}--data-storage'
+        )
+        self.assertIsNone(suggestion['reason_th'])
+        self.assertIn('Data storage', suggestion['reason'])
+
+        catalog = self.client.get(
+            reverse('assessment-session-skill-assessment-catalog', kwargs={'pk': session_id}),
+        ).json()
+        dimension = next(item for item in catalog['dimensions'] if item['key'] == f'{self.backend_role.slug}--data-storage')
+        self.assertNotIn('th', dimension['translations'])
+
+    def test_a_set_with_thai_wording_labels_its_dimension_in_thai(self):
+        AssessableTopicSet.objects.filter(key='data-storage').update(title_th='การจัดเก็บข้อมูล')
+        sync_topic_skill_assessment_catalog()
+
+        session_id = self.create_session()
+        response = self.client.get(
+            reverse('assessment-session-skill-assessment-catalog', kwargs={'pk': session_id}),
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        dimension = next(
+            item
+            for item in response.json()['dimensions']
+            if item['key'] == f'{self.backend_role.slug}--data-storage'
+        )
+        self.assertEqual(dimension['translations']['th']['label'], 'การจัดเก็บข้อมูล')
 
     def test_readiness_is_computed_over_assessed_sets_only(self):
         session_id = self.create_session()

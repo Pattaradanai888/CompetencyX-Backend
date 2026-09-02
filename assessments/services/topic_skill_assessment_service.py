@@ -105,6 +105,20 @@ def build_question_id(role: Role, topic_slug: str) -> str:
     return build_set_key(role.slug, topic_slug)
 
 
+def _unit_thai_title(unit: dict) -> str:
+    """What names the unit in Thai: its Canonical Thai Wording, or nothing.
+
+    An authored Assessable Topic Set is asked in its own Thai wording whatever
+    its review status: review runs in parallel with use, and the respondent is
+    not told the wording is draft (ADR-0004 decision 2). A set whose Thai text
+    is still empty has no Thai name at all -- there is nothing to put in the
+    sentence -- and returns ``''``. A unit derived from an imported roadmap has
+    no authored wording either way, so its own title stands in as it did before.
+    Every surface that renders Thai reads this one rule.
+    """
+    return unit['title_th'] if 'title_th' in unit else unit['title']
+
+
 def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
     """Regenerate the topic-anchored items for every role that has a roadmap.
 
@@ -125,14 +139,7 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
             # A set's slug already is its global catalog key; a derived topic's
             # is role-local and carries the role slug here to become one.
             question_id = topic.get('question_id') or build_question_id(role, topic['slug'])
-            # An authored set carries its own Canonical Thai Wording and is
-            # asked in it whatever its review.status: review runs in parallel
-            # with use, and the respondent is not told the wording is draft
-            # (ADR-0004 decision 2). Only a set with no Thai text at all gets
-            # no Thai prompt -- there is nothing to put in the sentence. A
-            # derived topic has no authored wording either way, so its own
-            # title stands in as it did before.
-            thai_topic = topic['title_th'] if 'title_th' in topic else topic['title']
+            thai_topic = _unit_thai_title(topic)
             dimension_key = question_id
             live_question_ids.append(question_id)
             live_dimension_keys.append(dimension_key)
@@ -144,7 +151,18 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
                     'label': topic['title'][:255],
                     'track': TOPIC_DIMENSION_TRACK,
                     'low_score_action': f'Start with "{topic["title"]}" on the {role.name} roadmap.',
-                    'translations': {},
+                    # The axis label and its advice are read straight off this
+                    # row, so a set with Canonical Thai Wording has to carry it
+                    # here or a Thai respondent reads an English radar.
+                    'translations': {
+                        'th': {
+                            'label': thai_topic[:255],
+                            # The role has no Thai name, so the advice points
+                            # at "this role's roadmap" rather than mixing in
+                            # an English one.
+                            'low_score_action': f'เริ่มจาก "{thai_topic}" ในแผนพัฒนาของสายงานนี้',
+                        },
+                    } if thai_topic else {},
                     'display_order': display_order,
                     'is_active': True,
                 },
@@ -216,6 +234,25 @@ def _unit_state(mastery: float | None, *, marked_held: bool) -> str:
 
 
 HELD_STATEMENT_TEMPLATE = 'You said you can already work on "{title}".'
+HELD_STATEMENT_TEMPLATE_TH = 'คุณระบุว่าคุณทำงานเรื่อง "{title}" ได้แล้ว'
+
+# Why a unit is suggested, in terms of the topics behind it. The four sentences
+# are the two states crossed with whether prerequisites are outstanding; the
+# language is data, so both languages read the same cascade.
+SUGGESTION_REASON_TEMPLATES = {
+    'en': {
+        (STATE_ASSESSED_GAP, True): 'You rated "{title}" low, and it builds on {named}.',
+        (STATE_ASSESSED_GAP, False): 'You rated "{title}" low, and it has no unmet prerequisites.',
+        (STATE_UNASSESSED, True): 'The assessment has not asked about "{title}" yet; it builds on {named}.',
+        (STATE_UNASSESSED, False): 'The assessment has not asked about "{title}" yet.',
+    },
+    'th': {
+        (STATE_ASSESSED_GAP, True): 'คุณให้คะแนน "{title}" ค่อนข้างต่ำ และหัวข้อนี้ต่อยอดจาก {named}',
+        (STATE_ASSESSED_GAP, False): 'คุณให้คะแนน "{title}" ค่อนข้างต่ำ และไม่มีหัวข้อที่ต้องเรียนก่อนค้างอยู่',
+        (STATE_UNASSESSED, True): 'แบบประเมินยังไม่ได้ถามเรื่อง "{title}" และหัวข้อนี้ต่อยอดจาก {named}',
+        (STATE_UNASSESSED, False): 'แบบประเมินยังไม่ได้ถามเรื่อง "{title}"',
+    },
+}
 
 
 def build_unit_dependencies(role: Role, units: list[dict]) -> dict[str, set[str]]:
@@ -277,18 +314,16 @@ def build_unit_layers(role: Role, units: list[dict], *, dependencies: dict[str, 
     return layers
 
 
-def _suggestion_reason(unit: dict, state: str, unmet_prerequisite_titles: list[str]) -> str:
-    """Why this unit is suggested, in terms of the topics behind it."""
-    title = unit['title']
-    if state == STATE_ASSESSED_GAP:
-        if unmet_prerequisite_titles:
-            named = ', '.join(f'"{name}"' for name in unmet_prerequisite_titles[:2])
-            return f'You rated "{title}" low, and it builds on {named}.'
-        return f'You rated "{title}" low, and it has no unmet prerequisites.'
-    if unmet_prerequisite_titles:
-        named = ', '.join(f'"{name}"' for name in unmet_prerequisite_titles[:2])
-        return f'The assessment has not asked about "{title}" yet; it builds on {named}.'
-    return f'The assessment has not asked about "{title}" yet.'
+def _suggestion_reason(title: str, state: str, unmet_prerequisite_titles: list[str], *, language: str) -> str:
+    """Why this unit is suggested, naming up to two outstanding prerequisites.
+
+    Both languages are carried on the entry rather than the wording being
+    rebuilt from a title on the client, where the prerequisite names behind
+    the reason are not available.
+    """
+    named = ', '.join(f'"{name}"' for name in unmet_prerequisite_titles[:2])
+    template = SUGGESTION_REASON_TEMPLATES[language][(state, bool(unmet_prerequisite_titles))]
+    return template.format(title=title, named=named)
 
 
 def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> dict:
@@ -307,10 +342,17 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
     by_slug: dict[str, dict] = {}
     for unit in units:
         unit_mastery = mastery.get(unit['slug'])
-        state = _unit_state(unit_mastery, marked_held=unit['slug'] in held_keys)
+        marked = unit['slug'] in held_keys
+        state = _unit_state(unit_mastery, marked_held=marked)
+        # The Canonical Thai Wording travels with the entry: the page has no
+        # other way to name the unit in the session's own language. A unit
+        # with no Thai wording says so with ``None`` rather than passing
+        # English off as Thai, so the page falls back deliberately.
+        thai_title = _unit_thai_title(unit) or None
         entry = {
             'topic_slug': unit['slug'],
             'topic_title': unit['title'],
+            'topic_title_th': thai_title,
             'state': state,
             'mastery': unit_mastery,
             'display_order': unit['display_order'],
@@ -318,21 +360,34 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
         }
         if state == STATE_HELD:
             entry['statement'] = HELD_STATEMENT_TEMPLATE.format(title=unit['title'])
+            entry['statement_th'] = HELD_STATEMENT_TEMPLATE_TH.format(title=thai_title) if thai_title else None
+            # Undoing a mark is offered only where the mark is what holds the
+            # unit. One held by a top self-rating -- whether or not it is also
+            # marked -- stays held when the mark is taken back, and offering
+            # that undo would be a control that does nothing.
+            entry['held_by_mark'] = marked and _unit_state(unit_mastery, marked_held=False) != STATE_HELD
         states.append(entry)
         by_slug[unit['slug']] = entry
 
     # A unit's prerequisites count as met only when the unit behind them is
     # held; naming a held prerequisite as outstanding would be a false reason.
     unmet: dict[str, list[str]] = {}
+    unmet_th: dict[str, list[str]] = {}
     for unit in units:
         prerequisite_units = sorted(
             dependencies.get(unit['slug'], ()),
             key=lambda slug: (unit_by_slug[slug]['display_order'], slug),
         )
-        unmet[unit['slug']] = [
-            unit_by_slug[prereq_slug]['title']
+        outstanding = [
+            prereq_slug
             for prereq_slug in prerequisite_units
             if by_slug[prereq_slug]['state'] != STATE_HELD
+        ]
+        unmet[unit['slug']] = [unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding]
+        # A prerequisite with no Thai wording is still named, in English,
+        # rather than the sentence losing the topic it points at.
+        unmet_th[unit['slug']] = [
+            _unit_thai_title(unit_by_slug[prereq_slug]) or unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding
         ]
 
     assessed_gaps = [entry for entry in states if entry['state'] == STATE_ASSESSED_GAP]
@@ -346,14 +401,16 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
 
     recommendations = []
     for entry in (*assessed_gaps, *unassessed):
-        unit = unit_by_slug[entry['topic_slug']]
+        slug, state, thai_title = entry['topic_slug'], entry['state'], entry['topic_title_th']
         recommendations.append(
             {
-                'topic_slug': entry['topic_slug'],
+                'topic_slug': slug,
                 'topic_title': entry['topic_title'],
-                'state': entry['state'],
+                'topic_title_th': thai_title,
+                'state': state,
                 'mastery': entry['mastery'],
-                'reason': _suggestion_reason(unit, entry['state'], unmet[entry['topic_slug']]),
+                'reason': _suggestion_reason(entry['topic_title'], state, unmet[slug], language='en'),
+                'reason_th': _suggestion_reason(thai_title, state, unmet_th[slug], language='th') if thai_title else None,
             },
         )
 

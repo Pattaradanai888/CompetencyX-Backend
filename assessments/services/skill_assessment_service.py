@@ -219,8 +219,9 @@ def get_skill_assessment_state(session: AssessmentSession) -> dict[str, object]:
         # Every unit's state -- held, assessed gap, or unassessed -- plus the
         # suggestions derived from the same answers, computed once.
         summary = build_assessment_summary(role, answers, held_keys=held_keys)
+        reported_state_keys = ('topic_slug', 'topic_title', 'topic_title_th', 'state', 'mastery', 'statement', 'statement_th', 'held_by_mark')
         states = [
-            {key: entry[key] for key in ('topic_slug', 'topic_title', 'state', 'mastery', 'statement') if key in entry}
+            {key: entry[key] for key in reported_state_keys if key in entry}
             for entry in summary['states']
         ]
         recommendations = summary['recommendations']

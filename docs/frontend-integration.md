@@ -203,6 +203,24 @@ function of the chosen topic alone, so it reproduced a sort by `display_order` a
 answer. The answer-derived ordering lives in `GET /api/v1/assessment-sessions/{id}/skill-assessment/` as
 `topic_mastery` and `recommended_topics`; consume those instead.
 
+### Topic states and suggestions
+`GET /api/v1/assessment-sessions/{id}/skill-assessment/` reports every Assessable Topic Set of the session's role in
+`topic_states`, and the suggestions derived from the same answers in `recommended_topics` (`next_topics` is its
+head). Each entry carries both the English wording and the set's Canonical Thai Wording, so a Thai session renders
+Thai without rebuilding a sentence on the client; the prerequisite names a reason points at are resolved server-side.
+
+| Field | On | Notes |
+| --- | --- | --- |
+| `topic_title` / `topic_title_th` | every entry | The set's wording in each language. A set whose Thai wording is still empty carries `null` in every `_th` field (and no `translations.th` in the catalog), so the page falls back deliberately rather than reading English as Thai; a unit derived from an imported roadmap repeats its English title, as its Thai prompt does |
+| `state` | every entry | `held`, `assessed_gap`, or `unassessed` |
+| `mastery` | every entry | Self-placed Mastery `0.0`–`1.0`; `null` when the set was never rated, including a set held by a mark alone |
+| `statement` / `statement_th` | `held` entries | The respondent's own statement ("You said you can already work on …"), never a verdict |
+| `held_by_mark` | `held` entries | `true` when the mark is what holds the set, so the undo control is shown; `false` when a top self-rating holds it (marked or not), because taking the mark back would change nothing |
+| `reason` / `reason_th` | suggestions | Why the set is suggested, naming up to two outstanding prerequisites |
+
+The catalog's dimension entries carry the same Thai wording under `translations.th.label` and
+`translations.th.low_score_action`, so the radar axes read in the session's language too.
+
 ## Role Discovery Notes
 Role discovery uses a static 46-question core SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before completing the session.
 

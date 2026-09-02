@@ -250,50 +250,64 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
     },
     'completed_at': '2026-05-08T20:00:00Z',
     'topic_mastery': {'backend-developer--databases': 0.25},
+    # Every entry carries its Canonical Thai Wording alongside the English, so
+    # a Thai session reads Thai without rebuilding the sentence on the client.
     'topic_states': [
         {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
+            'topic_title_th': 'การจัดเก็บข้อมูล',
             'state': 'assessed_gap',
             'mastery': 0.25,
         },
         {
             'topic_slug': 'backend-developer--caching',
             'topic_title': 'Caching',
+            'topic_title_th': 'การแคช',
             'state': 'unassessed',
             'mastery': None,
         },
         {
             'topic_slug': 'backend-developer--internet-and-web',
             'topic_title': 'Internet and web protocols',
+            'topic_title_th': 'อินเทอร์เน็ตและโปรโตคอลเว็บ',
             'state': 'held',
             'mastery': 1.0,
             'statement': 'You said you can already work on "Internet and web protocols".',
+            'statement_th': 'คุณระบุว่าคุณทำงานเรื่อง "อินเทอร์เน็ตและโปรโตคอลเว็บ" ได้แล้ว',
+            # Held by a top self-rating, not by a mark: there is no mark to undo.
+            'held_by_mark': False,
         },
     ],
     'recommended_topics': [
         {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
+            'topic_title_th': 'การจัดเก็บข้อมูล',
             'state': 'assessed_gap',
             'mastery': 0.25,
             'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
+            'reason_th': 'คุณให้คะแนน "การจัดเก็บข้อมูล" ค่อนข้างต่ำ และหัวข้อนี้ต่อยอดจาก "อินเทอร์เน็ตและโปรโตคอลเว็บ"',
         },
         {
             'topic_slug': 'backend-developer--caching',
             'topic_title': 'Caching',
+            'topic_title_th': 'การแคช',
             'state': 'unassessed',
             'mastery': None,
             'reason': 'The assessment has not asked about "Caching" yet.',
+            'reason_th': 'แบบประเมินยังไม่ได้ถามเรื่อง "การแคช"',
         },
     ],
     'next_topics': [
         {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
+            'topic_title_th': 'การจัดเก็บข้อมูล',
             'state': 'assessed_gap',
             'mastery': 0.25,
             'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
+            'reason_th': 'คุณให้คะแนน "การจัดเก็บข้อมูล" ค่อนข้างต่ำ และหัวข้อนี้ต่อยอดจาก "อินเทอร์เน็ตและโปรโตคอลเว็บ"',
         },
     ],
     'readiness': {

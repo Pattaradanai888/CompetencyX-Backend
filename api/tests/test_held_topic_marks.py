@@ -163,3 +163,44 @@ class HeldTopicMarkTests(TopicSetFlowTestCase):
 
         self.assertEqual(mark_response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn('topic_key', mark_response.json())
+
+    def test_only_a_held_topic_that_was_marked_offers_the_undo(self):
+        """A mark can be taken back; a top self-rating has no mark to take back.
+
+        The page shows the undo control only where it does something, so each
+        held entry says which kind of statement holds it.
+        """
+        session_id = self.create_owned_session()
+        self.client.post(
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
+            {'answers': {'backend-developer--internet-and-web': 5}, 'completed': False},
+            format='json',
+            HTTP_AUTHORIZATION=f'Token {self.token}',
+        )
+        self.mark(session_id, 'backend-developer--caching')
+
+        state = self.client.get(
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
+            HTTP_AUTHORIZATION=f'Token {self.token}',
+        ).json()
+        by_slug = {item['topic_slug']: item for item in state['topic_states']}
+
+        self.assertTrue(by_slug['backend-developer--caching']['held_by_mark'])
+        self.assertFalse(by_slug['backend-developer--internet-and-web']['held_by_mark'])
+        # A unit that is not held has no mark to speak of, so it carries no flag.
+        self.assertNotIn('held_by_mark', by_slug['backend-developer--data-storage'])
+
+    def test_a_set_held_by_a_top_rating_offers_no_undo_even_when_also_marked(self):
+        """Taking the mark back would leave the set held, so the control would do nothing."""
+        session_id = self.create_owned_session()
+        self.client.post(
+            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
+            {'answers': {'backend-developer--caching': 5}, 'completed': False},
+            format='json',
+            HTTP_AUTHORIZATION=f'Token {self.token}',
+        )
+        state = self.mark(session_id, 'backend-developer--caching').json()
+
+        caching = next(item for item in state['topic_states'] if item['topic_slug'] == 'backend-developer--caching')
+        self.assertEqual(caching['state'], 'held')
+        self.assertFalse(caching['held_by_mark'])
