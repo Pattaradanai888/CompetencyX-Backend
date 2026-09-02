@@ -8,7 +8,7 @@ sets:
     nodes: [introduction, 'what-is-an-ai-engineer?', ai-engineer-vs-ml-engineer, ai-vs-agi, impact-on-product-development, roles-and-responsiblities, llms, training, inference]
   - key: pre-trained-models
     title: Pre-trained models and model providers
-    title_th: โมเดลสำเร็จรูป (Pre-trained Models) และผู้ให้บริการโมเดล
+    title_th: Pre-trained Models และผู้ให้บริการโมเดล (OpenAI, Anthropic, Hugging Face)
     review: {status: draft}
     display_order: 2
     nodes: [pre-trained-models, limitations-and-considerations, benefits-of-pre-trained-models, openai-models, open-ai-models, capabilities---context-length, cut-off-dates---knowledge, anthropic's-claude, google's-gemini, azure-ai, aws-sagemaker, hugging-face-models, mistral-ai, cohere]
@@ -80,7 +80,7 @@ sets:
     nodes: [audio-processing, text-to-speech, speech-to-text, whisper-api]
   - key: ai-safety
     title: AI safety, security, and responsible use
-    title_th: ความปลอดภัยและการใช้ AI อย่างรับผิดชอบ
+    title_th: ความปลอดภัยของ AI และการใช้งานอย่างรับผิดชอบ (Prompt Injection, Bias)
     review: {status: draft}
     display_order: 14
     nodes: [ai-safety-and-ethics, prompt-injection-attacks, security-and-privacy-concerns, conducting-adversarial-testing, openai-moderation-api, adding-end-user-ids-in-prompts, bias-and-fairness, know-your-customers---usecases]

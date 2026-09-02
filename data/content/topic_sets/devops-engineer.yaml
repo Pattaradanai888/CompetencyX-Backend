@@ -98,7 +98,7 @@ sets:
     nodes: [infrastructure-monitoring, prometheus, grafana, zabbix, datadog, new-relic]
   - key: application-monitoring
     title: Application monitoring and tracing
-    title_th: การติดตามแอปพลิเคชันและ Distributed Tracing
+    title_th: การติดตามแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger)
     review: {status: draft}
     display_order: 17
     nodes: [application-monitoring, opentelemetry, jaeger]

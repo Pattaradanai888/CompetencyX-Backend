@@ -1,6 +1,6 @@
 # Assessable Topic Set review — Canonical Thai wording and grouping
 
-**Reviewed:** 2026-08-26, against all 26 files in `data/content/topic_sets/` (459 sets; 456 after #16).
+**Reviewed:** 2026-08-26, against all 26 files in `data/content/topic_sets/` (459 sets; 456 after #16). A second full pass on 2026-09-02 is recorded in §7.
 
 **Status: triage, not approval.** `CONTEXT.md` makes the Canonical Thai wording the
 authoritative definition of what an item means, and issue #7 states that the final review
@@ -319,3 +319,84 @@ transliteration spellings, the terms that stay in English), the gloss shape, and
 Response / Infrastructure as Code / Configuration Management / Secret / Virtualization renderings.
 The rest of 6.2 and whether a set is `reviewed` are not tested: the status flip is a person's
 action that the suite must not block.
+
+---
+
+## 7. Second full pass — 2026-09-02, all 456 sets read
+
+**Applied:** 2026-09-02, by an agent reading every set in all 26 files against its English
+title, its nodes, and the ADR-0004 rules. Every set is still `review: {status: draft}`.
+This pass is a full read, not a sample, so the person approving can start from "24 sets
+changed, 432 confirmed as written" instead of re-reading cold — but the confirmation is
+model-generated, and the `reviewed` flip stays a person's act (ADR-0004 decision 1).
+
+Mechanical state at the time of the pass: no set uses ความมั่นคงปลอดภัย, no gloss is
+conversational or longer than three names, `validate_topic_set_catalog` reports 0 roles
+without sets and 0 unknown nodes, and the persona harness passes its baseline.
+
+### 7.1 The 24 changes
+
+Each is an application of ADR-0004 decision 3 (working vocabulary, tool names in the gloss)
+or a plain correction; none changes which nodes a set covers.
+
+| File · set | Before | After |
+| --- | --- | --- |
+| ai-data-scientist · `statistics` | สถิติศาสตร์สำหรับการวิเคราะห์ข้อมูล | สถิติสำหรับการวิเคราะห์ข้อมูล |
+| ai-engineer · `pre-trained-models` | โมเดลสำเร็จรูป (Pre-trained Models) และผู้ให้บริการโมเดล | Pre-trained Models และผู้ให้บริการโมเดล (OpenAI, Anthropic, Hugging Face) |
+| ai-engineer · `ai-safety` | ความปลอดภัยและการใช้ AI อย่างรับผิดชอบ | ความปลอดภัยของ AI และการใช้งานอย่างรับผิดชอบ (Prompt Injection, Bias) |
+| android-developer · `local-storage` | การจัดเก็บข้อมูลบนเครื่อง (Room, DataStore, Shared Preferences) | การจัดเก็บข้อมูลบนเครื่อง (Room, DataStore, SharedPreferences) |
+| bi-analyst · `ethics-and-privacy` | จริยธรรมของข้อมูล ความเป็นส่วนตัว และอคติ (GDPR, CCPA) | จริยธรรมในการใช้ข้อมูล ความเป็นส่วนตัว และอคติ (GDPR, CCPA) |
+| cyber-security-engineer-analyst · `it-fundamentals` | ทักษะพื้นฐานด้านไอทีและฮาร์ดแวร์ | ทักษะพื้นฐานด้านไอที ฮาร์ดแวร์ และโปรแกรมสำนักงาน (MS Office, Google Workspace) |
+| cyber-security-engineer-analyst · `identity-and-access` | การยืนยันตัวตน การจัดการสิทธิ์ และวิทยาการเข้ารหัสลับ (SSO, MFA, PKI) | การยืนยันตัวตน การจัดการสิทธิ์ และการเข้ารหัสลับ (SSO, MFA, PKI) |
+| cyber-security-engineer-analyst · `endpoint-and-network-defense` | การป้องกันอุปกรณ์ปลายทางและเครือข่าย (EDR, Firewall, IDS/IPS) | การป้องกัน Endpoint และเครือข่าย (EDR, Firewall, IDS/IPS) |
+| cyber-security-engineer-analyst · `social-engineering` | การโจมตีด้วยวิศวกรรมสังคม (Phishing, Tailgating) | การโจมตีแบบ Social Engineering (Phishing, Tailgating) |
+| cyber-security-engineer-analyst · `network-attacks` | การโจมตีเครือข่าย การโจมตี Credential และการโจมตีเครือข่ายไร้สาย (MITM, DDoS, Evil Twin) | การโจมตีเครือข่าย, Credential และเครือข่ายไร้สาย (MITM, DDoS, Evil Twin) |
+| data-analyst · `big-data` | เทคโนโลยีข้อมูลขนาดใหญ่ (Hadoop, Spark) | เทคโนโลยี Big Data (Hadoop, Spark) |
+| software-architect · `big-data-processing` | การประมวลผลข้อมูลขนาดใหญ่ (Hadoop, Spark) | การประมวลผล Big Data (Hadoop, Spark) |
+| data-engineer · `messaging-systems` | ระบบส่งข้อความและสตรีมข้อมูล (Kafka, RabbitMQ) | ระบบ Messaging และ Streaming (Kafka, RabbitMQ) |
+| developer-relations · `developer-experience` | ประสบการณ์นักพัฒนาและการตลาดสำหรับนักพัฒนา | Developer Experience (DX) และ Developer Marketing |
+| developer-relations · `thought-leadership` | การสร้างชื่อเสียงในวงการและแบรนด์ส่วนบุคคล | การเป็น Thought Leader และการสร้าง Personal Brand |
+| devops-engineer · `application-monitoring` | การติดตามแอปพลิเคชันและ Distributed Tracing | การติดตามแอปพลิเคชันและ Distributed Tracing (OpenTelemetry, Jaeger) |
+| engineering-manager · `budget-and-vendors` | การวางแผนงบประมาณและการจัดการ Vendor กับพันธมิตร | การวางแผนงบประมาณ การจัดการ Vendor และพันธมิตร |
+| ios-developer · `graphics-and-media` | เฟรมเวิร์กด้านกราฟิก แอนิเมชัน และสื่อ | เฟรมเวิร์กด้านกราฟิก แอนิเมชัน และสื่อ (Core Animation, AVFoundation, Metal) |
+| machine-learning-engineer · `cnn-and-computer-vision` | โครงข่าย CNN และการประยุกต์ใช้ (Computer Vision) | CNN และการประยุกต์ใช้ด้าน Computer Vision |
+| product-manager · `go-to-market-and-release` | กลยุทธ์การออกสู่ตลาดและการปล่อยรีลีส (Go-to-Market) | กลยุทธ์การออกสู่ตลาด (Go-to-Market) และการปล่อย Release |
+| software-architect · `operations-knowledge` | ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD) | ความรู้ด้าน Operations (Cloud, Containers, CI/CD) |
+| software-architect · `management-and-methodologies` | ระเบียบวิธีส่งมอบแบบ Agile (Scrum, Kanban, SAFe) | แนวทางการส่งมอบงานแบบ Agile (Scrum, Kanban, SAFe) |
+| software-architect · `programming-paradigms` | กระบวนทัศน์การเขียนโปรแกรม (OOP, Functional, Reactive) | Programming Paradigms (OOP, Functional, Reactive) |
+| ux-designer · `interface-clarity` | ความชัดเจนของอินเทอร์เฟซและภาระทางความคิด | ความชัดเจนของอินเทอร์เฟซและ Cognitive Load |
+
+Why, grouped:
+
+- **Academic register where practitioners use English or plainer Thai** — วิทยาการเข้ารหัสลับ,
+  กระบวนทัศน์, ระเบียบวิธี, ปฏิบัติการ, ภาระทางความคิด, อุปกรณ์ปลายทาง, วิศวกรรมสังคม,
+  ข้อมูลขนาดใหญ่, สถิติศาสตร์. Same reasoning as the terms ADR-0004 decision 3 already lists.
+- **Thai that means something else** — ระบบส่งข้อความ reads as chat messaging, not a
+  messaging system; โมเดลสำเร็จรูป reads as an off-the-shelf product (§4 item 27); การสร้าง
+  ชื่อเสียง reads as becoming famous (§4 item 28); โครงข่าย CNN half-translates a term 6.2
+  keeps in English.
+- **Title under-covers the nodes** — cyber `it-fundamentals` (§4 item 17) now names the
+  office suites its nodes list; ios `graphics-and-media` and devops `application-monitoring`
+  gain the tool gloss their siblings have.
+- **Spelling and grammar** — `SharedPreferences` is one word; `Google Workspace` is the
+  product's current name; the Vendor set's กับ was the wrong conjunction; the network-attacks
+  set repeated การโจมตี three times.
+
+### 7.2 Open items from §4 and §6.1, decided
+
+| Item | Decision | Reason |
+| --- | --- | --- |
+| §4 17 · cyber `it-fundamentals` | Changed (above) | The nodes are hardware plus office suites plus basic networking; the title now says so. |
+| §4 18 · cyber `secure-protocols` mixes secure and insecure protocols | **Kept as written** | The English title has the same mix ("Protocols and secure transport"), and a respondent who knows SSH/TLS/IPsec is the one the set is anchored on. The insecure protocols are there as the contrast the roadmap draws. |
+| §4 25 · server-side-game `ai-and-data-processing` | **Kept** | It is a real section of the imported roadmap; the wording states exactly what it bundles, and dropping it sends nine nodes to the backlog for no wording gain. |
+| §4 26 · software-architect `collaboration-tools`, `enterprise-software` | **Kept** | Both read as category familiarity, the same construct as a languages or databases set: nobody holds every name in the gloss, and the rating is over the category. Narrowing (decision 5) has no primary skill to narrow to. |
+| §4 27 · ai-engineer `pre-trained-models` | Changed (above) | — |
+| §4 28 · developer-relations `thought-leadership` | Changed (above) | — |
+| §6.2 · data-engineer ธรรมาภิบาลข้อมูล vs devsecops การกำกับดูแล | **Confirmed as two constructs** | ธรรมาภิบาลข้อมูล is the established Thai for *data governance*; การกำกับดูแล is the GRC sense. |
+| §6.2 · devops `container-orchestration` as การจัดการคอนเทนเนอร์ | **Kept** | #17 settled it and data-engineer conforms; Container Orchestration in English would be equally defensible under decision 3 but is not worth reopening a settled rendering. |
+
+### 7.3 What the approver still has to do
+
+Flip `review.status` to `reviewed` per set, or per file, after reading. Nothing in this
+document, and nothing an agent runs, does that. Once every set is reviewed,
+`validate_topic_set_catalog --strict` passes and issue #7 can close.

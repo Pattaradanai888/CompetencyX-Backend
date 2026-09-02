@@ -74,7 +74,7 @@ sets:
     nodes: [types-of-data-ingestion, batch, streaming, realtime, hybrid, data-pipelines, extract-data, transform-data, load-data, apache-airflow, dbt, luigi, perfect]
   - key: messaging-systems
     title: Messaging and streaming systems
-    title_th: ระบบส่งข้อความและสตรีมข้อมูล (Kafka, RabbitMQ)
+    title_th: ระบบ Messaging และ Streaming (Kafka, RabbitMQ)
     review: {status: draft}
     display_order: 13
     nodes: [messaging-systems, 'what-and-why-use-them?', async-vs-sync-communication, messages-vs-streams, best-practices, apache-kafka, rabbitmq, aws-sqs, aws-sns]

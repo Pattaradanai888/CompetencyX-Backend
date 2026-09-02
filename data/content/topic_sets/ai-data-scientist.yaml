@@ -8,7 +8,7 @@ sets:
     nodes: [mathematics]
   - key: statistics
     title: Statistics
-    title_th: สถิติศาสตร์สำหรับการวิเคราะห์ข้อมูล
+    title_th: สถิติสำหรับการวิเคราะห์ข้อมูล
     review: {status: draft}
     display_order: 2
     nodes: [statistics]

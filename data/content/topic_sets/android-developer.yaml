@@ -68,7 +68,7 @@ sets:
     nodes: [dependency-injection, dagger, koin, hilt, kodein]
   - key: local-storage
     title: Local data storage
-    title_th: การจัดเก็บข้อมูลบนเครื่อง (Room, DataStore, Shared Preferences)
+    title_th: การจัดเก็บข้อมูลบนเครื่อง (Room, DataStore, SharedPreferences)
     review: {status: draft}
     display_order: 12
     nodes: [storage, shared-preferences, datastore, room-database, file-system]

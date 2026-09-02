@@ -20,7 +20,7 @@ sets:
     nodes: [ios-architecture, cocoa-touch, core-os, core-services, media]
   - key: graphics-and-media
     title: Graphics, animation, and media frameworks
-    title_th: เฟรมเวิร์กด้านกราฟิก แอนิเมชัน และสื่อ
+    title_th: เฟรมเวิร์กด้านกราฟิก แอนิเมชัน และสื่อ (Core Animation, AVFoundation, Metal)
     review: {status: draft}
     display_order: 4
     nodes: [core-graphics, core-animation, core-image, core-audio, avfoundation, metal, 'basics---creating-animations', lottie]

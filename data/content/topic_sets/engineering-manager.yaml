@@ -74,7 +74,7 @@ sets:
     nodes: [product-strategy-alignment, feature-prioritization, business-case-development, roi-analysis, market-awareness, competitive-analysis]
   - key: budget-and-vendors
     title: Budgeting, Vendors and Partnerships
-    title_th: การวางแผนงบประมาณและการจัดการ Vendor กับพันธมิตร
+    title_th: การวางแผนงบประมาณ การจัดการ Vendor และพันธมิตร
     review: {status: draft}
     display_order: 13
     nodes: [budget-planning, resource-forecasting, cost-optimization, vendor-management, vendor-relationships, technical-partnerships, technology-partnerships, external-collaboration]

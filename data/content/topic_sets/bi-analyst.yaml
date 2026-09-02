@@ -104,7 +104,7 @@ sets:
     nodes: [communication-and-storytelling, storytelling-framework, writing-executive-summaries, presentation-design, dashboard-design, relevance, timeliness, accesibility, interpretability, accuracy, coherence]
   - key: ethics-and-privacy
     title: Data ethics, privacy, and bias
-    title_th: จริยธรรมของข้อมูล ความเป็นส่วนตัว และอคติ (GDPR, CCPA)
+    title_th: จริยธรรมในการใช้ข้อมูล ความเป็นส่วนตัว และอคติ (GDPR, CCPA)
     review: {status: draft}
     display_order: 18
     nodes: [ethical-data-use, gdpr, ccpa, algorithmic-bias, privacy, bias-recognition, mitigation-strategies]

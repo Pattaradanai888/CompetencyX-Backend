@@ -26,7 +26,7 @@ sets:
     nodes: [technical-skills, programming-languages, 'java---kotlin---scala', python, ruby, go, 'javascript---typescript', '.net-framework-based']
   - key: programming-paradigms
     title: Programming paradigms
-    title_th: กระบวนทัศน์การเขียนโปรแกรม (OOP, Functional, Reactive)
+    title_th: Programming Paradigms (OOP, Functional, Reactive)
     review: {status: draft}
     display_order: 5
     nodes: [oop, functional-programming, reactive-programming]
@@ -68,7 +68,7 @@ sets:
     nodes: [working-with-data, sql-databases, nosql-databases, 'etl,-datawarehouses', datawarehouse-principles]
   - key: big-data-processing
     title: Big data processing
-    title_th: การประมวลผลข้อมูลขนาดใหญ่ (Hadoop, Spark)
+    title_th: การประมวลผล Big Data (Hadoop, Spark)
     review: {status: draft}
     display_order: 12
     nodes: [apache-spark, hadoop, 'hadoop,-spark,-mapreduce']
@@ -80,7 +80,7 @@ sets:
     nodes: ['web,-mobile', 'react,-vue,-angular', 'spa,-ssr,-ssg', microfrontends, w3c-and-whatwg]
   - key: operations-knowledge
     title: Operations knowledge
-    title_th: ความรู้ด้านปฏิบัติการ (Cloud, Containers, CI/CD)
+    title_th: ความรู้ด้าน Operations (Cloud, Containers, CI/CD)
     review: {status: draft}
     display_order: 14
     nodes: [operations-knowledge, infrastructure-as-code, cloud-providers, serverless-concepts, 'linux---unix', service-mesh, 'ci---cd', containers, cloud-design-patterns]
@@ -104,7 +104,7 @@ sets:
     nodes: [frameworks, togaf, iaf, babok, 'emc-dms']
   - key: management-and-methodologies
     title: Agile delivery methodologies
-    title_th: ระเบียบวิธีส่งมอบแบบ Agile (Scrum, Kanban, SAFe)
+    title_th: แนวทางการส่งมอบงานแบบ Agile (Scrum, Kanban, SAFe)
     review: {status: draft}
     display_order: 18
     nodes: [less, safe, kanban, scrum, xp]

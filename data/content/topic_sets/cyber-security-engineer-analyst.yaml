@@ -2,7 +2,7 @@ role_slug: cyber-security-engineer-analyst
 sets:
   - key: it-fundamentals
     title: Fundamental IT skills
-    title_th: ทักษะพื้นฐานด้านไอทีและฮาร์ดแวร์
+    title_th: ทักษะพื้นฐานด้านไอที ฮาร์ดแวร์ และโปรแกรมสำนักงาน (MS Office, Google Workspace)
     review: {status: draft}
     display_order: 1
     nodes: [fundamental-it-skills, computer-hardware-components, connection-types-and-their-function, os-independent-troubleshooting, understand-basics-of-popular-suites, ms-office-suite, google-suite, basics-of-computer-networking, bluetooth, infrared, nfc, wifi]
@@ -38,7 +38,7 @@ sets:
     nodes: [nslookup, dig, ping, netstat, ipconfig, route, tracert, tcpdump, nmap, hping, curl, port-scanners, packet-sniffers, protocol-analyzers, iptables, cat, head, tail, grep, dd]
   - key: identity-and-access
     title: Identity, access, and cryptography
-    title_th: การยืนยันตัวตน การจัดการสิทธิ์ และวิทยาการเข้ารหัสลับ (SSO, MFA, PKI)
+    title_th: การยืนยันตัวตน การจัดการสิทธิ์ และการเข้ารหัสลับ (SSO, MFA, PKI)
     review: {status: draft}
     display_order: 7
     nodes: [kerberos, ldap, sso, radius, certificates, local-auth, authentication-vs-authorization, mfa-and-2fa, hashing, salting, key-exchange, pki, private-vs-public-keys, obfuscation]
@@ -68,19 +68,19 @@ sets:
     nodes: [siem, soar, kali-linux, parrotos, lolbas, gtfobins, wadcoms, event-logs, syslogs, netflow, packet-captures, firewall-logs]
   - key: endpoint-and-network-defense
     title: Endpoint and network defense
-    title_th: การป้องกันอุปกรณ์ปลายทางและเครือข่าย (EDR, Firewall, IDS/IPS)
+    title_th: การป้องกัน Endpoint และเครือข่าย (EDR, Firewall, IDS/IPS)
     review: {status: draft}
     display_order: 12
     nodes: [endpoint-security, antivirus, antimalware, edr, dlp, host-based-firewall, 'firewall-and-nextgen-firewall', basics-of-ids-and-ips, hips, nids, nips, sandboxing, honeypots, operating-system-hardening, patching, acl, acls, 'mac-based', 'nac-based', port-blocking, group-policy, sinkholes, jump-server]
   - key: social-engineering
     title: Social engineering attacks
-    title_th: การโจมตีด้วยวิศวกรรมสังคม (Phishing, Tailgating)
+    title_th: การโจมตีแบบ Social Engineering (Phishing, Tailgating)
     review: {status: draft}
     display_order: 13
     nodes: [social-engineering, phishing, whishing, whaling, smishing, spam-vs-spim, shoulder-surfing, dumpster-diving, tailgating, impersonation, typo-squatting, watering-hole-attack, drive-by-attack]
   - key: network-attacks
     title: Network, credential, and wireless attacks
-    title_th: การโจมตีเครือข่าย การโจมตี Credential และการโจมตีเครือข่ายไร้สาย (MITM, DDoS, Evil Twin)
+    title_th: การโจมตีเครือข่าย, Credential และเครือข่ายไร้สาย (MITM, DDoS, Evil Twin)
     review: {status: draft}
     display_order: 14
     nodes: [mitm, spoofing, dns-poisoning, vlan-hopping, dos-vs-ddos, brute-force-vs-password-spray, replay-attack, pass-the-hash, reconnaissance, privilege-escalation, eap-vs-peap, wps, wpa-vs-wpa2-vs-wpa3-vs-wep, evil-twin, rogue-access-point, deauth-attack]

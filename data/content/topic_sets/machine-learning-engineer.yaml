@@ -86,7 +86,7 @@ sets:
     nodes: ['neural-network-(nn)-basics', 'perceptron,-multi-layer-perceptrons', activation-functions, forward-propagation, back-propagation, loss-functions]
   - key: cnn-and-computer-vision
     title: Convolutional neural networks and computer vision
-    title_th: โครงข่าย CNN และการประยุกต์ใช้ (Computer Vision)
+    title_th: CNN และการประยุกต์ใช้ด้าน Computer Vision
     review: {status: draft}
     display_order: 15
     nodes: [convolutional-neural-network, convolution, pooling, strides, padding, applications-of-cnns, image-classification, image-segmentation, image-and-video-recognition]

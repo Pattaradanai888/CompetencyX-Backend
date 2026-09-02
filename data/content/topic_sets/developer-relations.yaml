@@ -8,7 +8,7 @@ sets:
     nodes: ['what-is-devrel?', history-and-evolution, importance-of-devrel, advocacy, education, community-support, content-creation, feedback-loop]
   - key: developer-experience
     title: Developer experience and marketing
-    title_th: ประสบการณ์นักพัฒนาและการตลาดสำหรับนักพัฒนา
+    title_th: Developer Experience (DX) และ Developer Marketing
     review: {status: draft}
     display_order: 2
     nodes: [developer-experience, developer-journey, developer-marketing]
@@ -116,7 +116,7 @@ sets:
     nodes: [key-metrics, developer-satisfaction, community-growth, engagement-rates, content-performance, social-media-analytics, platform-specific-analytics, analytics-and-optimization, data-driven-strategy-shift, tools, google-analytics, reporting, regular-reports, data-visualization, insights-and-recommendations]
   - key: thought-leadership
     title: Thought leadership and personal brand
-    title_th: การสร้างชื่อเสียงในวงการและแบรนด์ส่วนบุคคล
+    title_th: การเป็น Thought Leader และการสร้าง Personal Brand
     review: {status: draft}
     display_order: 20
     nodes: [thought-leadership, publishing, media-appearances, conference-speaking, building-a-personal-brand, networking-strategies, meetups, open-source, continuous-learning]

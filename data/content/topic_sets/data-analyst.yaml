@@ -98,7 +98,7 @@ sets:
     nodes: ['deep-learning-(optional)', neural-networks, cnns, rnn, tensorflow, pytorch, image-recognition, natural-language-processing]
   - key: big-data
     title: Big data technologies
-    title_th: เทคโนโลยีข้อมูลขนาดใหญ่ (Hadoop, Spark)
+    title_th: เทคโนโลยี Big Data (Hadoop, Spark)
     review: {status: draft}
     display_order: 17
     nodes: [big-data-technologies, big-data-concepts, parallel-processing, hadoop, spark, mpi, mapreduce]

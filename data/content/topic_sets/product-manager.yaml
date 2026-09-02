@@ -86,7 +86,7 @@ sets:
     nodes: [agile-methodology, kanban-basics, scrum-basics, sprint-planning, daily-standups, retrospectives, project-management-tools, jira, linear, trello]
   - key: go-to-market-and-release
     title: Go-to-Market and Release Strategies
-    title_th: กลยุทธ์การออกสู่ตลาดและการปล่อยรีลีส (Go-to-Market)
+    title_th: กลยุทธ์การออกสู่ตลาด (Go-to-Market) และการปล่อย Release
     review: {status: draft}
     display_order: 15
     nodes: [go-to-market-strategy, launch-planning, marketing-strategies, strategic-partners, identify-partners, managing-partnerships, release-strategies, feature-toggles, phased-rollouts, dark-launches]

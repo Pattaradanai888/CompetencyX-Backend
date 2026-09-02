@@ -68,7 +68,7 @@ sets:
     nodes: [ux-best-practices, 'in-general,-keep-it-short-and-simple', make-it-easy-to-understand-and-complete, make-progress-visible-to-user, make-progress-meaningful-to-reward-user, make-successful-completion-clearly-visible]
   - key: interface-clarity
     title: Interface clarity and cognitive load
-    title_th: ความชัดเจนของอินเทอร์เฟซและภาระทางความคิด
+    title_th: ความชัดเจนของอินเทอร์เฟซและ Cognitive Load
     review: {status: draft}
     display_order: 12
     nodes: [clear-the-page-of-distractions, 'make-it-clear,-where-to-act', tell-user-what-the-action-is-and-ask-for-it, make-ui-professional-and-beautiful, avoid-cognitive-overhead, avoid-choice-overload]
