@@ -211,7 +211,7 @@ Thai without rebuilding a sentence on the client; the prerequisite names a reaso
 
 | Field | On | Notes |
 | --- | --- | --- |
-| `topic_title` / `topic_title_th` | every entry | The set's wording in each language. A set whose Thai wording is still empty carries `null` in every `_th` field (and no `translations.th` in the catalog), so the page falls back deliberately rather than reading English as Thai; a unit derived from an imported roadmap repeats its English title, as its Thai prompt does |
+| `topic_title` / `topic_title_th` | every entry | The set's wording in each language. A set whose Thai wording is still empty carries `null` in every `_th` field (and no `translations.th` in the catalog), so the page falls back deliberately rather than reading English as Thai |
 | `state` | every entry | `held`, `assessed_gap`, or `unassessed` |
 | `mastery` | every entry | Self-placed Mastery `0.0`–`1.0`; `null` when the set was never rated, including a set held by a mark alone |
 | `statement` / `statement_th` | `held` entries | The respondent's own statement ("You said you can already work on …"), never a verdict |

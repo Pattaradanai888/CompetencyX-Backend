@@ -1,14 +1,16 @@
-"""Skill Assessment items are anchored to the chosen role's roadmap topics.
+"""Skill Assessment items are anchored to the chosen role's Assessable Topic Sets.
 
-These cover the claims ADR-0002 makes: the instrument differs by role, the
-recommendation follows from the answers, and a role without an imported
-roadmap still gets a usable assessment.
+These cover the claims ADR-0002 and ADR-0003 make: the instrument differs by
+role, the recommendation follows from the answers, and a role whose sets are
+not authored still gets a usable assessment -- from the role-independent
+items, never from anything read off its imported roadmap.
 """
 
 from django.core.management import call_command
 from django.test import TestCase
 
-from assessments.models import AssessmentSession, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
+from assessments.models import AssessableTopicSet, AssessmentSession, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
+from assessments.services.assessable_topic_set_service import build_set_key
 from assessments.services.skill_assessment_service import (
     get_skill_assessment_catalog,
     get_skill_assessment_state,
@@ -16,29 +18,39 @@ from assessments.services.skill_assessment_service import (
     list_skill_assessment_role_guidance,
 )
 from assessments.services.topic_skill_assessment_service import (
-    MAX_TOPIC_QUESTIONS_PER_ROLE,
     build_readiness_summary,
     build_topic_targets,
     get_topic_mastery,
-    is_assessable_topic_title,
     scale_value_to_mastery,
-    select_assessable_topics,
+    select_assessable_units,
     sync_topic_skill_assessment_catalog,
 )
-from roadmaps.external_roadmap import build_external_roadmap_topics
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
 
 
-def _node(role, external_id, slug, title, order, node_type=ExternalRoadmapNode.NodeType.TOPIC):  # noqa: PLR0913 - node identity plus its place in the graph
+def _node(role, external_id, slug, title, order):
     return ExternalRoadmapNode.objects.create(
         role=role,
         external_id=external_id,
         slug=slug,
         title=title,
-        node_type=node_type,
+        node_type=ExternalRoadmapNode.NodeType.TOPIC,
         display_order=order,
         source='roadmap.sh',
     )
+
+
+def _set(role, key, title, nodes, order):
+    topic_set = AssessableTopicSet.objects.create(
+        set_key=build_set_key(role.slug, key),
+        key=key,
+        role=role,
+        title=title,
+        node_slugs=[node.slug for node in nodes],
+        display_order=order,
+    )
+    topic_set.nodes.set(nodes)
+    return topic_set
 
 
 class TopicSkillAssessmentTests(TestCase):
@@ -46,24 +58,31 @@ class TopicSkillAssessmentTests(TestCase):
     def setUpTestData(cls):
         cls.backend = Role.objects.create(slug='backend-developer', name='Backend Developer')
         cls.ux = Role.objects.create(slug='ux-designer', name='UX Designer')
-        cls.uncovered = Role.objects.create(slug='blockchain-developer', name='Blockchain Developer')
+        cls.unauthored = Role.objects.create(slug='blockchain-developer', name='Blockchain Developer')
 
         cls.http = _node(cls.backend, 'b1', 'http', 'HTTP Fundamentals', 1)
         cls.databases_topic = _node(cls.backend, 'b2', 'databases', 'Databases', 2)
         cls.caching = _node(cls.backend, 'b3', 'caching', 'Caching', 3)
-        _node(cls.backend, 'b4', 'redis', 'Redis', 4, ExternalRoadmapNode.NodeType.SUBTOPIC)
         ExternalRoadmapEdge.objects.create(role=cls.backend, source_node=cls.http, target_node=cls.databases_topic)
+        _set(cls.backend, 'http', 'HTTP Fundamentals', [cls.http], 1)
+        _set(cls.backend, 'databases', 'Databases', [cls.databases_topic], 2)
+        _set(cls.backend, 'caching', 'Caching', [cls.caching], 3)
 
-        _node(cls.ux, 'u1', 'research', 'User Research', 1)
-        _node(cls.ux, 'u2', 'prototyping', 'Prototyping', 2)
+        research = _node(cls.ux, 'u1', 'research', 'User Research', 1)
+        prototyping = _node(cls.ux, 'u2', 'prototyping', 'Prototyping', 2)
+        _set(cls.ux, 'research', 'User Research', [research], 1)
+        _set(cls.ux, 'prototyping', 'Prototyping', [prototyping], 2)
+
+        # A roadmap with no authored sets: there is content to read off it,
+        # and none of it may become an item.
+        _node(cls.unauthored, 'c1', 'solidity', 'Solidity', 1)
 
         sync_topic_skill_assessment_catalog()
 
-    def _answers(self, role, **by_slug):
-        questions = SkillAssessmentQuestion.objects.filter(role=role, is_active=True)
-        return {q.question_id: by_slug[q.topic_slug] for q in questions if q.topic_slug in by_slug}
+    def _answers(self, role, **by_key):
+        return {build_set_key(role.slug, key): value for key, value in by_key.items()}
 
-    def test_each_role_is_asked_about_its_own_topics(self):
+    def test_each_role_is_asked_about_its_own_sets(self):
         backend_questions = list_skill_assessment_questions('backend-developer')
         ux_questions = list_skill_assessment_questions('ux-designer')
 
@@ -76,60 +95,28 @@ class TopicSkillAssessmentTests(TestCase):
         for question in backend_questions:
             self.assertIn(question['topic_title'], question['prompt'])
 
-    def test_subtopics_are_not_asked_about(self):
-        # Subtopics are frequently interchangeable alternatives; asking about each
-        # would balloon the questionnaire without telling us anything extra.
-        titles = {q['topic_title'] for q in list_skill_assessment_questions('backend-developer')}
-        self.assertNotIn('Redis', titles)
-
-    def test_navigational_nodes_are_not_assessed_but_stay_on_the_roadmap(self):
-        # "I could work on Pick a Language in a real project" is not answerable;
-        # the node is still a legitimate step of the roadmap, so it is filtered
-        # here rather than dropped at import.
-        _node(self.ux, 'u3', 'pick-a-tool', 'Pick a Design Tool', 3)
-        _node(self.ux, 'u4', 'learn-figma', 'Learn Figma', 4)
-
-        sync_topic_skill_assessment_catalog()
-
-        assessed = {q['topic_title'] for q in list_skill_assessment_questions('ux-designer')}
-        self.assertNotIn('Pick a Design Tool', assessed)
-        self.assertNotIn('Learn Figma', assessed)
-        self.assertIn('User Research', assessed)
-
-        roadmap_titles = {topic['title'] for topic in build_external_roadmap_topics(self.ux)}
-        self.assertIn('Pick a Design Tool', roadmap_titles)
-
-    def test_instruction_titles_are_recognised(self):
-        self.assertFalse(is_assessable_topic_title('Pick a Language'))
-        self.assertFalse(is_assessable_topic_title('Learn SQL'))
-        self.assertFalse(is_assessable_topic_title('Visit the DevOps Roadmap'))
-        self.assertTrue(is_assessable_topic_title('Learning Management Systems'))
-        self.assertTrue(is_assessable_topic_title('Prototyping'))
-
-    def test_a_role_without_an_imported_roadmap_falls_back_to_the_shared_items(self):
-        self.assertEqual(select_assessable_topics(self.uncovered), [])
+    def test_a_role_without_authored_sets_is_not_assessed_from_its_roadmap(self):
+        # The items once derived from the imported graph are gone: that
+        # derivation is what asked Cyber Security six questions against 301
+        # nodes and never asked Backend Developer about Git (ADR-0003). A
+        # role whose sets are not authored falls back to the role-independent
+        # items.
+        self.assertEqual(select_assessable_units(self.unauthored), [])
+        self.assertFalse(SkillAssessmentQuestion.objects.filter(role=self.unauthored).exists())
 
         questions = list_skill_assessment_questions('blockchain-developer')
 
         self.assertTrue(questions)
         self.assertTrue(all(question['topic_slug'] == '' for question in questions))
 
-    def test_the_question_count_is_capped(self):
-        for index in range(MAX_TOPIC_QUESTIONS_PER_ROLE + 5):
-            _node(self.ux, f'extra-{index}', f'extra-{index}', f'Extra {index}', 10 + index)
-
-        sync_topic_skill_assessment_catalog()
-
-        self.assertEqual(len(list_skill_assessment_questions('ux-designer')), MAX_TOPIC_QUESTIONS_PER_ROLE)
-
     def test_ratings_become_per_topic_mastery(self):
         answers = self._answers(self.backend, http=5, databases=3, caching=1)
 
         mastery = get_topic_mastery(self.backend, answers)
 
-        self.assertEqual(mastery['http'], 1.0)
-        self.assertEqual(mastery['caching'], 0.0)
-        self.assertAlmostEqual(mastery['databases'], 0.5)
+        self.assertEqual(mastery['backend-developer--http'], 1.0)
+        self.assertEqual(mastery['backend-developer--caching'], 0.0)
+        self.assertAlmostEqual(mastery['backend-developer--databases'], 0.5)
         self.assertEqual(scale_value_to_mastery(99), 1.0)
         self.assertEqual(scale_value_to_mastery(None), 0.0)
 
@@ -145,8 +132,8 @@ class TopicSkillAssessmentTests(TestCase):
         # this roadmap, not one number applied to every role (ADR-0002, ticket 006).
         targets = build_topic_targets(self.backend)
 
-        self.assertGreater(targets['http'], targets['caching'])
-        self.assertEqual(targets['caching'], targets['databases'])
+        self.assertGreater(targets['backend-developer--http'], targets['backend-developer--caching'])
+        self.assertEqual(targets['backend-developer--caching'], targets['backend-developer--databases'])
         self.assertLessEqual(max(targets.values()), 1.0)
 
     def test_the_readiness_target_differs_between_roles(self):
@@ -180,8 +167,8 @@ class TopicSkillAssessmentTests(TestCase):
 
         state = get_skill_assessment_state(session)
 
-        self.assertEqual(state['topic_mastery']['http'], 1.0)
-        self.assertNotIn('http', {item['topic_slug'] for item in state['recommended_topics']})
+        self.assertEqual(state['topic_mastery']['backend-developer--http'], 1.0)
+        self.assertNotIn('backend-developer--http', {item['topic_slug'] for item in state['recommended_topics']})
         self.assertTrue(state['recommended_topics'])
 
 

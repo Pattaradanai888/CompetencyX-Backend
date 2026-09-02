@@ -15,6 +15,7 @@ import yaml
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 
+from assessments.management.commands.draft_topic_sets import is_assessable_topic_title
 from assessments.models import AssessableTopicSet
 from assessments.services import assessable_topic_set_service
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
@@ -81,6 +82,16 @@ class DraftTopicSetsTests(TestCase):
         self.assertGreaterEqual(len(assigned), 25)
         self.assertIn('topic-01', assigned)
         self.assertNotIn('pick-a-language', assigned)
+
+    def test_instruction_titles_are_recognised(self):
+        # "I could work on Pick a Language in a real project" is not a
+        # question anybody can answer, so a navigational node is left for the
+        # reviewer rather than drafted into a set.
+        self.assertFalse(is_assessable_topic_title('Pick a Language'))
+        self.assertFalse(is_assessable_topic_title('Learn SQL'))
+        self.assertFalse(is_assessable_topic_title('Visit the DevOps Roadmap'))
+        self.assertTrue(is_assessable_topic_title('Learning Management Systems'))
+        self.assertTrue(is_assessable_topic_title('Prototyping'))
 
     def test_the_draft_records_which_nodes_were_left_unassigned(self):
         self.run_draft()

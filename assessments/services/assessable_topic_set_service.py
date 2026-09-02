@@ -35,8 +35,8 @@ def build_set_key(role_slug: str, key: str) -> str:
 def load_assessable_topic_sets() -> list[dict]:
     """Every authored set, in file then authored order, with its key resolved.
 
-    Returns ``[]`` when no role has been authored yet, which is the signal for
-    every role to keep the items derived from its imported roadmap.
+    Returns ``[]`` when no role has been authored yet, which the sync treats
+    as "the content is not here" rather than as a catalog to retire.
     """
     directory = TOPIC_SET_CONTENT_DIR
     if not directory.exists():
@@ -99,8 +99,8 @@ def sync_assessable_topic_sets(*, stdout=None) -> dict[str, int]:
     Authoring nothing at all is treated as "the content is not here" rather
     than "every set was retired": a deploy with the content directory missing
     would otherwise deactivate the whole catalog and drop every role back to
-    its derived topics. Emptying the catalog deliberately is a database
-    operation, not a sync.
+    the role-independent items. Emptying the catalog deliberately is a
+    database operation, not a sync.
     """
     authored = load_assessable_topic_sets()
     roles_by_slug = {role.slug: role for role in Role.objects.filter(slug__in={entry['role_slug'] for entry in authored})}
@@ -135,7 +135,7 @@ def sync_assessable_topic_sets(*, stdout=None) -> dict[str, int]:
 
     if stdout is not None:
         if not authored:
-            stdout.write(f'No Assessable Topic Sets are authored in "{TOPIC_SET_CONTENT_DIR}"; every role keeps its derived topics.')
+            stdout.write(f'No Assessable Topic Sets are authored in "{TOPIC_SET_CONTENT_DIR}"; the catalog is left as it is.')
         else:
             stdout.write(f'Synced {sum(synced.values())} Assessable Topic Sets across {len(synced)} roles.')
     return synced
@@ -144,11 +144,10 @@ def sync_assessable_topic_sets(*, stdout=None) -> dict[str, int]:
 def select_assessable_topic_sets(role: Role) -> list[dict]:
     """The role's active sets as assessable units, in authored order.
 
-    The shape matches what :func:`select_assessable_topics` returns for a role
-    with no authored sets, so everything downstream -- the catalog, mastery, the
-    readiness targets -- reads one kind of unit. Prerequisites and follow-ons are
-    the union of those of the covered nodes, with the set's own nodes removed:
-    a dependency inside a set is not a dependency of the set.
+    This is the one unit everything downstream -- the catalog, mastery, the
+    readiness targets -- reads. Prerequisites and follow-ons are the union of
+    those of the covered nodes, with the set's own nodes removed: a dependency
+    inside a set is not a dependency of the set.
     """
     topic_sets = list(AssessableTopicSet.objects.filter(role=role, is_active=True).prefetch_related('nodes'))
     if not topic_sets:

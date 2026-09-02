@@ -1,13 +1,17 @@
-"""Build the Skill Assessment from each role's own roadmap topics.
+"""Build the Skill Assessment from each role's Assessable Topic Sets.
 
 The previous instrument asked eleven general PSP/SDLC process statements that
 were identical for every role, so nothing it produced could be readiness *for a
-role* (ADR-0002). Items are now generated per role from the top-level topics of
-that role's imported roadmap, and the rating a respondent gives a topic is the
-mastery used to gate prerequisites and to choose what to recommend next.
+role* (ADR-0002). Items are now generated per role from the Assessable Topic
+Sets authored for it, and the rating a respondent gives a set is the mastery
+used to gate prerequisites and to choose what to recommend next.
 
-Roles without an imported roadmap keep the role-independent fallback items, so
-the assessment never comes back empty.
+Nothing is read off the imported roadmap graph any more. The derivation that
+did -- the first twelve nodes typed ``topic`` -- is what assessed Cyber
+Security Engineer/Analyst with six items against 301 nodes and never asked
+Backend Developer about Git, and it was retired once every role had authored
+sets (ADR-0003, issue #7). A role whose sets are not authored keeps the
+role-independent items, so the assessment never comes back empty.
 
 Every assessable unit is in exactly one of three states (ADR-0003): **Held**
 (Self-placed Mastery at or above the threshold -- the respondent's own
@@ -19,15 +23,9 @@ never reported as absent capability.
 from collections import defaultdict
 
 from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion
-from assessments.services.assessable_topic_set_service import build_set_key, select_assessable_topic_sets
-from roadmaps.external_roadmap import build_external_roadmap_topics
+from assessments.services.assessable_topic_set_service import select_assessable_topic_sets
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
 
-
-# Top-level topic counts run from 6 to 59 per role. Asking every one of them is
-# not a questionnaire anybody finishes, so the sequence is cut here; topics come
-# in prerequisite order, so the cut keeps the earliest ones.
-MAX_TOPIC_QUESTIONS_PER_ROLE = 12
 
 # A rating of 1..5 on the shared agreement scale maps onto 0.0..1.0 mastery.
 SCALE_MIN = 1
@@ -49,60 +47,14 @@ def scale_value_to_mastery(value) -> float:
     return max(0.0, min(1.0, normalized))
 
 
-# Roadmap graphs carry navigational nodes addressed to the reader rather than
-# named skills -- "Pick a Language", "Learn SQL", "Visit the DevOps Roadmap".
-# They belong on the roadmap, but "I could work on Pick a Language in a real
-# project" is not a question anybody can answer, so they are not assessed.
-INSTRUCTION_TITLE_PREFIXES = ('pick ', 'learn ', 'visit ', 'choose ', 'read ', 'explore ', 'go to ')
-
-
-def is_assessable_topic_title(title: str) -> bool:
-    return not title.strip().lower().startswith(INSTRUCTION_TITLE_PREFIXES)
-
-
-def select_assessable_topics(role: Role) -> list[dict]:
-    """The role's top-level roadmap topics, in prerequisite order, capped.
-
-    Navigational nodes are filtered out here rather than at import, so the
-    roadmap still shows them as steps while the assessment does not ask about
-    them. Returns ``[]`` for a role with no imported roadmap, which is the
-    signal to fall back to the role-independent items.
-    """
-    topics = build_external_roadmap_topics(role)
-    top_level = [
-        topic
-        for topic in topics
-        if topic['node_type'] == 'topic' and is_assessable_topic_title(topic['title'])
-    ]
-    return [
-        {
-            **topic,
-            'node_slugs': [topic['slug']],
-            'question_id': build_set_key(role.slug, topic['slug']),
-        }
-        for topic in top_level[:MAX_TOPIC_QUESTIONS_PER_ROLE]
-    ]
-
-
 def select_assessable_units(role: Role) -> list[dict]:
-    """What this role is assessed on: its authored sets, or its derived topics.
+    """What this role is assessed on: its active Assessable Topic Sets.
 
-    Authored Assessable Topic Sets are the unit ADR-0003 settled on, and they
-    win wherever they exist. A role whose sets have not been authored yet keeps
-    the items derived from its imported roadmap, so no role loses its
-    topic-anchored assessment while the content is being written.
+    Authored sets are the only assessable unit (ADR-0003). A role with none
+    returns ``[]``, which is the signal to serve the role-independent items;
+    every curated role has authored sets, and a test guards that.
     """
-    return select_assessable_topic_sets(role) or select_assessable_topics(role)
-
-
-def build_question_id(role: Role, topic_slug: str) -> str:
-    """The catalog key for a role's item.
-
-    Composed by :func:`build_set_key`, so an item generated from an Assessable
-    Topic Set is keyed by that set's own ``set_key`` rather than by a second
-    string that happens to match it.
-    """
-    return build_set_key(role.slug, topic_slug)
+    return select_assessable_topic_sets(role)
 
 
 def _unit_thai_title(unit: dict) -> str:
@@ -112,19 +64,17 @@ def _unit_thai_title(unit: dict) -> str:
     its review status: review runs in parallel with use, and the respondent is
     not told the wording is draft (ADR-0004 decision 2). A set whose Thai text
     is still empty has no Thai name at all -- there is nothing to put in the
-    sentence -- and returns ``''``. A unit derived from an imported roadmap has
-    no authored wording either way, so its own title stands in as it did before.
-    Every surface that renders Thai reads this one rule.
+    sentence -- and returns ``''``. Every surface that renders Thai reads this
+    one rule.
     """
-    return unit['title_th'] if 'title_th' in unit else unit['title']
+    return unit['title_th']
 
 
 def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
-    """Regenerate the topic-anchored items for every role that has a roadmap.
+    """Regenerate the topic-anchored items for every role with authored sets.
 
-    Idempotent. Items for a role whose roadmap no longer covers a topic are
-    deactivated rather than deleted, so answers already recorded against them
-    stay interpretable.
+    Idempotent. Items for a set that is no longer active are deactivated rather
+    than deleted, so answers already recorded against them stay interpretable.
     """
     synced: dict[str, int] = {}
     live_question_ids: list[str] = []
@@ -136,9 +86,9 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
             continue
 
         for display_order, topic in enumerate(topics, start=1):
-            # A set's slug already is its global catalog key; a derived topic's
-            # is role-local and carries the role slug here to become one.
-            question_id = topic.get('question_id') or build_question_id(role, topic['slug'])
+            # The set's own ``set_key``: the one string the question, the
+            # answer, and a Held Topic mark are all addressed by.
+            question_id = topic['question_id']
             thai_topic = _unit_thai_title(topic)
             dimension_key = question_id
             live_question_ids.append(question_id)
@@ -187,8 +137,6 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
     SkillAssessmentDimension.objects.filter(role__isnull=False).exclude(dimension_key__in=live_dimension_keys).update(is_active=False)
 
     if stdout is not None:
-        # No cap is reported: the cap applies to topics derived from a roadmap,
-        # not to a role's authored sets.
         stdout.write(f'Synced topic Skill Assessment items for {len(synced)} roles ({sum(synced.values())} questions).')
     return synced
 
@@ -265,7 +213,7 @@ def build_unit_dependencies(role: Role, units: list[dict]) -> dict[str, set[str]
     """
     node_to_unit: dict[str, str] = {}
     for unit in units:
-        for node_slug in unit.get('node_slugs') or [unit['slug']]:
+        for node_slug in unit['node_slugs']:
             node_to_unit[node_slug] = unit['slug']
 
     nodes = ExternalRoadmapNode.objects.filter(role=role).only('id', 'slug', 'parent_id')
@@ -437,10 +385,7 @@ def build_topic_targets(role: Role, *, units: list[dict] | None = None) -> dict[
     if units is None:
         units = select_assessable_units(role)
     return {
-        topic['slug']: min(
-            TOPIC_TARGET_MAX,
-            TOPIC_TARGET_BASE + TOPIC_TARGET_PER_DEPENDENT * topic.get('dependent_count', len(topic['follow_on_titles'])),
-        )
+        topic['slug']: min(TOPIC_TARGET_MAX, TOPIC_TARGET_BASE + TOPIC_TARGET_PER_DEPENDENT * topic['dependent_count'])
         for topic in units
     }
 

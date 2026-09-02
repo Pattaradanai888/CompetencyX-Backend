@@ -17,12 +17,23 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
 
 from assessments.services import assessable_topic_set_service
-from assessments.services.topic_skill_assessment_service import is_assessable_topic_title
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
 
 
 TARGET_MIN_SETS = 15
 TARGET_MAX_SETS = 20
+
+# Roadmap graphs carry navigational nodes addressed to the reader rather than
+# named skills -- "Pick a Language", "Learn SQL", "Visit the DevOps Roadmap".
+# They belong on the roadmap, but "I could work on Pick a Language in a real
+# project" is not a question anybody can answer, so a draft leaves them for
+# the reviewer rather than putting them in a set.
+INSTRUCTION_TITLE_PREFIXES = ('pick ', 'learn ', 'visit ', 'choose ', 'read ', 'explore ', 'go to ')
+
+
+def is_assessable_topic_title(title: str) -> bool:
+    return not title.strip().lower().startswith(INSTRUCTION_TITLE_PREFIXES)
+
 
 DRAFT_HEADER = """\
 # Draft Assessable Topic Sets for {role_name}.

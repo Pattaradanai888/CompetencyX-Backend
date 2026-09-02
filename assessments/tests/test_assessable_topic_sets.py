@@ -1,9 +1,9 @@
 """The Skill Assessment is built from authored Assessable Topic Sets.
 
 These cover what ADR-0003 decided: the assessable unit is authored for the role
-rather than read off the imported graph, a role whose sets are not written yet
-still gets a usable assessment, and coverage of the graph is a backlog rather
-than a gate.
+and never read off the imported graph, a role whose sets are not written yet
+falls back to the role-independent items, and coverage of the graph is a
+backlog rather than a gate.
 """
 
 import shutil
@@ -139,7 +139,7 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
 
     def test_authoring_nothing_at_all_does_not_retire_the_catalog(self):
         # A deploy without the content directory would otherwise deactivate
-        # every set and drop every role back to its derived topics.
+        # every set and drop every role back to the role-independent items.
         self.write_sets('backend-developer', BACKEND_SETS)
         sync_assessable_topic_sets()
 
@@ -321,14 +321,18 @@ class AssessableTopicSetSyncTests(TopicSetContentTestCase):
         self.assertLess(targets['backend-developer--internet-and-web-protocols'], TOPIC_TARGET_MAX)
         self.assertAlmostEqual(targets['backend-developer--data-storage'], 0.6)
 
-    def test_a_role_without_authored_sets_keeps_the_items_derived_from_its_roadmap(self):
+    def test_a_role_without_authored_sets_gets_no_items_from_its_roadmap(self):
+        # The graph is right there to read items off, and that derivation is
+        # exactly what ADR-0003 retired: it asked Cyber Security six questions
+        # against 301 nodes. With no sets, the sync gives the role no items of
+        # its own; what it is served instead is asserted in
+        # test_topic_skill_assessment.py.
         sync_topic_skill_assessment_catalog()
 
-        titles = [question['topic_title'] for question in list_skill_assessment_questions('backend-developer')]
+        self.assertEqual(select_assessable_units(self.backend), [])
+        self.assertFalse(SkillAssessmentQuestion.objects.filter(role=self.backend).exists())
 
-        self.assertEqual(titles, ['HTTP', 'HTTPS', 'Databases', 'Caching'])
-
-    def test_authored_sets_win_over_the_derived_topics(self):
+    def test_authored_sets_are_the_assessable_units(self):
         self.write_sets('backend-developer', BACKEND_SETS)
         sync_assessable_topic_sets()
 
@@ -559,10 +563,10 @@ def test_display_order_is_contiguous_in_every_authored_file():
 
 
 def test_every_curated_role_has_authored_sets():
-    # The items derived from an imported roadmap stand in only for a role
-    # whose sets are not written yet. Issue #7 authored every role, so the
-    # fallback is dormant for the whole curated catalog; dropping a role's
-    # file would revive it silently, and this is what would notice. Read
+    # A role whose sets are not written falls back to the role-independent
+    # items, which name nothing about the role. Issue #7 authored every role,
+    # so no curated role is served that fallback; dropping a role's file
+    # would reinstate it silently, and this is what would notice. Read
     # straight off roles.yaml: the full catalog loader validates the
     # question bank too, and its errors do not belong under this name.
     roles_data = yaml.safe_load((CURATED_CONTENT_DIR / 'roles.yaml').read_text(encoding='utf-8'))
