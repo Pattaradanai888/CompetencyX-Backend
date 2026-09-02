@@ -33,6 +33,7 @@ from assessments.services.topic_skill_assessment_service import (
     sync_topic_skill_assessment_catalog,
 )
 from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
+from roadmaps.seeds import CURATED_CONTENT_DIR
 
 
 BACKEND_SETS = """
@@ -555,3 +556,17 @@ def test_display_order_is_contiguous_in_every_authored_file():
             gaps.append(f'{path.name}: {orders}')
 
     assert gaps == []
+
+
+def test_every_curated_role_has_authored_sets():
+    # The items derived from an imported roadmap stand in only for a role
+    # whose sets are not written yet. Issue #7 authored every role, so the
+    # fallback is dormant for the whole curated catalog; dropping a role's
+    # file would revive it silently, and this is what would notice. Read
+    # straight off roles.yaml: the full catalog loader validates the
+    # question bank too, and its errors do not belong under this name.
+    roles_data = yaml.safe_load((CURATED_CONTENT_DIR / 'roles.yaml').read_text(encoding='utf-8'))
+    curated = {role['slug'] for role in roles_data['roles']}
+    authored = {entry['role_slug'] for entry in load_assessable_topic_sets()}
+
+    assert curated - authored == set()
