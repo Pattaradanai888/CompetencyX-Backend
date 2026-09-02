@@ -3,120 +3,120 @@ sets:
   - key: relational-database-concepts
     title: Relational database concepts and workload types
     title_th: แนวคิดฐานข้อมูลเชิงสัมพันธ์และประเภท Workload (OLTP, OLAP, HTAP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [basic-rdbms-concepts, relational-model, high-level-database-concepts, 'what-are-relational-databases?', rdbms-benefits-and-limitations, postgresql-vs-nosql-databases, postgresql-vs-other-rdbms, oltp, olap, htap]
   - key: postgresql-object-model
     title: PostgreSQL object model and data types
     title_th: โครงสร้าง Object และ Data Types ใน PostgreSQL
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [object-model, databases, schemas, tables, columns, rows, data-types, domains, attributes, tuples, relations, constraints, 'null']
   - key: installation-and-setup
     title: Installation, setup, and connecting with psql
     title_th: การติดตั้ง ตั้งค่า และเชื่อมต่อ PostgreSQL ด้วย psql
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [installation-and-setup, using-docker, package-managers, deployment-in-cloud, 'using-`systemd`', 'using-`pg-ctl`', 'using-`pg-ctlcluster`', 'connect-using-`psql`', for-schemas, fortables]
   - key: sql-fundamentals
     title: SQL fundamentals and data loading
     title_th: พื้นฐาน SQL และการนำเข้า-ส่งออกข้อมูล (COPY, Bulk Loading)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [learn-sql, queries, querying-data, filtering-data, modifying-data, joining-tables, grouping, subqueries, set-operations, 'import---export-using-`copy`', bulk-loading---processing-data]
   - key: advanced-sql
     title: Advanced SQL
     title_th: SQL ขั้นสูง (CTE, Window Functions, Lateral Join)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [cte, recursive-cte, lateral-join, aggregate-and-window-functions, sql-query-patterns---anti-patterns, patterns---antipatterns]
   - key: plpgsql-programming
     title: Server-side programming with PL/pgSQL
     title_th: การเขียน Functions, Procedures และ Triggers ด้วย PL/pgSQL
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [pl-pgsql, procedures-and-functions, triggers]
   - key: schema-design
     title: Schema design, partitioning, and sharding
     title_th: การออกแบบ Schema, Normalization, Partitioning และ Sharding
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [schema-design-patterns---anti-patterns, normalization---normal-forms, practical-patterns---antipatterns, data-partitioning, sharding-patterns]
   - key: indexes
     title: Indexes and their use cases
     title_th: Index และการเลือกใช้ให้เหมาะกับงาน (B-Tree, GIN, GiST)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [indexes-and-their-usecases, b-tree, hash, gin, gist, sp-gist, brin]
   - key: transactions-and-concurrency
     title: Transactions and concurrency control
     title_th: การจัดการ Transaction และ Concurrency (ACID, MVCC, Locks)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [acid, transactions, mvcc, lock-management]
   - key: postgresql-internals
     title: PostgreSQL internals
     title_th: กลไกการทำงานภายในของ PostgreSQL (WAL, Vacuum, Buffer)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [write-ahead-log, query-processing, processes-and-memory-architecture, vacuum-processing, buffer-management, checkpoints---background-writer, physical-storage-and-file-layout, system-catalog, vacuums]
   - key: server-configuration
     title: Server configuration and tuning
     title_th: การตั้งค่าและ Tuning เซิร์ฟเวอร์ PostgreSQL
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [configuring, resource-usage, resource-usage---provisioning---capacity-planning, storage-parameters, 'per-user,-per-database-setting', reporting-logging-and-statistics]
   - key: security
     title: Security, roles, and privileges
     title_th: ความปลอดภัยและการจัดการสิทธิ์การเข้าถึง (Roles, Privileges, RLS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [security, authentication-models, roles, ssl-settings, pg-hba.conf, object-privileges, grant---revoke, default-privileges, row-level-security, selinux, postgresql-anonymizer]
   - key: query-performance
     title: Query optimization and connection pooling
     title_th: การปรับแต่งประสิทธิภาพ Query และ Connection Pooling (EXPLAIN, pg_stat_statements, PgBouncer)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [query-planner, explain, depesz, pev2, explain.dalibo.com, tensor, pg-stat-activity, pg-stat-statements, pgcenter, pgbadger, pgcluu, pgbouncer, pgbouncer-alternatives]
   - key: monitoring-observability
     title: Monitoring and observability
     title_th: การเฝ้าระวังและติดตามระบบ (Monitoring, Observability)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [prometheus, zabbix, check-pgactivity, temboard, use, red, golden-signals]
   - key: linux-diagnostics
     title: Linux performance diagnostics
     title_th: การวินิจฉัยประสิทธิภาพบน Linux (top, strace, perf)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [top, sysstat, iotop, gdb, strace, ebpf, perf-tools, core-dumps]
   - key: automation
     title: Automation and configuration management
     title_th: การทำ Automation ด้วย Script และ Configuration Management (Ansible, Puppet)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [shell-scripts, any-programming-language, ansible, salt, chef, puppet, awk, grep, sed]
   - key: postgresql-extensions
     title: PostgreSQL extensions
     title_th: การติดตั้งและใช้งาน Extensions ของ PostgreSQL
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [adding-extra-extensions, pgq]
   - key: replication-and-ha
     title: Replication and high availability
     title_th: การทำ Replication และ High Availability (Streaming, Logical, Patroni)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 18
     nodes: [replication, streaming-replication, logical-replication, using-logical-replication, patroni, patroni-alternatives, haproxy, consul, keepalived, etcd]
   - key: backup-restore-and-upgrades
     title: Backup, restore, and version upgrades
     title_th: การสำรองข้อมูล การกู้คืน และการอัปเกรดเวอร์ชัน (pg_dump, pgBackRest, pg_upgrade)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 19
     nodes: [pg-dump, pg-dumpall, pg-restore, pg-basebackup, pgbackrest, check-pgbackrest, barman, wal-g, pg-probackup, backup-validation-procedures, 'using-`pg-upgrade`', migration-related-tools]
   - key: postgresql-on-kubernetes
     title: PostgreSQL on Kubernetes
     title_th: การรัน PostgreSQL บน Kubernetes (StatefulSet, Helm, Operators)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 20
     nodes: [simple-stateful-setup, helm, operators]

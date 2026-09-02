@@ -525,3 +525,17 @@ writes คลาวด์).
 Unchanged from §7.3: flip `review.status` to `reviewed` per set after reading. The panel
 has read every set at least twice (domain reviewer plus copy editor); §7.1 and §8.1 list
 the 96 wordings that changed today, and the remaining 360 were confirmed as written by both.
+
+---
+
+## 9. Approval — 2026-09-02, all 456 sets set to `reviewed`
+
+The project owner instructed the agent to flip `review.status` from `draft` to `reviewed`
+on every set in `data/content/topic_sets/`, accepting the §7–§8 panel record as the
+review. ADR-0004 decision 1 reserves this flip for a person; it was performed on that
+explicit instruction, not on the agent's own judgement. Nothing else in the files changed.
+
+After the flip: `validate_topic_set_catalog --strict` passes (112 uncovered node slugs
+remain as backlog), the wording-rule and topic-set tests pass, the persona harness matches
+`data/simulation/persona_baseline.json`, and the full suite is green. Issue #7 closes on
+this commit.

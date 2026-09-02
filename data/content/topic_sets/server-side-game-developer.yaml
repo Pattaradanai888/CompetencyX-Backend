@@ -3,90 +3,90 @@ sets:
   - key: networking-fundamentals
     title: Computer Networking Fundamentals
     title_th: พื้นฐานเครือข่ายคอมพิวเตอร์ (IP, DNS, DHCP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [ip, ip-addressing, ipv4, ipv6, routing, arp, dns, dhcp, category, transactions, capability, link-capacity]
   - key: tcp-and-udp
     title: TCP and UDP Protocols
     title_th: โปรโตคอล TCP และ UDP
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [tcp, udp, tcp-vs-udp, ordered-vs-unordered, heavy-vs-lightweight, packet-vs-datagram, reliable-vs-unreliable, streaming-vs-broadcast, datagram, packet-structure, segment-structure, function, datagram-construction]
   - key: transport-mechanics
     title: Reliability, Flow Control and Congestion Control
     title_th: กลไก Reliability, Flow Control และ Congestion Control
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [connection, resource-usage, data-transfer, max-segment-scaling, max-segment-size, window-scaling, timestamp, out-of-band-data, selective-ack., veto, reliable-transmission, congestion-control, flow-control, checksum, reliability, error-detection]
   - key: network-security
     title: Network Security
     title_th: ความปลอดภัยของระบบเครือข่าย (TLS, DoS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [security, tls, ssl, cipher, vulnerability, connection-hijacking, denial-of-service]
   - key: server-side-programming-languages
     title: Server-Side Programming Languages
     title_th: ภาษาโปรแกรมสำหรับงานฝั่งเซิร์ฟเวอร์ (C++, C#, Go)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [programming-languages, 'c-c++', 'c#', java, erlang, javascript, go]
   - key: socket-programming
     title: Socket Programming
     title_th: การเขียนโปรแกรม Socket (BSD Socket, Winsock)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [socket-programming, bsd-socket, winsock, descriptor, api, byte-manipulation, address-conversion]
   - key: serialization
     title: Data Serialization and Formats
     title_th: การทำ Serialization ของข้อมูล (JSON, Protobuf)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [serialization, json, xml, yaml, toml, protobuf]
   - key: multithreading-and-synchronization
     title: Multithreading and Synchronization
     title_th: การเขียนโปรแกรม Multithreading และ Synchronization
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [multithreading, thread-local-storage, synchronization, barrier, spinlock, mutex, semaphore, condition-variable, windows, pthread, fiber, coroutine, future-and-promises, channel]
   - key: asynchronous-and-event-driven
     title: Asynchronous and Event-Driven Programming
     title_th: การเขียนโปรแกรม Asynchronous และ Event-Driven (epoll, IOCP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [asynchronous, reactor, select, wsa-poll, epoll, kqueue, proactor, iocp, io-uring, registered-io, task-based, goroutine-(go), concurrency-(java), 'asnc-await-(c#)', 'thread-building-block-(c++)']
   - key: actor-and-reactive-models
     title: Actor and Reactive Programming Models
     title_th: โมเดล Actor และ Reactive Programming (Akka)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [actor-model, 'akk.net-(c#)', akka-(java), reactive-approach, oorp, frp, reactive-model, synchrony, determinism, update-process]
   - key: databases-and-caching
     title: Databases and Caching
     title_th: ฐานข้อมูลและ Caching (SQL, Redis)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [databases, ms-sql, mysql, postgresql, dynamodb, mongodb, cassandra, couchbase, redis, memcached, orm, dal, sharding]
   - key: services-and-messaging
     title: RPC Services and Message Queues
     title_th: บริการ RPC/REST และ Message Queue (gRPC, Kafka)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [rpc---rest, rest, grpc, message-queues, rabbitmq, apache-kafka]
   - key: design-patterns-and-quality
     title: Design Patterns and Code Quality
     title_th: Design Patterns และคุณภาพของโค้ด (TDD)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [programming-techniques, design-patterns, tdd, dependency-injection, functional-programming, dump-analysis]
   - key: cloud-and-deployment
     title: Cloud Infrastructure and Containers
     title_th: คลาวด์และการ Deploy ระบบ (AWS, Docker, Kubernetes)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [cloud, aws, azure, gcp, serverless, kubernetes, containerization, docker, docker-compose]
   - key: ai-and-data-processing
     title: AI, Machine Learning and Data Processing
     title_th: AI, Machine Learning และการประมวลผลข้อมูล (TensorFlow, Spark)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [ai, cloud-ml, amazon-ml, azure-ml, tensorflow, pytorch, deep-learning, data-clustering, apache-spark]

@@ -3,102 +3,102 @@ sets:
   - key: analytics-foundations
     title: Data analytics foundations
     title_th: พื้นฐานการวิเคราะห์ข้อมูลและประเภทของ Analytics
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [introduction, what-is-data-analytics, key-concepts-of-data, types-of-data-analytics, descriptive-analytics, diagnostic-analytics, predictive-analytics, prescriptive-analytics]
   - key: analytics-workflow
     title: The analytics workflow
     title_th: ขั้นตอนการทำงานวิเคราะห์ข้อมูลตั้งแต่ต้นจนจบ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [collection, cleanup, exploration, visualisation]
   - key: excel-functions
     title: Excel functions for analysis
     title_th: ฟังก์ชัน Excel สำหรับงานวิเคราะห์ข้อมูล
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: ['analysis---reporting-with-excel', if, datedif, 'vlookup---hlookup', 'replace---substitute', 'upper---lower---proper', concat, trim]
   - key: excel-aggregation-and-reporting
     title: Excel aggregation and reporting
     title_th: การสรุปข้อมูลและทำรายงานด้วย Excel (Pivot Table)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [average, count, sum, 'min---max', charting, pivot-tables]
   - key: data-manipulation-libraries
     title: Programming languages and data manipulation libraries
     title_th: ภาษาโปรแกรมและไลบรารีสำหรับจัดการข้อมูล (R, Pandas, dplyr)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [r, data-manipulation-libraries, pandas, dplyr]
   - key: data-collection
     title: Data collection and storage
     title_th: การเก็บรวบรวมและจัดเก็บข้อมูล (Database, API, Web Scraping)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [data-collection, databases, csv-files, apis, web-scraping, data-storage-solutions]
   - key: data-cleanup
     title: Data cleanup
     title_th: การทำความสะอาดข้อมูล (Data Cleaning)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [data-cleanup, removing-duplicates, handling-missing-data, finding-outliers, data-transformation]
   - key: descriptive-statistics
     title: Descriptive statistics
     title_th: สถิติเชิงพรรณนา (Mean, Median, Standard Deviation)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [descriptive-analysis, mean, median, mode, central-tendency, range, variance, standard-deviation, dispersion]
   - key: distributions
     title: Distributions and their shape
     title_th: การแจกแจงของข้อมูล (Skewness, Kurtosis)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [distribution-space, skewness, kurtosis, visualizing-distributions]
   - key: inferential-statistics
     title: Inferential statistical analysis
     title_th: สถิติเชิงอนุมาน (Hypothesis Testing, Regression)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [statistical-analysis, hypothesis-testing, correlation-analysis, regression]
   - key: visualisation-libraries
     title: Visualisation libraries
     title_th: ไลบรารีสำหรับสร้างกราฟ (Matplotlib, Seaborn, ggplot2)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [data-visualisation-libraries, matplotlib, seaborn, ggplot2]
   - key: bi-tools
     title: BI and dashboard tools
     title_th: เครื่องมือ BI และแดชบอร์ด (Tableau, Power BI)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [tableau, power-bi]
   - key: chart-types
     title: Choosing the right chart
     title_th: การเลือกใช้กราฟให้เหมาะกับข้อมูล
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [data-visualisation, bar-charts, line-chart, scatter-plot, funnel-charts, histograms, stacked-charts, heatmap, pie-charts]
   - key: machine-learning-basics
     title: Machine learning basics
     title_th: พื้นฐาน Machine Learning และการประเมินโมเดล
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [machine-learning, supervised-learning, unsupervised-learning, reinforcement-learning, model-evaluation-techniques]
   - key: machine-learning-algorithms
     title: Common machine learning algorithms
     title_th: อัลกอริทึม Machine Learning ที่ใช้บ่อย
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [decision-trees, naive-byes, k-means-clustering, knn, logistic-regression]
   - key: deep-learning
     title: Deep learning
     title_th: Deep Learning และ Neural Networks
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: ['deep-learning-(optional)', neural-networks, cnns, rnn, tensorflow, pytorch, image-recognition, natural-language-processing]
   - key: big-data
     title: Big data technologies
     title_th: เทคโนโลยี Big Data (Hadoop, Spark)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [big-data-technologies, big-data-concepts, parallel-processing, hadoop, spark, mpi, mapreduce]

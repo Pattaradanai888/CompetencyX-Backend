@@ -3,120 +3,120 @@ sets:
   - key: product-management-foundations
     title: Product Management Fundamentals
     title_th: พื้นฐานการบริหารจัดการผลิตภัณฑ์ (Product Management)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [introduction, 'what-is-product-management?', product-vs-project-management, roles-and-responsibilities, key-skills]
   - key: product-lifecycle
     title: Product Development Lifecycle
     title_th: วงจรชีวิตการพัฒนาผลิตภัณฑ์ (Product Lifecycle)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [product-development-lifecycle, development, growth, maturity, decline, discovery, selection, validation, execution]
   - key: ideation-and-problem-framing
     title: Ideation and Problem Framing
     title_th: การหาไอเดียและการกำหนดกรอบปัญหา (Ideation, Problem Framing)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [product-identification, brainstorming-techniques, mind-mapping, brainwriting, scamper, triz-(theory-of-inventive-problem-solving), problem-framing, iterative-process]
   - key: market-and-competitive-analysis
     title: Market and Competitive Analysis
     title_th: การวิเคราะห์ตลาดและคู่แข่ง (Market Analysis)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [market-analysis, identifying-market-needs, competitive-analysis, emerging-market-trends, five-forces-analysis, competetive-advantage, strategic-thinking, competitive-strategy]
   - key: vision-and-strategy
     title: Vision, Mission and Product Strategy
     title_th: วิสัยทัศน์ พันธกิจ และกลยุทธ์ผลิตภัณฑ์
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [vision-and-mission, statement, proposition, capabilities, solved-constraints, future-constraints, reference-materials, narrative, blue-ocean-strategy]
   - key: value-proposition-and-positioning
     title: Value Proposition and Positioning
     title_th: คุณค่าของผลิตภัณฑ์ (Value Proposition) และการวางตำแหน่งในตลาด
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [value-proposition, defining-value-proposition, value-proposition-canvas, positioning, usp-(unique-selling-point), market-segmentation, case-studies, value-vs-features, finding-balance]
   - key: defining-goals
     title: Defining Goals and Success Targets
     title_th: การตั้งเป้าหมายและตัวชี้วัดความสำเร็จของผลิตภัณฑ์
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [defining-goals, target, baseline, trend, timeframe]
   - key: user-research
     title: User Research
     title_th: การวิจัยและทำความเข้าใจผู้ใช้ (User Research)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [user-research, user-personas, user-interviews, surveys-and-questionnaires, ethnographic-research]
   - key: ux-design
     title: UX/UI Design and Design Thinking
     title_th: การออกแบบประสบการณ์ผู้ใช้ (UX/UI) และ Design Thinking
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [ux---ui-design, principles-of-ux-design, wireframing-and-prototyping, design-thinking, interaction-design, service-design]
   - key: user-testing-and-mvp
     title: User Testing and MVP Validation
     title_th: การทดสอบกับผู้ใช้จริงและการตรวจสอบสมมติฐานด้วย MVP
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [user-testing, remote-user-testing, usability-testing, feedback-loops, minimum-viable-product-(mvp)]
   - key: product-requirements
     title: Product Requirements and PRDs
     title_th: การเขียนเอกสาร Product Requirements (PRD, User Story)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [product-requirements, writing-prds, user-stories, job-stories]
   - key: product-roadmapping
     title: Product Roadmapping
     title_th: การวางแผน Product Roadmap (Notion, Aha!, Productboard)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [product-roadmap, creating-a-roadmap, continuous-roadmapping, outcome-based-roadmaps, communicating-the-roadmap, roadmapping-tools, notion, aha, product-board]
   - key: prioritization-and-backlog
     title: Prioritization and Backlog Management
     title_th: การจัดลำดับความสำคัญของฟีเจอร์และการบริหาร Backlog
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [prioritising-features, prioritization-techniques, grooming-sessions, backlog-management, user-story-mapping, feature-creep, portfolio-management]
   - key: agile-ways-of-working
     title: Agile and Scrum Ways of Working
     title_th: การทำงานแบบ Agile และ Scrum (Jira, Trello)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [agile-methodology, kanban-basics, scrum-basics, sprint-planning, daily-standups, retrospectives, project-management-tools, jira, linear, trello]
   - key: go-to-market-and-release
     title: Go-to-Market and Release Strategies
     title_th: กลยุทธ์การออกสู่ตลาด (Go-to-Market) และการปล่อย Release
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [go-to-market-strategy, launch-planning, marketing-strategies, strategic-partners, identify-partners, managing-partnerships, release-strategies, feature-toggles, phased-rollouts, dark-launches]
   - key: growth-and-scaling
     title: Product Growth and Scaling
     title_th: การเติบโตและการขยายขนาดของผลิตภัณฑ์ (Growth, Scaling)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [growth-hacking, growth-strategies, scaling-products, platform-thinking, internationalization]
   - key: product-metrics-and-analytics
     title: Product Metrics, Analytics and Data-Driven Decisions
     title_th: Product Metrics, Analytics และการตัดสินใจด้วยข้อมูล (Amplitude, Heap, A/B Testing)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [key-product-metrics, dau-(daily-active-users), mau-(monthly-active-users), conversion-rate, retention-rate, churn-rate, ltv-(lifetime-value), cac-(customer-acquisition-cost), north-star-metric, data-driven-decision-making, a-b-testing, cohort-analysis, analytics-tools, amplitude, heap, looker, advanced-analysis, predictive-analytics, ml-in-product-mgmt., ai-in-product-mgmt.]
   - key: communication-and-stakeholders
     title: Communication and Stakeholder Management
     title_th: การสื่อสารและการบริหาร Stakeholder
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 18
     nodes: [communication-skills, interpersonal, business, communication-techniques, difficult-conversations, active-listening, conflict-resolution, alignment-and-buy-in, showing-impact, stakeholder-mapping, stakeholder-engagement, remote-stakeholders, managing-stakeholders, identifying-stakeholders, communication-tools, discord, teams, slack]
   - key: risk-management
     title: Risk Management
     title_th: การบริหารความเสี่ยงในงานผลิตภัณฑ์
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 19
     nodes: [identifying-risks, risk-register, risk-identification-techniques, risk-assessment, qualitative-risk-assessment, quantitative-risk-assessment, mitigation-strategies, risk-audits, risk-mitigation, contingency-planning, monitoring-and-controlling-risks, risk-monitoring-tools]
   - key: leadership-and-influence
     title: Leadership and Working with Engineering Teams
     title_th: ภาวะผู้นำและการทำงานร่วมกับทีม Engineering
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 20
     nodes: [leadership-and-influence, building-and-leading-teams, influencing-without-authority, emotional-intelligence, working-with-engineering-teams]

@@ -3,120 +3,120 @@ sets:
   - key: devrel-foundations
     title: DevRel foundations
     title_th: พื้นฐานงาน Developer Relations และบทบาทหลัก
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: ['what-is-devrel?', history-and-evolution, importance-of-devrel, advocacy, education, community-support, content-creation, feedback-loop]
   - key: developer-experience
     title: Developer experience and marketing
     title_th: Developer Experience (DX) และ Developer Marketing
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [developer-experience, developer-journey, developer-marketing]
   - key: public-speaking
     title: Public speaking and presentation
     title_th: การพูดในที่สาธารณะและเทคนิคการนำเสนอ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [public-speaking, presentation-techniques, rules-of-three, pechakucha, storytelling, mind-mapping, visualization]
   - key: engaging-audience
     title: Engaging an audience
     title_th: การดึงความสนใจของผู้ฟัง
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [engaging-audience, the-hook, contrast-principle, handouts, repetition-and-reinforcement]
   - key: handling-questions
     title: Handling questions and answers
     title_th: การรับมือช่วงถาม-ตอบ (Q&A)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [handling-qanda, active-listening, anticipate-questions, be-concise, managing-difficult-questions]
   - key: technical-skills
     title: Programming skills and tooling
     title_th: ทักษะการเขียนโปรแกรมและเครื่องมือพัฒนา (IDE)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [basic-programming-skills, ides, jetbrains-ides, vs-code]
   - key: version-control
     title: Version control and open repositories
     title_th: การใช้ Git และดูแล Repository สาธารณะ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [version-control, git, github, issues-and-pull-requests, managing-discussions, labelling-and-cleanup, milestones-and-releases, public-backlog]
   - key: apis-and-sdks
     title: APIs and SDKs
     title_th: การทำงานกับ API และการสร้าง SDK
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [apis-and-sdks, understanding-apis, writing-documentation, building-sdks]
   - key: developer-documentation
     title: Developer documentation
     title_th: เอกสารสำหรับนักพัฒนา (Tutorial, API Reference)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [documentation, tutorials, api-references, user-guides]
   - key: sample-projects
     title: Sample projects and code samples
     title_th: โปรเจกต์ตัวอย่างและตัวอย่างโค้ด
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [sample-projects, code-samples, example-apps, use-case-based]
   - key: community-building
     title: Building a community
     title_th: การสร้างชุมชนนักพัฒนา
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [building-a-community, identifying-audience, platform-selection, initial-outreach, community-guidelines]
   - key: community-management
     title: Community management and moderation
     title_th: การบริหารชุมชนและการดูแลกฎกติกา (Code of Conduct)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [community-management, moderation, code-of-conduct, rules-and-policies, conflict-resolution, encouraging-participation, recognition-programs]
   - key: community-engagement
     title: Community engagement
     title_th: การมีส่วนร่วมกับชุมชนและการสร้างเครือข่าย
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [community-engagement, networking, event-participation, online-communities]
   - key: event-management
     title: Event management
     title_th: การจัดกิจกรรมและอีเวนต์ (Webinar, Office Hours)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [event-management, planning, promotion, execution, post-event-followup, office-hours, webinars]
   - key: blogging
     title: Writing and blogging
     title_th: ทักษะการเขียนและการทำบล็อก (Blog Post, SEO)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [writing-skills, blog-posts, technical-documentation, blogging, topic-selection, writing-process, seo-basics, guest-blogging, cross-promotion, collaborations]
   - key: video-and-streaming
     title: Video production and live streaming
     title_th: การผลิตวิดีโอและไลฟ์สตรีม (YouTube, Twitch)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [video-production, scripting, recording, editing, animations-and-graphics, live-streaming, youtube, twitch, streamyard, technical-setup, video, audio]
   - key: social-media
     title: Social media presence
     title_th: การสื่อสารผ่านโซเชียลมีเดียและการสร้าง Brand Voice
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [social-media, x, linkedin, facebook, instagram, content-strategy, creating-brand-voice, engaging-content, consistent-posting, tracking-engagement]
   - key: developer-support
     title: Developer support channels
     title_th: ช่องทางสนับสนุนนักพัฒนา (Forum, Issue Tracking)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 18
     nodes: [support, forums, issue-tracking, faqs, surveys, feedback-collection]
   - key: metrics-and-analytics
     title: Metrics, analytics, and reporting
     title_th: ตัวชี้วัด การวิเคราะห์ผล และการรายงานต่อ Stakeholder
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 19
     nodes: [key-metrics, developer-satisfaction, community-growth, engagement-rates, content-performance, social-media-analytics, platform-specific-analytics, analytics-and-optimization, data-driven-strategy-shift, tools, google-analytics, reporting, regular-reports, data-visualization, insights-and-recommendations]
   - key: thought-leadership
     title: Thought leadership and personal brand
     title_th: การเป็น Thought Leader และการสร้าง Personal Brand
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 20
     nodes: [thought-leadership, publishing, media-appearances, conference-speaking, building-a-personal-brand, networking-strategies, meetups, open-source, continuous-learning]

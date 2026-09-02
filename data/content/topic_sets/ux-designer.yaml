@@ -3,102 +3,102 @@ sets:
   - key: behavioral-science-foundations
     title: Behavioral science foundations
     title_th: พื้นฐานพฤติกรรมศาสตร์และการตัดสินใจของมนุษย์
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [human-decision-making, behavioral-science, behavioral-economics, nudge-theory, persuasive-technology, dual-process-theory, spectrum-of-thinking-interventions]
   - key: behavior-models
     title: Behavior and habit models
     title_th: โมเดลพฤติกรรมและการสร้างนิสัย (Fogg Behavior Model, Hook Model)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [behavior-design, 'bj-fogg''s-behavior-model', 'bj-fogg''s-behavior-grid', create-action-funnel, 'nir-eyal''s-hook-model', cue-routine-reward-model]
   - key: understanding-the-product
     title: Understanding the product and business
     title_th: การทำความเข้าใจผลิตภัณฑ์และโมเดลธุรกิจ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [understanding-the-product, business-model-canvas, lean-canvas, business-model-inspirator]
   - key: market-analysis
     title: Market and competitor analysis
     title_th: การวิเคราะห์ตลาดและคู่แข่ง (SWOT, Five Forces)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [competitor-analysis, five-forces-model, swot-analysis]
   - key: users-and-target-behavior
     title: Users and target behavior
     title_th: การกำหนดผู้ใช้เป้าหมายและพฤติกรรมที่ต้องการ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [create-user-personas, target-outcome, target-actor, target-action, user-stories]
   - key: journey-and-process-mapping
     title: Journey and process mapping
     title_th: การทำแผนที่เส้นทางผู้ใช้และกระบวนการ (Journey Map, BPMN)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [customer-experience-map-by-mel-edwards, simple-flowchart, 'event-driven-process-chain-model-(epc)', 'business-process-model-and-notation-(bpmn)']
   - key: conceptual-design
     title: Conceptual design
     title_th: การออกแบบเชิงแนวคิดและกลยุทธ์การเปลี่ยนพฤติกรรม
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [conceptual-design, behavior-change-strategies, support-conscious-action, educate-and-encourage-user, help-user-think-about-their-action]
   - key: habit-change
     title: Making and changing habits
     title_th: การสร้างและเปลี่ยนนิสัยของผู้ใช้
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [make-or-change-habits, help-user-avoiding-the-cue, replace-the-routine, use-consciousness-to-interfere, mindfulness-to-avoid-acting-on-the-cue, crowd-out-old-habit-with-new-behavior]
   - key: reducing-effort
     title: Reducing effort and defaults
     title_th: การลดภาระของผู้ใช้และการตั้งค่าเริ่มต้น (Defaults)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [cheating, defaulting, making-it-incidental, automate-the-act-of-repetition, default-everything, 'lessen-the-burden-of-action---info']
   - key: prototyping
     title: Prototyping and design tools
     title_th: การทำ Prototype และเครื่องมือออกแบบ (Figma, Sketch, Balsamiq)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [prototyping, good-layout-rules, figma, sketch, balsamiq]
   - key: ux-flow-best-practices
     title: Flow and progress best practices
     title_th: แนวปฏิบัติที่ดีของ Flow และการแสดงความคืบหน้า
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [ux-best-practices, 'in-general,-keep-it-short-and-simple', make-it-easy-to-understand-and-complete, make-progress-visible-to-user, make-progress-meaningful-to-reward-user, make-successful-completion-clearly-visible]
   - key: interface-clarity
     title: Interface clarity and cognitive load
     title_th: ความชัดเจนของอินเทอร์เฟซและ Cognitive Load
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [clear-the-page-of-distractions, 'make-it-clear,-where-to-act', tell-user-what-the-action-is-and-ask-for-it, make-ui-professional-and-beautiful, avoid-cognitive-overhead, avoid-choice-overload]
   - key: persuasive-content
     title: Persuasive copy and credibility
     title_th: การเขียนเนื้อหาเชิงโน้มน้าวและสร้างความน่าเชื่อถือ
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [call-to-action, be-authentic-and-personal, prime-user-relevant-associations, frame-text-to-avoid-temporal-myopia, deploy-strong-authority-on-subject, deploy-social-proof]
   - key: social-motivation
     title: Social motivation and commitment
     title_th: แรงจูงใจทางสังคมและการให้คำมั่นสัญญา
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [use-peer-comparisons, deploy-peer-comparisons, use-competition, social-sharing, make-commitment-to-friends, remind-of-prior-commitment-to-act, elicit-implementation-intentions]
   - key: incentives-and-rewards
     title: Incentives, rewards, and loss aversion
     title_th: สิ่งจูงใจ รางวัล และ Loss Aversion
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [leverage-loss-aversion, make-reward-scarce, avoid-direct-payments, gamification, behavior-change-games]
   - key: engagement-features
     title: Engagement features
     title_th: ฟีเจอร์ที่กระตุ้นการมีส่วนร่วม (Reminder, Goal Tracker)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [status-reports, how-to-tips, reminders-and-planning-prompts, decision-making-support, planners, reminders, goal-trackers, tutorials]
   - key: measuring-impact
     title: Measuring impact and experimentation
     title_th: การวัดผลกระทบและการทดลอง (A/B Testing)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [measuring-the-impact, 'incremental-a-b-testing', multivariate-testing, 'gather-lessons,-prioritize-and-integrate']

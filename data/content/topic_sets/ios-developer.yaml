@@ -3,120 +3,120 @@ sets:
   - key: swift-and-objective-c
     title: Swift and platform releases
     title_th: ภาษา Swift และการติดตามเวอร์ชันใหม่ของแพลตฟอร์ม (WWDC)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: ['swift-(recommended)', 'history-and-why-swift?', swift-basics, latest-swift-version, keeping-updated-with-wwdc, latest-ios-sdk, new-feature-announcements]
   - key: core-programming-concepts
     title: Core programming concepts
     title_th: แนวคิดพื้นฐานการเขียนโปรแกรม (OOP, Memory Management)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [core-programming-concepts, oop, functional-programming, memory-management, error-handling]
   - key: ios-architecture
     title: iOS platform architecture
     title_th: สถาปัตยกรรมแพลตฟอร์ม iOS (Cocoa Touch, Core OS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [ios-architecture, cocoa-touch, core-os, core-services, media]
   - key: graphics-and-media
     title: Graphics, animation, and media frameworks
     title_th: เฟรมเวิร์กด้านกราฟิก แอนิเมชัน และสื่อ (Core Animation, AVFoundation, Metal)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [core-graphics, core-animation, core-image, core-audio, avfoundation, metal, 'basics---creating-animations', lottie]
   - key: xcode
     title: Xcode
     title_th: การใช้งาน Xcode
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [xcode, installing, preferences, new-project, interface-overview, toolbar, navigators, editors, project-files, groups]
   - key: debugging-and-profiling
     title: Debugging and profiling
     title_th: การดีบักและทำ Profiling (Xcode Debugger, Instruments)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [debugging-techniques, xcode-debugger, breakpoints, debug-navigator, stepping, profiling-instruments]
   - key: uikit
     title: UIKit and Interface Builder
     title_th: การสร้าง UI ด้วย UIKit และ Interface Builder (Auto Layout)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [uikit, views, view-controllers, viewcontroller-lifecycle, components, basic-interfaces, storyboards, xibs, user-interactions, 'views,-view-controllers', interface-builder, iboutlets, ibactions, auto-layout]
   - key: swiftui
     title: SwiftUI
     title_th: การสร้าง UI ด้วย SwiftUI
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [swiftui, declarative-syntax, building-interfaces, views-and-modifiers, state-management, data-binding]
   - key: navigation
     title: Navigation and view transitions
     title_th: การนำทางระหว่างหน้าจอ (UINavigationController, Segue, NavigationStack)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [navigation, view-transitions, 'navigation-controllers,-segues', navigation-stacks, pushing-presenting, modals-and-navigation, navigation-view, navigationlink, 'presenting---dismissing-views']
   - key: ui-design-and-accessibility
     title: UI design and accessibility
     title_th: การออกแบบ UI ตาม HIG และ Accessibility
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [ui-design, hig, accessibility, accessibility-inspector, voice-over, dynamic-type]
   - key: architectural-patterns
     title: App architectural patterns
     title_th: แพตเทิร์นสถาปัตยกรรมแอป (MVC, MVVM, VIPER)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [architectural-patterns, mvc, mvp, mvvm, 'mvvm-c', viper, tca]
   - key: reactive-programming
     title: Reactive programming
     title_th: Reactive Programming (Combine, RxSwift)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [reactive-programming, combine, 'publishers---subscribers', operators-and-pipelines, combine-and-mvvm, rxswift, observables-and-observers, subjects, rxswift-with-mvvm, operators, schedulers]
   - key: delegates-and-closures
     title: Delegates, callbacks, and closures
     title_th: Delegate, Callback และ Closure
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [delegate-pattern, implementing-delegates, callbacks, closures, understanding-and-using-closures, 'capturing-values-and-memory-mgmt.', callback-hell]
   - key: concurrency
     title: Concurrency and multithreading
     title_th: การเขียนโปรแกรม Concurrency และ Multithreading (GCD, async/await)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [concurrency-and-multithreading, 'concurrency-(gcd,-async-await)', gcd, operation-queues, 'async---await', concurrency]
   - key: networking
     title: Networking
     title_th: การเชื่อมต่อเครือข่ายและเรียกใช้ API (URLSession, Alamofire, REST)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [networking, 'http---https', urlsession, alamofire, rest, graphql, 'json---xml', parsing, serializing]
   - key: data-persistence
     title: Data persistence
     title_th: การจัดเก็บข้อมูลบนเครื่อง (Core Data, UserDefaults, Keychain)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [data-persistence, core-data, user-defaults, keychain, file-system, sqlite]
   - key: dependency-management
     title: Dependency and framework management
     title_th: การจัดการ Dependency และไลบรารี (SPM, CocoaPods)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [dependency-manager, swift-package-manager, cocoapods, carthage, frameworks-and-library, static-library, dynamic-library, xcframework]
   - key: apple-frameworks
     title: Apple platform frameworks
     title_th: เฟรมเวิร์กเฉพาะทางของ Apple (ARKit, HealthKit, Core ML)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 18
     nodes: [frameworks, arkit, healthkit, gamekit, mapkit, core-ml]
   - key: code-quality-and-testing
     title: Code quality and testing
     title_th: คุณภาพโค้ดและการทดสอบ (SwiftLint, XCTest)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 19
     nodes: [code-quality-tools, swiftlint, swiftformat, tailor, unit-and-ui-testing, xctest, xcuitest, test-plan-and-coverage]
   - key: ci-cd-and-distribution
     title: Version control, CI/CD, and App Store distribution
     title_th: ระบบควบคุมเวอร์ชัน, CI/CD และการเผยแพร่แอปบน App Store (Git, Fastlane, TestFlight)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 20
     nodes: [version-control, git, github, 'ci---cd', jenkins, circleci, github-actions, gitlab, azure-devops, fastlane, testflight, app-store-distribution, 'app-store-optimization-(aso)']

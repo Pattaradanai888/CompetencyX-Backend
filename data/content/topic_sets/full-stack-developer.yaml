@@ -3,84 +3,84 @@ sets:
   - key: html-and-static-webpages
     title: HTML and Static Webpages
     title_th: HTML และการสร้างหน้าเว็บแบบ Static
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [html, checkpoint---static-webpages]
   - key: css-and-tailwind
     title: CSS Styling with Tailwind
     title_th: CSS และการจัดสไตล์ด้วย Tailwind CSS
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [css, tailwind-css]
   - key: javascript-and-interactivity
     title: JavaScript and Interactivity
     title_th: JavaScript และการทำให้หน้าเว็บโต้ตอบกับผู้ใช้ได้
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [javascript, checkpoint---interactivity]
   - key: react-frontend-apps
     title: Building Frontend Apps with React
     title_th: การสร้างแอป Frontend ด้วย React
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [react, checkpoint---frontend-apps]
   - key: nodejs-and-cli-apps
     title: Node.js and CLI Apps
     title_th: Node.js และการเขียน CLI Apps
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [node.js, 'checkpoint-—-cli-apps']
   - key: npm-and-packages
     title: npm and External Packages
     title_th: npm และการใช้แพ็กเกจภายนอก
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [npm, checkpoint---external-packages]
   - key: version-control
     title: Version control and repository hosting
     title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [git, github, checkpoint---collaborative-work]
   - key: databases
     title: Databases
     title_th: ฐานข้อมูล (PostgreSQL, Redis)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [postgresql, redis]
   - key: restful-apis
     title: RESTful API Development
     title_th: การพัฒนา RESTful API
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [restful-apis, 'checkpoint-—-simple-crud-apps', 'checkpoint-—-complete-app']
   - key: jwt-auth
     title: JWT Authentication
     title_th: การยืนยันตัวตนด้วย JWT
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [jwt-auth]
   - key: aws-and-deployment
     title: AWS Services and Deployment
     title_th: บริการ AWS และการ Deploy แอป (EC2, S3, VPC)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [basic-aws-services, ec2, vpc, route53, ses, s3, 'checkpoint-—-deployment']
   - key: linux-and-monitoring
     title: Linux Server Operations and Monitoring
     title_th: การดูแลเซิร์ฟเวอร์ Linux และการเฝ้าระวังระบบ (Monitoring)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [linux-basics, monit, 'checkpoint-—-monitoring']
   - key: cicd-github-actions
     title: CI/CD with GitHub Actions
     title_th: ระบบ CI/CD ด้วย GitHub Actions
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [github-actions, 'checkpoint-—-ci---cd']
   - key: infrastructure-as-code
     title: Infrastructure as Code
     title_th: Infrastructure as Code (Ansible, Terraform)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [ansible, terraform, 'checkpoint-—-automation', 'checkpoint-—-infrastructure']

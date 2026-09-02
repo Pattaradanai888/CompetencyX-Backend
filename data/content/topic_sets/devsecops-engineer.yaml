@@ -3,90 +3,90 @@ sets:
   - key: security-foundations
     title: Security Foundations
     title_th: หลักการพื้นฐานด้านความปลอดภัย (CIA Triad, Defense in Depth)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [devsecops-vs-devops, cia-triad, defense-in-depth-concepts, zero-trust-concepts]
   - key: networking-fundamentals
     title: Networking Fundamentals
     title_th: พื้นฐานเครือข่าย (DNS, HTTP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [networking-basics, dns, http]
   - key: applied-cryptography
     title: Applied Cryptography and PKI
     title_th: การเข้ารหัสลับและ Key Management (Hashing, KMS, PKI)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [encryption, symmetric, asymmetric, cryptographic-hashing, bcrypt, sha-256, key-management-service, pki-design-and-failover, certificate-lifecycle]
   - key: identity-and-access
     title: Identity and Access Management
     title_th: การจัดการตัวตนและสิทธิ์การเข้าถึง (IAM, RBAC)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [identity-basics, authentication, authorization, iam, role-based-access, least-privilege, large-scale-identity-strategy]
   - key: secure-coding
     title: Secure Coding and OWASP Top 10
     title_th: การเขียนโค้ดอย่างปลอดภัยและ OWASP Top 10
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [secure-coding, input-validation-patterns, sql-injection-prevention, xss-prevention, owasp-top-10, secure-api-design]
   - key: threat-modeling
     title: Threat Modeling
     title_th: การทำ Threat Modeling (STRIDE, PASTA)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [threat-modeling, threat-modeling-workflows, stride, pasta, attack-surface-mapping]
   - key: network-security
     title: Network Security Controls
     title_th: การรักษาความปลอดภัยเครือข่าย (Firewall, TLS, DDoS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [firewalls, vlans, acls, tls, network-segmentation, secure-network-zoning, ddos-miligation-strategy, ids, ips]
   - key: security-testing-tools
     title: Security Testing and Scanning Tools
     title_th: เครื่องมือทดสอบเจาะระบบและสแกนช่องโหว่ (Burp Suite, Nmap, Nessus)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [burp-suite, wireshark-basics, nmap-basics, nmap, nessus, openvas, qualys]
   - key: cloud-security
     title: Cloud Security
     title_th: ความปลอดภัยบนคลาวด์ (Cloud Security, CSPM)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [cloud-security, cspm, multi-region-security-planning]
   - key: container-security
     title: Container Security
     title_th: ความปลอดภัยของคอนเทนเนอร์ (Docker, Kubernetes)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [container-security, docker, kubernetes, image-scanning]
   - key: supply-chain-security
     title: Software Supply Chain Security
     title_th: ความปลอดภัยของ Software Supply Chain และ Dependency (SBOM)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [supply-chain-security, sboms, dependency-risk-management, build-pipeline-hardening, automated-patching]
   - key: security-monitoring
     title: Security Monitoring and SIEM
     title_th: การเฝ้าระวังด้านความปลอดภัยและ SIEM/SOAR
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [monitoring, log-analysis, alert-types, siem, soar-concepts, soar-automation, enterprise-operations]
   - key: incident-response
     title: Incident Response and Forensics
     title_th: การรับมือ Incident และ Digital Forensics
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [incident-response, ir-lifecycle, forensics, containment, root-cause-analysis, response-strategy, endpoint-detection]
   - key: governance-risk-compliance
     title: Governance, Risk and Compliance
     title_th: การกำกับดูแล ความเสี่ยง และ Compliance (SOC 2, ISO 27001, NIST)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [soc-2, iso-27001, nist, audit-and-compliance-mapping, risk-quantification]
   - key: scripting-and-automation
     title: Scripting and Programming
     title_th: การเขียนสคริปต์และโปรแกรมเพื่องานความปลอดภัย (Python, Bash, PowerShell)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [scripting-knowledge, python, go, 'javascript---node.js', ruby, rust, bash, powershell, vim---nano---emacs]

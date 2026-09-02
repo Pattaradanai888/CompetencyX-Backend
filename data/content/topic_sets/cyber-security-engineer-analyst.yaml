@@ -3,114 +3,114 @@ sets:
   - key: it-fundamentals
     title: Fundamental IT skills
     title_th: ทักษะพื้นฐานด้านไอที ฮาร์ดแวร์ และโปรแกรมสำนักงาน (MS Office, Google Workspace)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [fundamental-it-skills, computer-hardware-components, connection-types-and-their-function, os-independent-troubleshooting, understand-basics-of-popular-suites, ms-office-suite, google-suite, basics-of-computer-networking, bluetooth, infrared, nfc, wifi]
   - key: operating-systems
     title: Operating systems and virtualization
     title_th: ระบบปฏิบัติการและ Virtualization (Windows, Linux, Hypervisor)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [operating-systems, windows, linux, macos, installation-and-configuration, different-versions-and-differences, navigating-using-gui-and-cli, understand-permissions, installing-software-and-applications, performing-crud-on-files, troubleshooting, common-commands, vm, hypervisor, guestos, hostos, vmware, virtualbox, esxi, proxmox]
   - key: networking-fundamentals
     title: Networking fundamentals
     title_th: พื้นฐานเครือข่าย (OSI Model, Subnetting, DNS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [networking-knowledge, understand-the-osi-model, common-protocols-and-their-uses, common-ports-and-their-uses, ip, public-vs-private-ip-addresses, localhost, loopback, cidr, subnet-mask, default-gateway, basics-of-subnetting, nat, arp, dhcp, dns, ntp, ipam]
   - key: network-devices-and-topologies
     title: Network devices and topologies
     title_th: อุปกรณ์เครือข่ายและ Network Topology (Router, VLAN, VPN)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [router, switch, vlan, dmz, vpn, lan, wan, man, wlan, star, ring, mesh, bus, basics-of-nas-and-san]
   - key: secure-protocols
     title: Protocols and secure transport
     title_th: โปรโตคอลและการรับส่งข้อมูลอย่างปลอดภัย (SSH, TLS, IPsec)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [ssh, rdp, ftp, sftp, 'http---https', 'ssl---tls', ssl-and-tls-basics, ftp-vs-sftp, ssl-vs-tls, ipsec, dnssec, ldaps, srtp, 's-mime']
   - key: command-line-and-analysis-tools
     title: Command-line and network troubleshooting tools
     title_th: เครื่องมือ Command Line และการตรวจสอบและแก้ปัญหาเครือข่าย (grep, nmap, tcpdump)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [nslookup, dig, ping, netstat, ipconfig, route, tracert, tcpdump, nmap, hping, curl, port-scanners, packet-sniffers, protocol-analyzers, iptables, cat, head, tail, grep, dd]
   - key: identity-and-access
     title: Identity, access, and cryptography
     title_th: การยืนยันตัวตน การจัดการสิทธิ์ และการเข้ารหัสลับ (SSO, MFA, PKI)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [kerberos, ldap, sso, radius, certificates, local-auth, authentication-vs-authorization, mfa-and-2fa, hashing, salting, key-exchange, pki, private-vs-public-keys, obfuscation]
   - key: security-concepts
     title: Core security concepts
     title_th: แนวคิดหลักด้านความปลอดภัย (CIA Triad, Zero Trust)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [security-skills-and-knowledge, understand-cia-triad, understand-the-definition-of-risk, understand-concept-of-defense-in-depth, core-concepts-of-zero-trust, understand-concept-of-isolation, perimiter-vs-dmz-vs-segmentation, 'blue---red---purple-teams', roles-of-compliance-and-auditors, understand-backups-and-resiliency]
   - key: security-operations-practices
     title: Security operations practices
     title_th: งาน Security Operations (Threat Hunting, Vulnerability Management, Pentest)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [understand-concept-of-runbooks, basics-and-concepts-of-threat-hunting, basics-of-vulnerability-management, understand-basics-of-forensics, basics-of-reverse-engineering, penetration-testing-rules-of-engagement, understand-common-hacking-tools, understand-common-exploit-frameworks, 'false-negative---false-positive', 'true-negative---true-positive']
   - key: frameworks-and-standards
     title: Threat and compliance frameworks
     title_th: เฟรมเวิร์กวิเคราะห์ภัยคุกคามและมาตรฐานด้านความปลอดภัย (MITRE ATT&CK, NIST, ISO 27001)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [cyber-kill-chain, kill-chain, attandck, diamond-model, 'basics-of-threat-intel,-osint', iso, nist, rmf, cis, csf]
   - key: security-tooling
     title: Security platforms and log sources
     title_th: แพลตฟอร์มด้านความปลอดภัยและ Log Source (SIEM, SOAR, Kali Linux)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [siem, soar, kali-linux, parrotos, lolbas, gtfobins, wadcoms, event-logs, syslogs, netflow, packet-captures, firewall-logs]
   - key: endpoint-and-network-defense
     title: Endpoint and network defense
     title_th: การป้องกัน Endpoint และเครือข่าย (EDR, Firewall, IDS/IPS)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [endpoint-security, antivirus, antimalware, edr, dlp, host-based-firewall, 'firewall-and-nextgen-firewall', basics-of-ids-and-ips, hips, nids, nips, sandboxing, honeypots, operating-system-hardening, patching, acl, acls, 'mac-based', 'nac-based', port-blocking, group-policy, sinkholes, jump-server]
   - key: social-engineering
     title: Social engineering attacks
     title_th: การโจมตีแบบ Social Engineering (Phishing, Tailgating)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [social-engineering, phishing, whishing, whaling, smishing, spam-vs-spim, shoulder-surfing, dumpster-diving, tailgating, impersonation, typo-squatting, watering-hole-attack, drive-by-attack]
   - key: network-attacks
     title: Network, credential, and wireless attacks
     title_th: การโจมตีเครือข่าย เครือข่ายไร้สาย และ Credential (MITM, DDoS, Evil Twin)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [mitm, spoofing, dns-poisoning, vlan-hopping, dos-vs-ddos, brute-force-vs-password-spray, replay-attack, pass-the-hash, reconnaissance, privilege-escalation, eap-vs-peap, wps, wpa-vs-wpa2-vs-wpa3-vs-wep, evil-twin, rogue-access-point, deauth-attack]
   - key: application-attacks
     title: Application attacks
     title_th: การโจมตีระดับแอปพลิเคชัน (OWASP Top 10, XSS, SQL Injection)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [web-based-attacks-and-owasp10, xss, sql-injection, csrf, directory-traversal, buffer-overflow, memory-leak]
   - key: malware-and-threat-analysis
     title: Malware analysis and digital forensics
     title_th: การวิเคราะห์มัลแวร์และ Digital Forensics (VirusTotal, Wireshark, Autopsy)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [zero-day, known-vs-unknown, apt, understand-handshakes, virustotal, joe-sandbox, 'any.run', urlvoid, urlscan, whois, wireshark, winhex, memdump, ftk-imager, autopsy]
   - key: incident-response
     title: Incident response
     title_th: การรับมือ Incident (Incident Response)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [preparation, identification, containment, eradication, recovery, lessons-learned, stakeholders, hr, legal, compliance, management]
   - key: cloud-security
     title: Cloud skills and cloud security
     title_th: ทักษะด้านคลาวด์และความปลอดภัยบนคลาวด์ (AWS, Azure, GCP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 18
     nodes: [cloud-skills-and-knowledge, understand-the-concept-of-security-in-the-cloud, understand-the-basics-and-general-flow-of-deploying-in-the-cloud, understand-the-differences-between-cloud-and-on-premises, understand-the-concept-of-infrastructure-as-code, understand-the-concept-of-serverless, saas, paas, iaas, private, public, hybrid, aws, gcp, azure, s3, dropbox, box, onedrive, google-drive, icloud]
   - key: programming-skills
     title: Programming and scripting skills
     title_th: ทักษะการเขียนโปรแกรมและสคริปต์ (Python, Bash, PowerShell)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 19
     nodes: [programming-skills, python, go, javascript, 'c++', bash, power-shell]

@@ -3,102 +3,102 @@ sets:
   - key: game-mathematics
     title: Game Mathematics and Transforms
     title_th: คณิตศาสตร์สำหรับเกม (Linear Algebra, Transform, Quaternion)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [game-mathematics, linear-algebra, matrix, linear-transformation, affine-space, affine-transformation, vector, orientation, quaternion, euler-angle]
   - key: curves-and-animation
     title: Curves and Animation
     title_th: เส้นโค้งและแอนิเมชัน (Spline, Bezier)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [curve, spline, hermite, bezier, catmull-rom, computer-animation]
   - key: game-programming-languages
     title: Game programming languages
     title_th: ภาษาสำหรับพัฒนาเกม (C++, C#, GDScript)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [programming-languages, 'c-c++', 'c#', gdscript, rust, python]
   - key: graphics-fundamentals
     title: Computer Graphics Fundamentals
     title_th: คอมพิวเตอร์กราฟิกส์พื้นฐาน (Graphics Pipeline, Rasterization)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [computer-graphics, graphics-pipeline, rasterization, ray-tracing, sampling, projection, perspective, orthogonal]
   - key: graphics-apis
     title: Graphics APIs
     title_th: Graphics APIs (DirectX, OpenGL, Vulkan)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [graphics-api, directx, opengl, opengl-es, webgl, metal, vulkan]
   - key: shader-programming
     title: Shader programming
     title_th: การเขียน Shader (HLSL, GLSL)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [shader, hlsl, glsl, spir-v]
   - key: shading-and-materials
     title: Shading theory and materials
     title_th: ทฤษฎี Shading และ Materials (Texture, BRDF)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [rendering-equation, reflection, specular, diffuse, mapping, texture, bump, parallax, horizon, translucency-and-transparency, conservation-of-energy, metallicity, microsurface-scattering]
   - key: color-and-tone
     title: Color and tone reproduction
     title_th: สี การรับรู้ภาพ และ Tone Reproduction
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [color, visual-perception, tone-reproduction]
   - key: lighting-and-shadows
     title: Lighting and shadows
     title_th: แสงและเงาในการเรนเดอร์ (Lighting, Shadow Map)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [lighting-and-shadow, light, light-source, directional, point, spot, infinite, shadow, shadow-map, 2d, cube, cascaded, stencil-shadow]
   - key: visibility-and-culling
     title: Visibility and culling
     title_th: การทำ Culling และ Visibility (Frustum Culling, Occlusion Culling)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [visibility-and-occlusion, occluder, culling, clipping, fog, frustum]
   - key: advanced-rendering
     title: Advanced rendering
     title_th: การเรนเดอร์ขั้นสูง (Ray Tracing, PBR)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [advanced-rendering, real-time-ray-tracing, physically-based-rendering, vulkan-ray-tracing, optix, directx-ray-tracing]
   - key: computational-geometry
     title: Computational geometry
     title_th: เรขาคณิตเชิงคำนวณ (Convex Hull, Bounding Volume)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [geometry, intersection, convexity, convex, convex-hull, convex-decomposition, bounding-volume, polygon, polyhedron]
   - key: game-physics
     title: Game physics and dynamics
     title_th: ฟิสิกส์ในเกมและ Dynamics (Force, Friction, Joint)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [game-physics, dynamics, force, acceleration, linear-velocity, angular-velocity, friction, restitution, buoyancy, center-of-mass, moment-of-inertia, joints]
   - key: collision-detection
     title: Collision detection
     title_th: การตรวจจับการชน (Collision Detection)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [collision-detection, broad-phase, narrow-phase, spatial-partitioning, ccd, concave, obb, aabb, sat, gjk, epa, dbvt, sort-and-sweep, bvh]
   - key: game-ai
     title: Game AI
     title_th: AI ในเกม (Behavior Tree, State Machine)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [game-ai, decision-making, decision-tree, state-machine, behavior-tree, fuzzy-logic, markov-system, goal-oriented-behavior, movement, board-game, minimax, ab-pruning, mcts]
   - key: game-ai-learning
     title: Game AI learning
     title_th: Machine Learning และ Reinforcement Learning ในเกม
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 16
     nodes: [decision-learning, learning, naive-bayes-classifier, decision-tree-learning, deep-learning, artificial-neural-network, reinforcements-learning]
   - key: game-engines
     title: Game engines
     title_th: เกมเอนจิน (Unity, Unreal, Godot)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 17
     nodes: [game-engine, unity-3d, unreal-engine, native, godot]

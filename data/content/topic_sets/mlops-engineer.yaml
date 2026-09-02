@@ -3,90 +3,90 @@ sets:
   - key: programming-fundamentals
     title: Programming for MLOps
     title_th: การเขียนโปรแกรมสำหรับงาน MLOps (Python, Go, Bash)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 1
     nodes: [programming-fundamentals, python, go, bash]
   - key: version-control
     title: Version control and repository hosting
     title_th: ระบบควบคุมเวอร์ชันและการโฮสต์ Repository (Git, GitHub)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 2
     nodes: [version-control-systems, version-control, git, github]
   - key: machine-learning-fundamentals
     title: Machine learning fundamentals
     title_th: พื้นฐาน Machine Learning
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 3
     nodes: [machine-learning-fundamentals]
   - key: mlops-foundations
     title: MLOps principles and components
     title_th: หลักการและองค์ประกอบหลักของ MLOps
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 4
     nodes: [mlops-principles, mlops-components]
   - key: data-engineering-fundamentals
     title: Data engineering fundamentals and pipelines
     title_th: พื้นฐาน Data Engineering และ Data Pipelines
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 5
     nodes: [data-engineering-fundamentals, data-pipelines, data-ingestion-architecture]
   - key: data-storage-and-streaming
     title: Data lakes, warehouses, and stream processing
     title_th: Data Lake, Data Warehouse และ Stream Processing (Kafka, Spark, Flink)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 6
     nodes: [data-lakes-and-warehouses, kafka, spark, flink]
   - key: cloud-computing
     title: Cloud computing and managed ML services
     title_th: การใช้งานคลาวด์และบริการ ML แบบ Managed (AWS, Azure, GCP)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 7
     nodes: [cloud-computing, aws---azure---gcp, cloud-native-ml-services]
   - key: containerization
     title: Containerization
     title_th: การใช้งานคอนเทนเนอร์ (Docker, Kubernetes)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 8
     nodes: [containerization, docker, kubernetes]
   - key: cicd
     title: CI/CD
     title_th: ระบบ CI/CD
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 9
     nodes: [ci-cd]
   - key: infrastructure-as-code
     title: Infrastructure as Code
     title_th: Infrastructure as Code
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 10
     nodes: [infrastructure-as-code]
   - key: workflow-orchestration
     title: Workflow orchestration
     title_th: การทำ Workflow Orchestration (Airflow)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 11
     nodes: [orchestration, airflow]
   - key: experiment-tracking
     title: Experiment tracking and model registry
     title_th: การทำ Experiment Tracking และ Model Registry (MLflow)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 12
     nodes: [experiment-tracking-and-model-registry]
   - key: model-training-and-serving
     title: Model training and serving
     title_th: การ Train และ Serve โมเดลใน Production
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 13
     nodes: [model-training-and-serving]
   - key: data-lineage-and-feature-stores
     title: Data lineage and feature stores
     title_th: การติดตาม Data Lineage และการใช้งาน Feature Store
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 14
     nodes: [data-lineage-and-feature-stores]
   - key: monitoring-observability
     title: Monitoring and observability
     title_th: การเฝ้าระวังและติดตามระบบ (Monitoring, Observability)
-    review: {status: draft}
+    review: {status: reviewed}
     display_order: 15
     nodes: [monitoring-and-observability]
