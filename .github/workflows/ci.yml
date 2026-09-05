@@ -1,0 +1,160 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_FROZEN: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync
+      - run: uv run ruff check .
+
+  django-checks:
+    name: Django checks, migrations, content catalogs, OpenAPI snapshot
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync
+
+      - name: System checks
+        run: uv run python manage.py check --fail-level WARNING
+
+      - name: Every model change has a migration
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Migrate and seed a fresh database
+        run: |
+          uv run python manage.py migrate --noinput
+          uv run python manage.py sync_content
+
+      - name: Curated content validates
+        run: |
+          uv run python manage.py validate_question_catalog
+          uv run python manage.py validate_topic_set_catalog --strict
+
+      - name: docs/openapi.json matches the live schema
+        # The checked-in snapshot is the frontend's contract artifact; a
+        # serializer or route change must ship with a regenerated snapshot.
+        run: |
+          uv run python manage.py spectacular --format openapi-json --file /tmp/openapi.json
+          uv run python - <<'PY'
+          import json, sys
+          live = json.load(open('/tmp/openapi.json', encoding='utf-8'))
+          committed = json.load(open('docs/openapi.json', encoding='utf-8'))
+          if live != committed:
+              live_paths, committed_paths = set(live['paths']), set(committed['paths'])
+              print('docs/openapi.json is out of date. Regenerate with:')
+              print('  uv run python manage.py spectacular --format openapi-json --file docs/openapi.json')
+              print('paths only live     :', sorted(live_paths - committed_paths))
+              print('paths only committed:', sorted(committed_paths - live_paths))
+              sys.exit(1)
+          print('OpenAPI snapshot is current.')
+          PY
+
+      - name: Production settings load (deploy checklist, errors only)
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.runtime
+          DJANGO_DEBUG: 'false'
+          DJANGO_SECRET_KEY: ci-only-secret-key-that-is-long-enough-to-pass-the-check-0123456789
+          DJANGO_ALLOWED_HOSTS: localhost
+        run: uv run python manage.py check --deploy --fail-level ERROR
+
+  test:
+    name: Tests (SQLite, with coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync
+      - name: pytest
+        run: uv run pytest -n auto --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-xml
+          path: coverage/coverage.xml
+          if-no-files-found: ignore
+
+  test-postgres:
+    # The runtime targets PostgreSQL while the fast suite runs on SQLite. This
+    # job runs migrations, the content sync and the whole suite against the
+    # real engine, which is where integer ranges, row locks on outer joins and
+    # JSON field behaviour differ (see the fixes in git history).
+    name: Tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: competencyx
+          POSTGRES_USER: competencyx
+          POSTGRES_PASSWORD: competencyx
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U competencyx -d competencyx"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.runtime
+      DJANGO_DEBUG: 'true'
+      DJANGO_SECRET_KEY: ci-only-secret-key
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DATABASE_URL: postgres://competencyx:competencyx@localhost:5432/competencyx
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version-file: .python-version
+      - run: uv sync
+      - name: Pre-deploy path (what Railway runs once per deployment)
+        run: |
+          uv run python manage.py wait_for_db --timeout 60
+          uv run python manage.py migrate --noinput
+          uv run python manage.py sync_content
+      - name: pytest against PostgreSQL
+        run: uv run pytest -n auto --ds=config.settings.runtime --create-db
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

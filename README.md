@@ -1,6 +1,6 @@
 # CompetencyX Backend
 
-REST API (Django + Django REST Framework) สำหรับ **Role Discovery** (ค้นหาสายงานที่น่าจะเหมาะ), **Skill Assessment** (ประเมินทักษะตัวเองตาม PSP/SDLC) และ **Recommendation** (แนะนำหัวข้อถัดไปใน roadmap)
+REST API (Django + Django REST Framework) สำหรับ **Role Discovery** (ค้นหาสายงานที่น่าจะเหมาะ), **Skill Assessment** (วางตัวเองเทียบกับ Assessable Topic Set ของ roadmap ของสายงาน) และ **Recommendation** (แนะนำหัวข้อถัดไปใน roadmap)
 
 เอกสารนี้เขียนสำหรับ dev ที่เพิ่งเข้ามาในโปรเจกต์ — ทำตามทีละขั้นได้เลย ไม่ต้องเดาว่าต้องรันคำสั่งไหน
 
@@ -183,7 +183,7 @@ Assessment session (flow หลัก)
 - `GET  /api/v1/assessment-sessions/{id}/insights/` — evidence ระหว่างทาง (pillar / ranked roles)
 - `GET  /api/v1/assessment-sessions/{id}/results/` — ผลสรุป + recommendation
 - `GET  /api/v1/assessment-sessions/{id}/history/` — ประวัติคำตอบ
-- `GET  /api/v1/assessment-sessions/{id}/skill-assessment/catalog/` — dimension ของ PSP/SDLC
+- `GET  /api/v1/assessment-sessions/{id}/skill-assessment/catalog/` — คำถามและ dimension จาก Assessable Topic Set ของสายงานเป้าหมาย
 - `POST /api/v1/assessment-sessions/{id}/skill-assessment/next-question/` — ขอคำถาม Skill Assessment ถัดไป
 - `GET|POST /api/v1/assessment-sessions/{id}/skill-assessment/` — อ่าน / บันทึกผล Skill Assessment
 
@@ -288,15 +288,38 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 
 ---
 
-## 7. โครงสร้างโปรเจกต์
+## 7. CI (GitHub Actions)
+
+ทุก push ไป `main` และทุก pull request รัน `.github/workflows/ci.yml` แยกเป็น 5 job ขนานกัน
+
+| Job | ทำอะไร |
+| --- | --- |
+| `lint` | `ruff check .` |
+| `django-checks` | `manage.py check`, `makemigrations --check`, migrate + `sync_content` บนฐานเปล่า, `validate_question_catalog`, `validate_topic_set_catalog --strict`, เทียบ `docs/openapi.json` กับ schema สด, และ `check --deploy` ด้วย runtime settings |
+| `test` | `pytest -n auto --cov` บน SQLite แล้วอัปโหลด `coverage/coverage.xml` เป็น artifact |
+| `test-postgres` | รัน pre-deploy path (`wait_for_db` → `migrate` → `sync_content`) แล้วรัน test suite ทั้งชุดบน PostgreSQL 16 ด้วย runtime settings |
+| `docker` | build image จาก `Dockerfile` (target `production`) โดยไม่ push |
+
+ก่อนเปิด PR ให้รันชุดเดียวกันในเครื่อง:
+
+```powershell
+.venv\Scripts\python.exe -m ruff check .
+.venv\Scripts\python.exe manage.py check
+.venv\Scripts\python.exe manage.py makemigrations --check --dry-run
+.venv\Scripts\python.exe -m pytest -n auto
+.venv\Scripts\python.exe manage.py spectacular --format openapi-json --file docs/openapi.json   # ถ้าแก้ serializer / route
+```
+
+ถ้า `django-checks` ตกที่ขั้น OpenAPI แปลว่าแก้ contract แล้วยังไม่ได้ regenerate snapshot ให้รันคำสั่งบรรทัดสุดท้ายแล้ว commit `docs/openapi.json` (และ copy ไปที่ repo frontend)
+
+## 8. โครงสร้างโปรเจกต์
 
 | โฟลเดอร์ | หน้าที่ |
 | --- | --- |
 | `accounts/` | user model (`AUTH_USER_MODEL`), สมัคร / เข้าสู่ระบบ / ออกจากระบบ และ identity ของผู้ใช้ปัจจุบัน |
 | `api/` | จุดเข้า API รวม, health check, และคำสั่ง `sync_content` |
-| `assessments/` | session, คำตอบ, scoring, serializers, คำสั่ง simulation |
+| `assessments/` | session, คำตอบ, scoring, Skill Assessment, การแนะนำหัวข้อถัดไป (`services/topic_skill_assessment_service.py`), serializers, คำสั่ง simulation |
 | `roadmaps/` | role, topic, คำถาม, seed data, logic ของ questionnaire |
-| `recommendations/` | logic การแนะนำหัวข้อถัดไป |
 | `config/` | Django settings (`settings/runtime.py`, `settings/test.py`) และ root URLs |
 | `data/content/` | เนื้อหาที่ curate เอง (role, topic, คำถาม) — แหล่งความจริงของ content |
 | `data/upstream/` | snapshot ที่ import มาจากภายนอก ถือเป็น source material |
@@ -306,7 +329,7 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 
 ---
 
-## 8. อ่านต่อ
+## 9. อ่านต่อ
 
 - [CONTEXT.md](CONTEXT.md) — คำศัพท์ของ domain (อ่านก่อนแก้ logic)
 - [AGENTS.md](AGENTS.md) — coding style, testing, commit convention
@@ -318,7 +341,7 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 
 ---
 
-## 9. ปัญหาที่เจอบ่อย
+## 10. ปัญหาที่เจอบ่อย
 
 | อาการ | วิธีแก้ |
 | --- | --- |
