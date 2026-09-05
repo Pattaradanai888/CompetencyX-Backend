@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     'api',
     'roadmaps',
     'assessments',
-    'recommendations',
 ]
 
 MIDDLEWARE = [

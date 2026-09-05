@@ -9,10 +9,10 @@ If absent, proceed silently.
 /
 ├── CONTEXT.md          # optional domain glossary
 ├── docs/adr/           # optional architecture decisions
+├── accounts/
 ├── api/
 ├── assessments/
 ├── roadmaps/
-├── recommendations/
 └── config/
 ```
 

@@ -32,12 +32,12 @@ default-groups = ["dev"]
 [tool.pytest.ini_options]
 minversion = "8.3"
 # Coverage is opt-in to keep the dev loop fast; for a coverage run use:
-#   .venv\Scripts\python.exe -m pytest -n 0 --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
-# (coverage needs -n 0: under xdist each worker measures only its own slice)
+#   .venv\Scripts\python.exe -m pytest -n auto --cov=. --cov-report=xml:coverage/coverage.xml --cov-report=term-missing
+# (pytest-cov combines the xdist workers' data, so parallel runs report full coverage; CI runs exactly this)
 # Pass -n 0 to disable parallelism for debugging single tests.
 addopts = "-p no:cacheprovider --basetemp=.codex-pytest-basetemp --ds=config.settings.test --reuse-db --import-mode=importlib -n auto"
 python_files = ["tests.py", "test_*.py"]
-testpaths = ["accounts", "api", "roadmaps", "assessments", "recommendations", "config", "simulation"]
+testpaths = ["accounts", "api", "roadmaps", "assessments", "config", "simulation"]
 tmp_path_retention_count = 1
 tmp_path_retention_policy = "failed"
 norecursedirs = [
@@ -59,7 +59,7 @@ norecursedirs = [
 
 [tool.coverage.run]
 relative_files = true
-source = ["accounts", "api", "assessments", "config", "recommendations", "roadmaps", "simulation"]
+source = ["accounts", "api", "assessments", "config", "roadmaps", "simulation"]
 omit = [
     "*/migrations/*",
     "*/tests/*",
