@@ -57,7 +57,7 @@ def get_likert_response_scale(language):
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ('id', 'slug', 'name', 'description', 'top_ka_codes', 'core_tasks', 'swebok_source_version')
+        fields = ('id', 'slug', 'name', 'name_th', 'description', 'description_th', 'top_ka_codes', 'core_tasks', 'swebok_source_version')
 
 
 class TopicPrerequisiteSerializer(serializers.Serializer):

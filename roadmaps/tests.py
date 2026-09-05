@@ -50,12 +50,11 @@ class SyncContentTests(TestCase):
         assert TopicPrerequisite.objects.count() == expected_prereq_count
         assert Question.objects.count() == expected_question_count
         assert QuestionOption.objects.count() == expected_option_count
-        # The 8 PSP/SDLC dimensions and their 11 items remain as the fallback for a
-        # role with no imported roadmap; every role that has one also gets topic-anchored
-        # items and a dimension per assessed topic (ADR-0002).
-        assert SkillAssessmentDimension.objects.filter(role__isnull=True).count() == 8
-        assert SkillAssessmentQuestion.objects.filter(role__isnull=True).count() == 11
-        assert SkillAssessmentQuestion.objects.filter(role__isnull=False).exists()
+        # Every role gets topic-anchored items and a dimension per assessed set
+        # (ADR-0002); no role-independent items survive (ADR-0005).
+        assert SkillAssessmentDimension.objects.filter(role__isnull=True, is_active=True).count() == 0
+        assert SkillAssessmentQuestion.objects.filter(role__isnull=True, is_active=True).count() == 0
+        assert SkillAssessmentQuestion.objects.filter(role__isnull=False, is_active=True).exists()
         assert SkillAssessmentRoleGuidance.objects.count() == 54
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
         assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()
@@ -147,12 +146,13 @@ class SyncContentTests(TestCase):
         role = Role.objects.get(slug='backend-developer')
         stale_dimension = SkillAssessmentDimension.objects.create(
             dimension_key='stale-dimension',
+            role=role,
             label='Stale dimension',
-            track=SkillAssessmentDimension.Track.PSP,
             low_score_action='Stale action',
         )
         stale_question = SkillAssessmentQuestion.objects.create(
             question_id='stale-skill-question',
+            role=role,
             prompt='Stale skill question',
             dimension_key=stale_dimension.dimension_key,
         )
@@ -268,6 +268,14 @@ class SyncContentTests(TestCase):
         assert role.swebok_source_version == 'SWEBOK V4.0'
         assert role.top_ka_codes == ['KA4', 'KA2', 'KA6']
         assert role.core_tasks[0]['ka_codes'] == ['KA2', 'KA4']
+
+    def test_sync_content_command_gives_every_role_a_thai_name_and_description(self):
+        call_command('sync_content')
+
+        for role in Role.objects.filter(is_active=True):
+            assert role.name_th, role.slug
+            assert role.description_th, role.slug
+        assert Role.objects.get(slug='backend-developer').name_th == 'นักพัฒนา Backend'
 
     def test_sync_content_imports_external_roadmap_graphs_from_the_manifest(self):
         # sync_content already ran in setUpTestData.

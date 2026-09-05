@@ -34,8 +34,9 @@ class SkillAssessmentQuestionAdmin(admin.ModelAdmin):
 
 @admin.register(SkillAssessmentDimension)
 class SkillAssessmentDimensionAdmin(admin.ModelAdmin):
-    list_display = ('dimension_key', 'label', 'track', 'display_order', 'is_active', 'updated_at')
-    list_filter = ('track', 'is_active')
+    list_display = ('dimension_key', 'role', 'label', 'display_order', 'is_active', 'updated_at')
+    list_filter = ('role', 'is_active')
+    list_select_related = ('role',)
     search_fields = ('dimension_key', 'label', 'low_score_action')
 
 

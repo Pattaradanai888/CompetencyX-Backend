@@ -19,7 +19,9 @@ SESSION_RESPONSE_EXAMPLE = {
         'id': 1,
         'slug': 'backend-engineer',
         'name': 'Backend Engineer',
+        'name_th': 'นักพัฒนา Backend',
         'description': 'Builds APIs and backend services.',
+        'description_th': 'สร้าง API และ service ฝั่ง backend',
     },
     'best_fit_role': None,
     'profile': {
@@ -99,7 +101,9 @@ INSIGHTS_RESPONSE_EXAMPLE = {
         'id': 2,
         'slug': 'backend-engineer',
         'name': 'Backend Engineer',
+        'name_th': 'นักพัฒนา Backend',
         'description': 'Builds APIs, data flows, and server-side application logic.',
+        'description_th': 'สร้าง API, data flow และ logic ของแอปพลิเคชันฝั่งเซิร์ฟเวอร์',
     },
     'best_fit_confidence': 0.71,
     'answered_role_questions': 3,
@@ -107,6 +111,7 @@ INSIGHTS_RESPONSE_EXAMPLE = {
         {
             'key': 'systems_design',
             'label': 'Systems Design',
+            'label_th': 'การออกแบบระบบ',
             'raw_score': 7.0,
             'normalized_score': 0.5,
             'evidence_count': 3,
@@ -114,6 +119,7 @@ INSIGHTS_RESPONSE_EXAMPLE = {
         {
             'key': 'reliability_automation',
             'label': 'Reliability and Automation',
+            'label_th': 'ความเชื่อถือได้และระบบอัตโนมัติ',
             'raw_score': 4.0,
             'normalized_score': 0.286,
             'evidence_count': 2,
@@ -123,16 +129,20 @@ INSIGHTS_RESPONSE_EXAMPLE = {
         {
             'slug': 'backend-engineer',
             'name': 'Backend Engineer',
+            'name_th': 'นักพัฒนา Backend',
             'fit_score': 0.71,
             'fit_share': 0.18,
             'top_supporting_pillars': ['Systems Design', 'Reliability and Automation', 'Data Reasoning'],
+            'top_supporting_pillars_th': ['การออกแบบระบบ', 'ความเชื่อถือได้และระบบอัตโนมัติ', 'การใช้เหตุผลกับข้อมูล'],
         },
         {
             'slug': 'system-architect',
             'name': 'System Architect',
+            'name_th': 'สถาปนิกระบบ',
             'fit_score': 0.58,
             'fit_share': 0.16,
             'top_supporting_pillars': ['Systems Design', 'Risk and Security'],
+            'top_supporting_pillars_th': ['การออกแบบระบบ', 'ความเสี่ยงและความปลอดภัย'],
         },
     ],
     'guidance_summary': 'Your current answers align best with Backend Engineer.',
@@ -154,13 +164,17 @@ RESULT_RESPONSE_EXAMPLE = {
         'id': 1,
         'slug': 'backend-engineer',
         'name': 'Backend Engineer',
+        'name_th': 'นักพัฒนา Backend',
         'description': 'Builds APIs and backend services.',
+        'description_th': 'สร้าง API และ service ฝั่ง backend',
     },
     'best_fit_role': {
         'id': 1,
         'slug': 'backend-engineer',
         'name': 'Backend Engineer',
+        'name_th': 'นักพัฒนา Backend',
         'description': 'Builds APIs and backend services.',
+        'description_th': 'สร้าง API และ service ฝั่ง backend',
     },
     'profile': {
         'education_level': 'student',
@@ -176,11 +190,12 @@ RESULT_RESPONSE_EXAMPLE = {
     },
     'role_alignment_status': 'aligned',
     'role_resolution_status': 'resolved',
-    'guidance_summary': 'You are tracking well toward Backend Engineer. Focus next on Databases, HTTP Fundamentals.',
+    'guidance_summary': 'You are tracking well toward Backend Engineer.',
     'pillar_profile': [
         {
             'key': 'systems_design',
             'label': 'Systems Design',
+            'label_th': 'การออกแบบระบบ',
             'raw_score': 7.0,
             'normalized_score': 0.5,
             'evidence_count': 3,
@@ -190,27 +205,11 @@ RESULT_RESPONSE_EXAMPLE = {
         {
             'slug': 'backend-engineer',
             'name': 'Backend Engineer',
+            'name_th': 'นักพัฒนา Backend',
             'fit_score': 0.71,
             'fit_share': 0.18,
             'top_supporting_pillars': ['Systems Design', 'Reliability and Automation', 'Data Reasoning'],
-        }
-    ],
-    'preferred_role_gap_topics': [
-        {
-            'id': 12,
-            'slug': 'databases',
-            'title': 'Databases',
-            'description': 'Relational data modeling and SQL.',
-            'difficulty': 'beginner',
-            'display_order': 2,
-            'parent_id': None,
-            'prerequisites': [
-                {
-                    'topic_id': 11,
-                    'required_mastery_threshold': 0.7,
-                    'dependency_weight': 1.0,
-                }
-            ],
+            'top_supporting_pillars_th': ['การออกแบบระบบ', 'ความเชื่อถือได้และระบบอัตโนมัติ', 'การใช้เหตุผลกับข้อมูล'],
         }
     ],
 }
@@ -241,12 +240,8 @@ HISTORY_RESPONSE_EXAMPLE = {
 SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
     'completed': True,
     'answers': {
-        'q-req': 4,
-        'q-design': 5,
-        'q-dev': 4,
-        'q-test': 3,
-        'q-release': 3,
-        'q-psp': 4,
+        'backend-developer--internet-and-web': 5,
+        'backend-developer--databases': 2,
     },
     'completed_at': '2026-05-08T20:00:00Z',
     'topic_mastery': {'backend-developer--databases': 0.25},
@@ -257,6 +252,9 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
             'topic_title_th': 'การจัดเก็บข้อมูล',
+            # The imported roadmap nodes the set covers, so a roadmap view can
+            # mark them by slug.
+            'node_slugs': ['databases', 'sql'],
             'state': 'assessed_gap',
             'mastery': 0.25,
         },
@@ -264,6 +262,7 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--caching',
             'topic_title': 'Caching',
             'topic_title_th': 'การแคช',
+            'node_slugs': ['caching', 'redis'],
             'state': 'unassessed',
             'mastery': None,
         },
@@ -271,6 +270,7 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--internet-and-web',
             'topic_title': 'Internet and web protocols',
             'topic_title_th': 'อินเทอร์เน็ตและโปรโตคอลเว็บ',
+            'node_slugs': ['internet', 'http'],
             'state': 'held',
             'mastery': 1.0,
             'statement': 'You said you can already work on "Internet and web protocols".',
@@ -284,6 +284,7 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
             'topic_title_th': 'การจัดเก็บข้อมูล',
+            'node_slugs': ['databases', 'sql'],
             'state': 'assessed_gap',
             'mastery': 0.25,
             'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
@@ -293,6 +294,7 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--caching',
             'topic_title': 'Caching',
             'topic_title_th': 'การแคช',
+            'node_slugs': ['caching', 'redis'],
             'state': 'unassessed',
             'mastery': None,
             'reason': 'The assessment has not asked about "Caching" yet.',
@@ -304,6 +306,7 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
             'topic_slug': 'backend-developer--databases',
             'topic_title': 'Data storage',
             'topic_title_th': 'การจัดเก็บข้อมูล',
+            'node_slugs': ['databases', 'sql'],
             'state': 'assessed_gap',
             'mastery': 0.25,
             'reason': 'You rated "Data storage" low, and it builds on "Internet and web protocols".',
@@ -317,28 +320,37 @@ SKILL_ASSESSMENT_RESPONSE_EXAMPLE = {
         'assessed_count': 1,
     },
     'progress': {
-        'answered': 6,
+        'answered': 2,
         'total': 18,
-        'remaining': 12,
+        'remaining': 16,
         'floor': 12,
         'ceiling': 18,
-        'settled': True,
+        'settled': False,
     },
-    'confidence': 'high',
+    'confidence': 'low',
 }
 
+# The answers a client proposes need not be saved yet: the stop rule reads
+# only the answers handed in (ADR-0005).
 SKILL_ASSESSMENT_NEXT_QUESTION_REQUEST_EXAMPLE = {
     'answers': {
-        'q-req': 4,
-        'q-design': 5,
+        'backend-developer--internet-and-web': 5,
+        'backend-developer--databases': 2,
     },
 }
 
 SKILL_ASSESSMENT_NEXT_QUESTION_RESPONSE_EXAMPLE = {
     'next_question': {
-        'id': 'q-dev',
-        'prompt': 'I can implement features using clear design and coding practices.',
-        'dimension_key': 'development',
+        'id': 'backend-developer--caching',
+        'prompt': 'I could work on "Caching" in a real project without help.',
+        'translations': {
+            'en': {'prompt': 'I could work on "Caching" in a real project without help.'},
+            'th': {'prompt': 'ฉันทำงานเรื่อง "การแคช" ในโปรเจกต์จริงได้เองโดยไม่ต้องมีคนช่วย'},
+        },
+        'dimension_key': 'backend-developer--caching',
+        'display_order': 3,
+        'topic_slug': 'backend-developer--caching',
+        'topic_title': 'Caching',
     },
     'progress': {
         'answered': 2,

@@ -24,9 +24,10 @@ sets:
   status, and a set is served with its draft wording in the meantime.
 - `display_order` is optional and defaults to the position in the file.
 
-A role with no file here is served the role-independent items, which name
-nothing about the role; nothing is read off its imported roadmap. Every
-curated role has a file, and a test fails if one is dropped.
+A role with no file here has no Skill Assessment: nothing is read off its
+imported roadmap, and the role-independent items that once stood in were
+retired (ADR-0005). Every curated role has a file, and a test fails if one is
+dropped.
 
 Run `.venv\Scripts\python.exe manage.py validate_topic_set_catalog` to see what
 is still missing, and `manage.py sync_content` to load them.

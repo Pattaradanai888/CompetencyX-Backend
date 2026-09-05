@@ -111,6 +111,10 @@ class TopicStatesTests(TopicSetFlowTestCase):
         self.assertEqual(len(states_by_key), 5)
         self.assertEqual(states_by_key['backend-developer--internet-and-web']['state'], 'held')
         self.assertEqual(states_by_key['backend-developer--internet-and-web']['mastery'], 1.0)
+        # The nodes a set covers travel with it, so a roadmap view can mark
+        # them by slug instead of guessing from titles.
+        self.assertEqual(states_by_key['backend-developer--internet-and-web']['node_slugs'], ['internet', 'http'])
+        self.assertEqual(state['recommended_topics'][0]['node_slugs'], ['databases'])
         self.assertEqual(states_by_key['backend-developer--data-storage']['state'], 'assessed_gap')
         self.assertEqual(states_by_key['backend-developer--data-storage']['mastery'], 0.0)
         for key in ('caching', 'api-design', 'testing'):

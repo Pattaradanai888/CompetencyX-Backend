@@ -49,14 +49,14 @@ def get_role_inference_snapshot(session: AssessmentSession) -> dict[str, object]
     sorted_scores = scoring_service.get_sorted_role_scores(
         {role_slug: evidence_snapshot.role_scores.get(role_slug, 0.0) for role_slug in active_role_slugs},
     )
-    role_names = {
-        role.slug: role.name
-        for role in Role.objects.filter(is_active=True, slug__in=[slug for slug, _score in sorted_scores])
-    }
+    ranked_roles = list(Role.objects.filter(is_active=True, slug__in=[slug for slug, _score in sorted_scores]))
+    role_names = {role.slug: role.name for role in ranked_roles}
+    role_names_th = {role.slug: role.name_th for role in ranked_roles if role.name_th}
     return scoring_service.build_role_inference_snapshot(
         evidence_snapshot,
         active_role_slugs=active_role_slugs,
         role_names=role_names,
+        role_names_th=role_names_th,
         answered_core=_get_answered_core_role_question_count(session),
         core_target=_get_active_core_role_question_count(),
         answered_tie_break=_get_answered_tie_break_question_count(session),

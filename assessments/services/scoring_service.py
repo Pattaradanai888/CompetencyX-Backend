@@ -19,7 +19,7 @@ old score margins never did. Recalibrate with `manage.py tune_scoring`.
 from collections import defaultdict
 from dataclasses import dataclass
 
-from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_PROFILE_WEIGHTS
+from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_DIMENSION_LABELS_TH, ROLE_PROFILE_WEIGHTS
 
 
 # Minimum vote lead over the runner-up to declare the role resolved.
@@ -104,16 +104,30 @@ def build_role_shares(role_scores: dict[str, float], active_role_slugs: list[str
     return {slug: value / total for slug, value in shifted.items()}
 
 
-def _get_top_supporting_pillars(role_slug: str, dimension_scores: dict[str, float], *, limit: int = 3) -> list[str]:
+def dimension_label(dimension_key: str) -> str:
+    return ROLE_DIMENSION_LABELS.get(dimension_key, dimension_key.replace('_', ' ').title())
+
+
+def dimension_label_th(dimension_key: str) -> str:
+    """The Thai label, falling back to the English one for a key with no Thai wording."""
+    return ROLE_DIMENSION_LABELS_TH.get(dimension_key) or dimension_label(dimension_key)
+
+
+def _get_top_supporting_pillar_keys(role_slug: str, dimension_scores: dict[str, float], *, limit: int = 3) -> list[str]:
     profile = ROLE_PROFILE_WEIGHTS.get(role_slug, {})
     weighted_dimensions = [
         (
-            ROLE_DIMENSION_LABELS.get(dimension_key, dimension_key.replace('_', ' ').title()),
+            dimension_key,
             max(float(profile_weight), 0.0) * max(float(dimension_scores.get(dimension_key, 0.0)), 0.0),
         )
         for dimension_key, profile_weight in profile.items()
     ]
-    return [label for label, weighted_score in sorted(weighted_dimensions, key=lambda item: (-item[1], item[0]))[:limit] if weighted_score > 0]
+    ranked = sorted(weighted_dimensions, key=lambda item: (-item[1], dimension_label(item[0])))
+    return [dimension_key for dimension_key, weighted_score in ranked[:limit] if weighted_score > 0]
+
+
+def _get_top_supporting_pillars(role_slug: str, dimension_scores: dict[str, float], *, limit: int = 3) -> list[str]:
+    return [dimension_label(key) for key in _get_top_supporting_pillar_keys(role_slug, dimension_scores, limit=limit)]
 
 
 def compute_role_evidence_snapshot(answers: list[dict]) -> RoleEvidenceSnapshot:
@@ -150,11 +164,13 @@ def build_role_inference_snapshot(  # noqa: PLR0913
     *,
     active_role_slugs: list[str],
     role_names: dict[str, str] | None = None,
+    role_names_th: dict[str, str] | None = None,
     answered_core: int,
     core_target: int,
     answered_tie_break: int = 0,
 ) -> dict[str, object]:
     role_names = {} if role_names is None else role_names
+    role_names_th = {} if role_names_th is None else role_names_th
     role_scores = {role_slug: evidence.role_scores.get(role_slug, 0.0) for role_slug in active_role_slugs}
     sorted_scores = get_sorted_role_scores(role_scores)
     role_shares = build_role_shares(role_scores, active_role_slugs)
@@ -171,7 +187,8 @@ def build_role_inference_snapshot(  # noqa: PLR0913
     pillar_profile = [
         {
             'key': dimension_key,
-            'label': ROLE_DIMENSION_LABELS.get(dimension_key, dimension_key.replace('_', ' ').title()),
+            'label': dimension_label(dimension_key),
+            'label_th': dimension_label_th(dimension_key),
             'raw_score': raw_score,
             'normalized_score': (raw_score / total_dimension_score) if total_dimension_score else 0.0,
             'evidence_count': evidence.dimension_evidence_counts.get(dimension_key, 0),
@@ -182,16 +199,21 @@ def build_role_inference_snapshot(  # noqa: PLR0913
         )
         if raw_score > 0
     ]
-    ranked_roles = [
-        {
-            'slug': role_slug,
-            'name': role_names.get(role_slug, role_slug),
-            'fit_score': score,
-            'fit_share': role_shares.get(role_slug, 0.0),
-            'top_supporting_pillars': _get_top_supporting_pillars(role_slug, evidence.dimension_scores),
-        }
-        for role_slug, score in sorted_scores
-    ]
+    ranked_roles = []
+    for role_slug, score in sorted_scores:
+        pillar_keys = _get_top_supporting_pillar_keys(role_slug, evidence.dimension_scores)
+        ranked_roles.append(
+            {
+                'slug': role_slug,
+                'name': role_names.get(role_slug, role_slug),
+                # A role with no Thai name reads as its English name in a Thai session.
+                'name_th': role_names_th.get(role_slug) or role_names.get(role_slug, role_slug),
+                'fit_score': score,
+                'fit_share': role_shares.get(role_slug, 0.0),
+                'top_supporting_pillars': [dimension_label(key) for key in pillar_keys],
+                'top_supporting_pillars_th': [dimension_label_th(key) for key in pillar_keys],
+            },
+        )
     return {
         'top_role_slug': top_slug,
         'winner_share': winner_share,

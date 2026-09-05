@@ -7,14 +7,14 @@ This document summarizes the current assessment API contract after the role-disc
 - Live schema endpoint: `GET /api/schema/`
 - Swagger UI: `GET /api/schema/swagger-ui/`
 - Checked-in schema snapshot: [docs/openapi.json](/D:/Flook/SE/Personal%20Project/CompentencyX/docs/openapi.json)
-- Authentication: none currently required
+- Authentication: optional token (`Authorization: Token <key>`); required only to mark a Held Topic and to list your own sessions
 
 The backend remains the source of truth for:
 
 - question selection
 - role-discovery progression
 - role resolution state
-- Skill Assessment (PSP/SDLC self-rating) state
+- Skill Assessment state, the stop rule (Recommendation Stability) and the suggestion order
 - final recommendation output
 
 ## Main Contract Changes
@@ -97,7 +97,7 @@ Create-session accepts an optional `language` field:
 
 Supported values are `en` and `th`. If omitted, the backend stores `language: "en"` on the session.
 
-For `role_discovery` questions, `current_question.prompt`, `current_question.help_text`, and `response_scale[].label` are returned in the session language when a translation exists. Missing Thai translations fall back to English. Roadmap content, recommendations, and history text remain English in this pass.
+For `role_discovery` questions, `current_question.prompt`, `current_question.help_text`, and `response_scale[].label` are returned in the session language when a translation exists. Missing Thai translations fall back to English. `guidance_summary` is written in the session language. Role objects carry `name_th` / `description_th`, pillar entries `label_th`, and ranked roles `name_th` / `top_supporting_pillars_th`; a `_th` field falls back to the English value rather than to empty. Answer history text stays English.
 
 Role-discovery questions use `question_type: "likert_5"` and return no `options`. Render the five radio choices from `response_scale` and submit the selected numeric `value`.
 
@@ -129,6 +129,7 @@ Response fields:
 
 - `key`
 - `label`
+- `label_th`
 - `raw_score`
 - `normalized_score`
 - `evidence_count`
@@ -137,16 +138,22 @@ Response fields:
 
 - `slug`
 - `name`
+- `name_th`
 - `fit_score`
 - `fit_share`
 - `top_supporting_pillars`
+- `top_supporting_pillars_th`
 
 ### Final results payload
-`GET /api/v1/assessment-sessions/{id}/results/` returns mastery and role analysis, and now also includes:
+`GET /api/v1/assessment-sessions/{id}/results/` returns the role analysis:
 
 - `pillar_profile`
 - `ranked_roles`
 - `role_resolution_status`
+
+Nothing in it names topics to learn. `preferred_role_gap_topics` and the "Focus next on …" sentence, which listed the first
+three curated topics regardless of the answers, were removed (ADR-0005): what to learn next is the Skill Assessment's
+answer-derived suggestion, read from `GET …/skill-assessment/`.
 
 This means detailed role-fit analysis is available from:
 
@@ -187,14 +194,38 @@ out have no owner: they stay readable, and reading one never assigns it to the a
 | `POST` | `/api/v1/assessment-sessions/{id}/answers/` | Submits the current answer and returns the updated lean session state |
 | `GET` | `/api/v1/assessment-sessions/{id}/next-question/` | Returns the role discovery question the session is waiting on, or `null` |
 | `GET` | `/api/v1/assessment-sessions/{id}/insights/` | Returns pillar profile and ranked-role analysis |
-| `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns mastery, gap topics, and role analysis after completion |
+| `GET` | `/api/v1/assessment-sessions/{id}/results/` | Returns the role analysis after completion |
 | `GET` | `/api/v1/assessment-sessions/{id}/history/` | Returns answer history after completion |
-| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Returns saved skill assessment state (`completed`, `answers`, `completed_at`) |
-| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Replaces the whole skill assessment answer set and completion state |
-| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/catalog/` | Returns the PSP/SDLC question catalog with role-aware guidance |
-| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/next-question/` | Returns the next unanswered skill assessment question, in authored roadmap order |
+| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Returns saved skill assessment state, every unit's state, the suggestions, readiness and `progress` |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/` | Replaces the whole answer set; `completed: true` is accepted only when the stop rule allows it |
+| `GET` | `/api/v1/assessment-sessions/{id}/skill-assessment/catalog/` | Returns the target role's items and radar axes, one per Assessable Topic Set, plus role guidance |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/next-question/` | Decides the next item and the stop rule from the answers posted, saved or not |
+| `POST` | `/api/v1/assessment-sessions/{id}/skill-assessment/held-topics/` | Marks an Assessable Topic Set as already held (account required); returns the updated state |
+| `DELETE` | `/api/v1/assessment-sessions/{id}/skill-assessment/held-topics/{topic_key}/` | Withdraws a mark (account required); returns the updated state |
 
 Skill Assessment state is stored in dedicated tables; the session `profile` field is free-form client data only and no longer carries a `skill_assessment` key.
+
+### The stop rule, and how a client should drive it (ADR-0005)
+The catalog holds only the target role's Assessable Topic Sets (there is no role-independent fallback; a session with no
+role gets an empty catalog). The client asks `POST …/skill-assessment/next-question/` with **all the answers it holds**,
+saved or not, after every answer. The response carries the item to ask next and a `progress` object:
+
+| Field | Meaning |
+| --- | --- |
+| `answered` / `total` / `remaining` | Counts over the role's sets |
+| `floor` / `ceiling` | The assessment never ends before `floor` answers (12, or the catalog size) and never asks past `ceiling` (20, or the catalog size) |
+| `settled` | Recommendation Stability: no single unanswered set, at any rating, could change the next five topics -- and the floor was reached |
+
+`next_question` is `null` when the assessment should stop: `settled`, or `answered >= ceiling`, or nothing left to
+ask. That is the client's signal to `POST …/skill-assessment/` with `completed: true` and the same answers; the save
+applies the same rule, so it never disagrees with the last `next-question` verdict. It refuses (`400`, key `completed`)
+only when the client asks to complete answers the rule does not allow, and rolls that request's answers back.
+
+Nothing about stability is stored: the state endpoint recomputes `progress` from the saved answers on every read. On a
+completed assessment `confidence` is `high` when the saved answers are settled and `low` when the ceiling ended it.
+
+The client must not pick an item of its own when the backend cannot be reached; an order that does not come from the
+backend's evidence is a guess.
 
 ### Removed: persisted path recommendations (ADR-0003)
 `preferred_path_recommendation` and `best_fit_path_recommendation` are gone from the results payload, and
@@ -212,6 +243,7 @@ Thai without rebuilding a sentence on the client; the prerequisite names a reaso
 | Field | On | Notes |
 | --- | --- | --- |
 | `topic_title` / `topic_title_th` | every entry | The set's wording in each language. A set whose Thai wording is still empty carries `null` in every `_th` field (and no `translations.th` in the catalog), so the page falls back deliberately rather than reading English as Thai |
+| `node_slugs` | every entry | The imported roadmap node slugs the set covers, in authored order. A roadmap view marks a held set's nodes, or a suggested set's nodes, by slug rather than by matching titles |
 | `state` | every entry | `held`, `assessed_gap`, or `unassessed` |
 | `mastery` | every entry | Self-placed Mastery `0.0`–`1.0`; `null` when the set was never rated, including a set held by a mark alone |
 | `statement` / `statement_th` | `held` entries | The respondent's own statement ("You said you can already work on …"), never a verdict |
@@ -219,7 +251,9 @@ Thai without rebuilding a sentence on the client; the prerequisite names a reaso
 | `reason` / `reason_th` | suggestions | Why the set is suggested, naming up to two outstanding prerequisites |
 
 The catalog's dimension entries carry the same Thai wording under `translations.th.label` and
-`translations.th.low_score_action`, so the radar axes read in the session's language too.
+`translations.th.low_score_action`, so the radar axes read in the session's language too. Dimensions carry no
+`track`: an axis is an Assessable Topic Set and nothing else. Catalog questions carry `topic_slug` / `topic_title`,
+the set they are about.
 
 ## Role Discovery Notes
 Role discovery uses a static 46-question core SWEBOK 2024 knowledge-area profile. The backend measures work preferences across the SWEBOK knowledge areas first, then maps the completed profile to a best-fit role. If the completed profile is still low-margin, the backend may ask additional role tie-break questions before completing the session.

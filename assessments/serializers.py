@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from roadmaps.models import Question, QuestionOption, Role
-from roadmaps.serializers import QuestionSerializer, RoadmapTopicSerializer, RoleSerializer
+from roadmaps.serializers import QuestionSerializer, RoleSerializer
 
 from .exceptions import AssessmentFlowError
 from .models import Answer, AssessmentSession
@@ -14,7 +14,6 @@ from .services.assessment_service import (
 )
 from .services.guidance_service import (
     build_guidance_summary,
-    get_preferred_role_gap_topics,
     get_role_alignment_status,
     get_role_insights,
     get_visible_role_result,
@@ -103,6 +102,8 @@ class AnswerSubmitSerializer(serializers.Serializer):
 class PillarInsightSerializer(serializers.Serializer):
     key = serializers.CharField()
     label = serializers.CharField()
+    # The same label as a Thai respondent reads it; English where no Thai wording exists.
+    label_th = serializers.CharField()
     raw_score = serializers.FloatField()
     normalized_score = serializers.FloatField()
     evidence_count = serializers.IntegerField()
@@ -111,9 +112,11 @@ class PillarInsightSerializer(serializers.Serializer):
 class RankedRoleInsightSerializer(serializers.Serializer):
     slug = serializers.CharField()
     name = serializers.CharField()
+    name_th = serializers.CharField()
     fit_score = serializers.FloatField()
     fit_share = serializers.FloatField()
     top_supporting_pillars = serializers.ListField(child=serializers.CharField())
+    top_supporting_pillars_th = serializers.ListField(child=serializers.CharField())
 
 
 class RoleInsightsFieldsMixin(ContextMemoMixin):
@@ -321,7 +324,6 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
     role_alignment_status = serializers.SerializerMethodField()
     role_resolution_status = serializers.SerializerMethodField()
     guidance_summary = serializers.SerializerMethodField()
-    preferred_role_gap_topics = serializers.SerializerMethodField()
     pillar_profile = serializers.SerializerMethodField()
     ranked_roles = serializers.SerializerMethodField()
 
@@ -345,7 +347,6 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
             'guidance_summary',
             'pillar_profile',
             'ranked_roles',
-            'preferred_role_gap_topics',
         )
 
     def _visible_role_result(self, obj):
@@ -375,10 +376,6 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
     @extend_schema_field(serializers.CharField())
     def get_guidance_summary(self, obj):
         return build_guidance_summary(obj)
-
-    @extend_schema_field(RoadmapTopicSerializer(many=True))
-    def get_preferred_role_gap_topics(self, obj):
-        return RoadmapTopicSerializer(get_preferred_role_gap_topics(obj), many=True).data
 
 
 class AssessmentHistorySerializer(serializers.ModelSerializer):
@@ -457,9 +454,10 @@ class SkillAssessmentScaleOptionSerializer(serializers.Serializer):
 
 
 class SkillAssessmentDimensionSerializer(serializers.Serializer):
+    """One radar axis: an Assessable Topic Set of the session's target role."""
+
     key = serializers.CharField()
     label = serializers.CharField()
-    track = serializers.ChoiceField(choices=['psp', 'sdlc'])
     low_score_action = serializers.CharField()
     translations = serializers.DictField(required=False)
 
@@ -469,11 +467,9 @@ class SkillAssessmentQuestionSerializer(serializers.Serializer):
     prompt = serializers.CharField()
     translations = serializers.DictField(required=False)
     dimension_key = serializers.CharField()
-    # What the item is about: the Assessable Topic Set's key and reviewed
-    # title, or the roadmap topic it was derived from. Empty for the
-    # role-independent fallback items, which are about no topic in particular.
-    topic_slug = serializers.CharField(allow_blank=True, required=False)
-    topic_title = serializers.CharField(allow_blank=True, required=False)
+    # What the item is about: the Assessable Topic Set's key and its title.
+    topic_slug = serializers.CharField()
+    topic_title = serializers.CharField()
 
 
 class SkillAssessmentCatalogSerializer(serializers.Serializer):

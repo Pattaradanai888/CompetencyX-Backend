@@ -9,7 +9,7 @@ A career-exploration process that ranks plausible roles, explains the supporting
 _Avoid_: Career diagnosis, definitive role assignment
 
 **Skill Assessment**:
-The self-assessment in which the Primary Role Discovery Respondent rates their own current practice maturity across fixed competency dimensions (the PSP and SDLC tracks). It is the source of evidence for Role Readiness, as Role Discovery is the source of evidence for Role Affinity. It is a self-report of perceived capability, not a test or knowledge check.
+The self-assessment in which the Primary Role Discovery Respondent places themself against the Assessable Topic Sets of one Role's Roadmap, one set per question. It is the source of evidence for Role Readiness, as Role Discovery is the source of evidence for Role Affinity. It is a self-report of perceived capability, not a test or knowledge check.
 _Avoid_: Skill test, knowledge check, competency exam, proficiency exam
 
 **Role Evidence**:
@@ -57,7 +57,7 @@ An authored cluster of Roadmap Topics for one Role, written so a respondent can 
 _Avoid_: Dimension, category, topic group, node, certification, industry experience
 
 **Recommendation Stability**:
-The point at which further Skill Assessment answers stop changing which topics the product would suggest next. It is the signal to stop asking, not a measure of how correct the suggestions are.
+The point at which no further Skill Assessment answer, whatever its rating, could change which topics the product would suggest next. It is decided from the answers given so far, saved or not, and it is the signal to stop asking, not a measure of how correct the suggestions are.
 _Avoid_: Convergence, accuracy, confidence
 
 **Self-placed Mastery**:
@@ -83,6 +83,14 @@ _Avoid_: Skill, technical proficiency
 **Domain Preference**:
 A person's relative interest in problem domains such as data, artificial intelligence, security, mobile, infrastructure, games, product, or documentation.
 _Avoid_: Domain expertise, qualification
+
+**Assessment Session**:
+One respondent's run through Role Discovery and the Skill Assessment for one Role, holding the answers and the evidence derived from them. A respondent may hold several, one per direction explored; a session belongs to the Account that started it, or to no one when started signed out.
+_Avoid_: Attempt, test run, user session, login session
+
+**Account**:
+The identity a respondent signs in with, identified by email. It is what a Held Topic and an Assessment Session belong to, so a statement about the person outlives the browser that made it. Signing in is never required to run Role Discovery or the Skill Assessment; it is required to mark a topic Held and to list one's own sessions.
+_Avoid_: User, profile, member, login
 
 **Primary Role Discovery Respondent**:
 A learner or early-career explorer who may have little or no professional technology-work experience. Role Discovery must not require prior exposure to a role, tool, or workplace practice to produce useful evidence.

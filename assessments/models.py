@@ -80,12 +80,8 @@ class AssessmentSession(models.Model):
     profile = models.JSONField(default=dict, blank=True)
     skill_assessment_completed = models.BooleanField(default=False)
     skill_assessment_completed_at = models.DateTimeField(null=True, blank=True)
-    # The top five suggestions as of the last saved answer, and whether that
-    # answer left them unchanged: Recommendation Stability is the signal to
-    # stop asking, so it has to survive the request that observed it
-    # (ADR-0003). ``null`` means no suggestion has been computed yet.
-    skill_assessment_top_five = models.JSONField(null=True, blank=True)
-    skill_assessment_stable = models.BooleanField(default=False)
+    # Recommendation Stability is not stored: it is a pure function of the
+    # answers (ADR-0005), so the state endpoint recomputes it on every read.
     started_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
@@ -140,13 +136,15 @@ class Answer(models.Model):
 
 
 class SkillAssessmentQuestion(models.Model):
-    """One Skill Assessment item.
+    """One Skill Assessment item, anchored to one of a role's Assessable Topic Sets.
 
-    An item either names a topic from a role's roadmap (``role`` and
-    ``topic_slug`` set) or is a role-independent fallback item (both empty).
-    Topic-anchored items are what make the assessment measure readiness *for a
-    role*: the object the respondent rates is the object the roadmap orders and
-    the recommendation names. See ADR-0002.
+    ``question_id`` is the set's ``set_key``, and ``role`` / ``topic_slug`` say
+    which set it stands for. Topic-anchored items are what make the assessment
+    measure readiness *for a role*: the object the respondent rates is the
+    object the roadmap orders and the recommendation names (ADR-0002). The
+    role-independent fallback items were retired in ADR-0005, so ``role`` is
+    always set on a live item; the column stays nullable only so answers to
+    the retired items remain interpretable.
     """
 
     question_id = models.SlugField(max_length=128, unique=True)
@@ -175,9 +173,11 @@ class SkillAssessmentQuestion(models.Model):
 
 
 class SkillAssessmentDimension(models.Model):
-    class Track(models.TextChoices):
-        PSP = 'psp', 'PSP'
-        SDLC = 'sdlc', 'SDLC'
+    """One axis of the readiness radar: an Assessable Topic Set of a role.
+
+    The PSP/SDLC track the axes used to be grouped by went with the
+    role-independent items (ADR-0005); an axis is now just a set.
+    """
 
     dimension_key = models.SlugField(max_length=128, unique=True)
     role = models.ForeignKey(
@@ -188,7 +188,6 @@ class SkillAssessmentDimension(models.Model):
         related_name='skill_assessment_dimensions',
     )
     label = models.CharField(max_length=255)
-    track = models.CharField(max_length=16, choices=Track.choices)
     low_score_action = models.TextField()
     translations = models.JSONField(default=dict, blank=True)
     display_order = models.PositiveIntegerField(default=0)

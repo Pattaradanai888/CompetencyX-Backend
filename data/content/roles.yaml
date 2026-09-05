@@ -1,7 +1,9 @@
 roles:
   - slug: frontend-developer
     name: Frontend Developer
+    name_th: นักพัฒนา Frontend
     description: Builds user-facing web interfaces and client-side application behavior.
+    description_th: สร้างหน้าเว็บที่ผู้ใช้เห็นและพฤติกรรมของแอปพลิเคชันฝั่ง client
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA3, KA4, KA12]
     core_tasks:
@@ -15,7 +17,9 @@ roles:
         ka_codes: [KA6, KA10, KA16]
   - slug: backend-developer
     name: Backend Developer
+    name_th: นักพัฒนา Backend
     description: Builds server-side logic, APIs, services, and business rules.
+    description_th: สร้าง logic ฝั่งเซิร์ฟเวอร์, API, service และกฎทางธุรกิจ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA2, KA6]
     core_tasks:
@@ -29,7 +33,9 @@ roles:
         ka_codes: [KA6, KA7, KA8]
   - slug: full-stack-developer
     name: Full Stack Developer
+    name_th: นักพัฒนา Full Stack
     description: Develops both frontend and backend parts of a software product.
+    description_th: พัฒนาทั้งฝั่ง frontend และ backend ของผลิตภัณฑ์ซอฟต์แวร์
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA3, KA6]
     core_tasks:
@@ -43,7 +49,9 @@ roles:
         ka_codes: [KA6, KA7, KA8]
   - slug: devops-engineer
     name: DevOps Engineer
+    name_th: วิศวกร DevOps
     description: Automates software delivery, infrastructure, deployment, and operational reliability.
+    description_th: ทำให้การส่งมอบซอฟต์แวร์ โครงสร้างพื้นฐาน การ deploy และความเสถียรของระบบเป็นอัตโนมัติ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA6, KA8, KA10]
     core_tasks:
@@ -57,7 +65,9 @@ roles:
         ka_codes: [KA6, KA12]
   - slug: devsecops-engineer
     name: DevSecOps Engineer
+    name_th: วิศวกร DevSecOps
     description: Integrates security practices into DevOps pipelines and software delivery.
+    description_th: ผสานแนวปฏิบัติด้านความปลอดภัยเข้ากับ pipeline ของ DevOps และการส่งมอบซอฟต์แวร์
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA13, KA6, KA8]
     core_tasks:
@@ -71,7 +81,9 @@ roles:
         ka_codes: [KA1, KA10, KA13]
   - slug: data-analyst
     name: Data Analyst
+    name_th: นักวิเคราะห์ข้อมูล
     description: Analyzes business and product data to support decision-making.
+    description_th: วิเคราะห์ข้อมูลธุรกิจและผลิตภัณฑ์เพื่อสนับสนุนการตัดสินใจ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA16, KA17, KA15]
     core_tasks:
@@ -85,7 +97,9 @@ roles:
         ka_codes: [KA16, KA17, KA12]
   - slug: ai-engineer
     name: AI Engineer
+    name_th: วิศวกร AI
     description: Builds AI-enabled software systems that integrate models into real applications.
+    description_th: สร้างระบบซอฟต์แวร์ที่ใช้ AI โดยนำโมเดลมาผสานเข้ากับแอปพลิเคชันจริง
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA16, KA4, KA2]
     core_tasks:
@@ -99,7 +113,9 @@ roles:
         ka_codes: [KA6, KA8, KA10]
   - slug: ai-data-scientist
     name: AI and Data Scientist
+    name_th: นักวิทยาศาสตร์ข้อมูลและ AI
     description: Develops analytical, statistical, and machine learning models to solve business or product problems.
+    description_th: พัฒนาโมเดลเชิงวิเคราะห์ สถิติ และ machine learning เพื่อแก้โจทย์ธุรกิจหรือผลิตภัณฑ์
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA16, KA17, KA11]
     core_tasks:
@@ -113,7 +129,9 @@ roles:
         ka_codes: [KA4, KA6, KA8]
   - slug: data-engineer
     name: Data Engineer
+    name_th: วิศวกรข้อมูล
     description: Builds data pipelines, data platforms, and reliable data infrastructure.
+    description_th: สร้าง data pipeline, data platform และโครงสร้างพื้นฐานข้อมูลที่เชื่อถือได้
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA6, KA16]
     core_tasks:
@@ -127,7 +145,9 @@ roles:
         ka_codes: [KA6, KA8]
   - slug: android-developer
     name: Android Developer
+    name_th: นักพัฒนาแอป Android
     description: Builds mobile applications for the Android platform.
+    description_th: สร้างแอปพลิเคชันมือถือสำหรับแพลตฟอร์ม Android
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA3, KA5]
     core_tasks:
@@ -141,7 +161,9 @@ roles:
         ka_codes: [KA6, KA8, KA16]
   - slug: machine-learning-engineer
     name: Machine Learning Engineer
+    name_th: วิศวกร Machine Learning
     description: Engineers machine learning models and deploys them into production systems.
+    description_th: สร้างโมเดล machine learning และนำขึ้นใช้งานในระบบ production
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA16, KA4, KA6]
     core_tasks:
@@ -155,7 +177,9 @@ roles:
         ka_codes: [KA8, KA10]
   - slug: postgresql-developer-dba
     name: PostgreSQL Developer / DBA
+    name_th: นักพัฒนา / ผู้ดูแลฐานข้อมูล PostgreSQL
     description: Designs, optimizes, secures, and operates PostgreSQL databases.
+    description_th: ออกแบบ ปรับแต่ง รักษาความปลอดภัย และดูแลฐานข้อมูล PostgreSQL
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA6, KA12]
     core_tasks:
@@ -169,7 +193,9 @@ roles:
         ka_codes: [KA13, KA14]
   - slug: ios-developer
     name: iOS Developer
+    name_th: นักพัฒนาแอป iOS
     description: Builds mobile applications for Apple platforms.
+    description_th: สร้างแอปพลิเคชันมือถือสำหรับแพลตฟอร์มของ Apple
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA3, KA5]
     core_tasks:
@@ -183,7 +209,9 @@ roles:
         ka_codes: [KA6, KA8]
   - slug: blockchain-developer
     name: Blockchain Developer
+    name_th: นักพัฒนา Blockchain
     description: Builds decentralized applications, smart contracts, and blockchain integrations.
+    description_th: สร้างแอปแบบกระจายศูนย์ smart contract และการเชื่อมต่อกับ blockchain
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA13, KA2]
     core_tasks:
@@ -197,7 +225,9 @@ roles:
         ka_codes: [KA6, KA8]
   - slug: qa-engineer
     name: QA Engineer
+    name_th: วิศวกร QA
     description: Ensures software quality through testing, validation, and process improvement.
+    description_th: ดูแลคุณภาพซอฟต์แวร์ผ่านการทดสอบ การตรวจสอบ และการปรับปรุงกระบวนการ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA5, KA12, KA10]
     core_tasks:
@@ -211,7 +241,9 @@ roles:
         ka_codes: [KA7, KA12]
   - slug: software-architect
     name: Software Architect
+    name_th: สถาปนิกซอฟต์แวร์
     description: Defines the high-level structure, technical direction, and quality attributes of software systems.
+    description_th: กำหนดโครงสร้างระดับสูง ทิศทางทางเทคนิค และคุณลักษณะด้านคุณภาพของระบบซอฟต์แวร์
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA2, KA3, KA12]
     core_tasks:
@@ -225,7 +257,9 @@ roles:
         ka_codes: [KA6, KA10]
   - slug: cyber-security-engineer-analyst
     name: Cyber Security Engineer / Analyst
+    name_th: วิศวกร / นักวิเคราะห์ความปลอดภัยไซเบอร์
     description: Protects software systems, data, infrastructure, and users from security risks.
+    description_th: ปกป้องระบบซอฟต์แวร์ ข้อมูล โครงสร้างพื้นฐาน และผู้ใช้จากความเสี่ยงด้านความปลอดภัย
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA13, KA6, KA12]
     core_tasks:
@@ -239,7 +273,9 @@ roles:
         ka_codes: [KA1, KA10, KA13]
   - slug: ux-designer
     name: UX Designer
+    name_th: นักออกแบบ UX
     description: Designs user experiences, interaction flows, prototypes, and usability improvements.
+    description_th: ออกแบบประสบการณ์ผู้ใช้ ลำดับการโต้ตอบ prototype และการปรับปรุงด้าน usability
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA1, KA3, KA12]
     core_tasks:
@@ -253,7 +289,9 @@ roles:
         ka_codes: [KA10, KA1]
   - slug: technical-writer
     name: Technical Writer
+    name_th: นักเขียนเอกสารเทคนิค
     description: Creates technical documentation for users, developers, operations teams, and stakeholders.
+    description_th: เขียนเอกสารเทคนิคสำหรับผู้ใช้ นักพัฒนา ทีมปฏิบัติการ และผู้มีส่วนได้ส่วนเสีย
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA14, KA1, KA7]
     core_tasks:
@@ -267,7 +305,9 @@ roles:
         ka_codes: [KA12, KA14, KA16]
   - slug: game-developer
     name: Game Developer
+    name_th: นักพัฒนาเกม
     description: Builds gameplay systems, mechanics, UI, physics, and interactive game features.
+    description_th: สร้างระบบ gameplay กลไกเกม UI ฟิสิกส์ และฟีเจอร์เชิงโต้ตอบของเกม
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA3, KA16]
     core_tasks:
@@ -281,7 +321,9 @@ roles:
         ka_codes: [KA6, KA10, KA16]
   - slug: server-side-game-developer
     name: Server Side Game Developer
+    name_th: นักพัฒนาเกมฝั่งเซิร์ฟเวอร์
     description: Builds backend services for multiplayer, matchmaking, game state, accounts, and live operations.
+    description_th: สร้าง service ฝั่ง backend สำหรับเกมหลายผู้เล่น matchmaking สถานะเกม บัญชี และ live operations
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA4, KA6, KA2]
     core_tasks:
@@ -295,7 +337,9 @@ roles:
         ka_codes: [KA6, KA8, KA10]
   - slug: mlops-engineer
     name: MLOps Engineer
+    name_th: วิศวกร MLOps
     description: Builds infrastructure and processes for deploying, monitoring, and governing machine learning systems.
+    description_th: สร้างโครงสร้างพื้นฐานและกระบวนการสำหรับ deploy ติดตาม และกำกับดูแลระบบ machine learning
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA6, KA8, KA16]
     core_tasks:
@@ -309,7 +353,9 @@ roles:
         ka_codes: [KA10, KA13, KA14]
   - slug: product-manager
     name: Product Manager
+    name_th: Product Manager
     description: Defines product direction, prioritizes value, and aligns software delivery with user and business needs.
+    description_th: กำหนดทิศทางผลิตภัณฑ์ จัดลำดับความสำคัญของคุณค่า และทำให้การส่งมอบซอฟต์แวร์ตอบโจทย์ผู้ใช้และธุรกิจ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA1, KA15, KA9]
     core_tasks:
@@ -323,7 +369,9 @@ roles:
         ka_codes: [KA16, KA12, KA15]
   - slug: engineering-manager
     name: Engineering Manager
+    name_th: Engineering Manager
     description: Leads engineering teams, delivery execution, technical health, and people development.
+    description_th: นำทีมวิศวกรรม ดูแลการส่งมอบ สุขภาพทางเทคนิคของระบบ และการพัฒนาคนในทีม
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA9, KA10, KA14]
     core_tasks:
@@ -337,7 +385,9 @@ roles:
         ka_codes: [KA6, KA12, KA16]
   - slug: developer-relations
     name: Developer Relations
+    name_th: Developer Relations
     description: Supports developer communities through education, advocacy, documentation, demos, and feedback loops.
+    description_th: สนับสนุนชุมชนนักพัฒนาผ่านการให้ความรู้ การเป็นตัวแทน เอกสาร เดโม และวงจร feedback
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA14, KA1, KA4]
     core_tasks:
@@ -351,7 +401,9 @@ roles:
         ka_codes: [KA6, KA16]
   - slug: bi-analyst
     name: BI Analyst
+    name_th: นักวิเคราะห์ BI
     description: Converts business data into dashboards, reports, KPIs, and decision-support insights.
+    description_th: แปลงข้อมูลธุรกิจเป็น dashboard รายงาน KPI และ insight ที่ช่วยการตัดสินใจ
     swebok_source_version: SWEBOK V4.0
     top_ka_codes: [KA15, KA16, KA17]
     core_tasks:

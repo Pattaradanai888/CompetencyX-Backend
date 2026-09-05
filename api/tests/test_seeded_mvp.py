@@ -70,9 +70,13 @@ class SeededMvpFlowTests(APITestCase):
             assert results_response.status_code == status.HTTP_200_OK
             results = results_response.json()
             assert results['preferred_role']['slug'] == role.slug
-            # Every seeded role reaches results with roadmap topics to learn against.
-            assert results['preferred_role_gap_topics']
-            assert results['preferred_role_gap_topics'][0]['slug'] is not None
+            assert results['preferred_role']['name_th']
+            assert results['ranked_roles']
+            # Every seeded role reaches results with a Skill Assessment built
+            # from its own authored sets to continue into.
+            catalog = self.client.get(reverse('assessment-session-skill-assessment-catalog', kwargs={'pk': payload['id']})).json()
+            assert catalog['questions']
+            assert catalog['questions'][0]['topic_slug'].startswith(f'{role.slug}--')
 
     def test_swebok_scoring_favors_backend_for_service_operations_profile(self):
         role_scores = _score_roles_from_dimensions(ROLE_PROFILE_WEIGHTS['backend-developer'])

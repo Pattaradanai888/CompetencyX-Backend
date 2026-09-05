@@ -12,15 +12,21 @@ from assessments.models import (
 
 from .held_topic_service import get_held_topic_keys
 from .topic_skill_assessment_service import (
+    NEXT_TOPIC_COUNT,
+    AssessmentGraph,
     build_assessment_summary,
     build_readiness_summary,
     get_topic_mastery,
+    is_recommendation_settled,
+    load_assessment_graph,
 )
 
 
-# The post-assessment screen shows the next few topics to learn, not the whole
-# graph: three to five is a place to start (ADR-0003).
-NEXT_TOPIC_COUNT = 5
+__all__ = ['NEXT_TOPIC_COUNT']
+
+# The catalog's shape: items generated from Assessable Topic Sets (ADR-0002,
+# ADR-0003). Bumped when the item shape or the scale changes.
+CATALOG_VERSION = '2026-09.topic-sets-v1'
 
 # Recommendation Stability: at least this many answered items before the
 # assessment may stop, however settled the suggestions look, and never more
@@ -33,9 +39,14 @@ def _stop_bounds(total_questions: int) -> tuple[int, int]:
     return min(SKILL_ASSESSMENT_FLOOR, total_questions), min(SKILL_ASSESSMENT_CEILING, total_questions)
 
 
+def _target_role(session: AssessmentSession):
+    """The role the session's Skill Assessment is about: the aspiration, else the best fit."""
+    return session.preferred_role or session.best_fit_role
+
+
 def get_skill_assessment_catalog(role_slug: str | None = None) -> dict[str, object]:
     return {
-        'version': '2026-05-11.psp-sdlc-v1',
+        'version': CATALOG_VERSION,
         'scale': [
             {'label': 'Strongly disagree', 'label_th': 'ไม่เห็นด้วยอย่างยิ่ง', 'value': 1},
             {'label': 'Disagree', 'label_th': 'ไม่เห็นด้วย', 'value': 2},
@@ -54,16 +65,16 @@ def get_skill_assessment_question_ids(role_slug: str | None = None) -> set[str]:
 
 
 def _question_queryset(role_slug: str | None):
-    """Items for ``role_slug``, or the role-independent fallback items.
+    """The role's own topic-anchored items, and nothing else.
 
-    A role with an imported roadmap has its own topic-anchored items and must
-    never be served another role's; a role without one falls back to the items
-    that carry no role. See ADR-0002.
+    Items are anchored to a role's Assessable Topic Sets (ADR-0002), so a
+    session with no role yet has no items to answer; there is no
+    role-independent fallback (ADR-0005).
     """
-    questions = SkillAssessmentQuestion.objects.filter(is_active=True)
-    if role_slug and questions.filter(role__slug=role_slug).exists():
-        return questions.filter(role__slug=role_slug)
-    return questions.filter(role__isnull=True)
+    questions = SkillAssessmentQuestion.objects.filter(is_active=True, role__isnull=False)
+    if not role_slug:
+        return questions.none()
+    return questions.filter(role__slug=role_slug)
 
 
 def list_skill_assessment_questions(role_slug: str | None = None) -> list[dict[str, object]]:
@@ -87,21 +98,18 @@ def list_skill_assessment_questions(role_slug: str | None = None) -> list[dict[s
 
 
 def list_skill_assessment_dimensions(role_slug: str | None = None) -> list[dict[str, object]]:
-    dimensions = SkillAssessmentDimension.objects.filter(is_active=True)
-    if role_slug and dimensions.filter(role__slug=role_slug).exists():
-        dimensions = dimensions.filter(role__slug=role_slug)
-    else:
-        dimensions = dimensions.filter(role__isnull=True)
+    dimensions = SkillAssessmentDimension.objects.filter(is_active=True, role__isnull=False)
+    dimensions = dimensions.filter(role__slug=role_slug) if role_slug else dimensions.none()
     return [
         {
             'key': dimension['dimension_key'],
             'label': dimension['label'],
-            'track': dimension['track'],
             'low_score_action': dimension['low_score_action'],
             'translations': dimension['translations'] or {},
         }
-        for dimension in dimensions.order_by('display_order', 'dimension_key')
-        .values('dimension_key', 'label', 'track', 'low_score_action', 'translations')
+        for dimension in dimensions.order_by('display_order', 'dimension_key').values(
+            'dimension_key', 'label', 'low_score_action', 'translations'
+        )
     ]
 
 
@@ -122,24 +130,30 @@ def list_skill_assessment_role_guidance(role_slug: str | None = None) -> list[st
     )
 
 
-def build_skill_assessment_progress(session: AssessmentSession, answers: dict[str, int]) -> dict[str, object]:
+def build_skill_assessment_progress(
+    session: AssessmentSession,
+    answers: dict[str, int],
+    *,
+    graph: AssessmentGraph | None = None,
+    held_keys: frozenset[str] | None = None,
+) -> dict[str, object]:
     """How far through the questionnaire the respondent is, and whether it is settled.
 
-    ``settled`` is Recommendation Stability with the floor applied: the top
-    five suggestions have stopped changing *and* enough items were answered
-    for that to mean something. It is only trusted against the answers the
-    session actually saved, so a caller probing with unsaved answers cannot
-    stop the assessment early.
+    ``settled`` is Recommendation Stability with the floor applied: no further
+    single answer could change the next topics *and* enough items were
+    answered for that to mean something. It is a function of the answers
+    handed in, so a client asking about answers it has not saved yet gets the
+    same verdict it will get when it saves them (ADR-0005).
     """
-    role = session.preferred_role or session.best_fit_role
-    total = len(get_skill_assessment_question_ids(role.slug if role else None))
+    role = _target_role(session)
+    if role is not None and graph is None:
+        graph = load_assessment_graph(role)
+    if held_keys is None:
+        held_keys = get_held_topic_keys(session.user)
+    total = len(graph.units) if graph is not None else 0
     answered = len(answers)
     floor, ceiling = _stop_bounds(total)
-    settled = (
-        answered >= floor
-        and session.skill_assessment_stable
-        and answers == get_skill_assessment_answers(session)
-    )
+    settled = graph is not None and answered >= floor and is_recommendation_settled(graph, answers, held_keys=held_keys)
     return {
         'answered': answered,
         'total': total,
@@ -150,13 +164,17 @@ def build_skill_assessment_progress(session: AssessmentSession, answers: dict[st
     }
 
 
+def _may_complete(progress: dict[str, object]) -> bool:
+    return bool(progress['settled']) or int(progress['answered']) >= int(progress['ceiling'])
+
+
 def select_next_skill_assessment_question(session: AssessmentSession, answers: dict[str, int]) -> dict[str, object] | None:
     """The next unanswered item, or ``None`` once the assessment should stop.
 
     Stopping follows the stop rule (ADR-0003): the floor of twelve keeps a
     settled-looking start from ending the questionnaire, the ceiling of twenty
-    ends it regardless, and in between the assessment stops once the top five
-    suggestions stop changing between answers.
+    ends it regardless, and in between the assessment stops once no further
+    answer could change the next topics (ADR-0005).
 
     Selection is deterministic and aims at resolving the most uncertainty
     about which sets are held: an unanswered item that already sits among the
@@ -167,23 +185,22 @@ def select_next_skill_assessment_question(session: AssessmentSession, answers: d
     epsilon-greedy selector it replaced was rewarded by agreement, so it
     learned to ask the items a respondent already agrees with.
     """
-    role = session.preferred_role or session.best_fit_role
+    role = _target_role(session)
     questions = list_skill_assessment_questions(role.slug if role else None)
     unanswered = [question for question in questions if question['id'] not in answers]
     if not unanswered:
         return None
 
-    progress = build_skill_assessment_progress(session, answers)
-    if progress['answered'] >= progress['ceiling'] or progress['settled']:
+    graph = load_assessment_graph(role) if role else None
+    held_keys = get_held_topic_keys(session.user)
+    progress = build_skill_assessment_progress(session, answers, graph=graph, held_keys=held_keys)
+    if _may_complete(progress):
         return None
 
-    if role:
-        suggested_order = [
-            item['topic_slug']
-            for item in build_assessment_summary(role, answers, held_keys=get_held_topic_keys(session.user))['recommendations']
-        ]
-    else:
-        suggested_order = []
+    suggested_order = [
+        item['topic_slug']
+        for item in build_assessment_summary(role, answers, held_keys=held_keys, graph=graph)['recommendations'][:NEXT_TOPIC_COUNT]
+    ]
 
     def uncertainty_rank(question):
         question_id = question['id']
@@ -209,27 +226,40 @@ def get_skill_assessment_answers(session: AssessmentSession) -> dict[str, int]:
     return dict(session.skill_assessment_answers.values_list('question_id', 'value'))
 
 
+REPORTED_STATE_KEYS = (
+    'topic_slug',
+    'topic_title',
+    'topic_title_th',
+    'node_slugs',
+    'state',
+    'mastery',
+    'statement',
+    'statement_th',
+    'held_by_mark',
+)
+
+
 def get_skill_assessment_state(session: AssessmentSession) -> dict[str, object]:
     answers = get_skill_assessment_answers(session)
-    role = session.preferred_role or session.best_fit_role
+    role = _target_role(session)
     # Marks belong to the owner, so they are in effect in every session the
     # signed-in respondent opens on this role (ADR-0003).
     held_keys = get_held_topic_keys(session.user)
     if role:
-        # Every unit's state -- held, assessed gap, or unassessed -- plus the
-        # suggestions derived from the same answers, computed once.
-        summary = build_assessment_summary(role, answers, held_keys=held_keys)
-        reported_state_keys = ('topic_slug', 'topic_title', 'topic_title_th', 'state', 'mastery', 'statement', 'statement_th', 'held_by_mark')
-        states = [
-            {key: entry[key] for key in reported_state_keys if key in entry}
-            for entry in summary['states']
-        ]
+        # The roadmap is read once; every unit's state -- held, assessed gap,
+        # or unassessed -- the suggestions, the readiness figure and the stop
+        # rule are all derived from that one graph and the same answers.
+        graph = load_assessment_graph(role)
+        summary = build_assessment_summary(role, answers, held_keys=held_keys, graph=graph)
+        states = [{key: entry[key] for key in REPORTED_STATE_KEYS if key in entry} for entry in summary['states']]
         recommendations = summary['recommendations']
-        readiness = build_readiness_summary(role, answers, held_keys=held_keys)
+        readiness = build_readiness_summary(role, answers, held_keys=held_keys, summary=summary)
+        progress = build_skill_assessment_progress(session, answers, graph=graph, held_keys=held_keys)
     else:
         states = []
         recommendations = []
         readiness = {'targets': {}, 'overall_target': 0.0, 'overall_mastery': 0.0, 'assessed_count': 0}
+        progress = build_skill_assessment_progress(session, answers, held_keys=held_keys)
     return {
         'completed': session.skill_assessment_completed,
         'answers': answers,
@@ -242,12 +272,11 @@ def get_skill_assessment_state(session: AssessmentSession) -> dict[str, object]:
         # The post-assessment screen reads this, not the whole roadmap (ADR-0003).
         'next_topics': recommendations[:NEXT_TOPIC_COUNT],
         'readiness': readiness,
-        'progress': build_skill_assessment_progress(session, answers),
-        # Reaching the ceiling without the suggestions settling completes the
-        # assessment and says the result is less certain (ADR-0003).
-        'confidence': (
-            'high' if session.skill_assessment_stable else 'low'
-        ) if session.skill_assessment_completed else None,
+        'progress': progress,
+        # A completed assessment whose suggestions settled is a certain result;
+        # one that only ended because it hit the ceiling is less certain, and
+        # says so (ADR-0003).
+        'confidence': ('high' if progress['settled'] else 'low') if session.skill_assessment_completed else None,
     }
 
 
@@ -269,34 +298,17 @@ def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, 
     elif not session.skill_assessment_completed:
         session.skill_assessment_completed_at = None
 
-    previous_answers = dict(session.skill_assessment_answers.values_list('question_id', 'value'))
     session.skill_assessment_answers.all().delete()
     SkillAssessmentAnswer.objects.bulk_create(
         SkillAssessmentAnswer(session=session, question_id=question_id, value=value) for question_id, value in answers.items()
     )
 
-    # Recommendation Stability: whether this save's answers left the top five
-    # suggestions where the previous save had them. Stored on the session, so
-    # the decision survives the request that observed it. Only a save whose
-    # answers actually changed can move it: re-saving the same answers is not
-    # "between answers", so it must not be read as the suggestions settling.
-    if answers != previous_answers:
-        role = session.preferred_role or session.best_fit_role
-        held_keys = get_held_topic_keys(session.user)
-        if role:
-            top_five = [
-                item['topic_slug'] for item in build_assessment_summary(role, answers, held_keys=held_keys)['recommendations'][:5]
-            ]
-        else:
-            top_five = []
-        session.skill_assessment_stable = (
-            session.skill_assessment_top_five is not None and session.skill_assessment_top_five == top_five
-        )
-        session.skill_assessment_top_five = top_five
-
     if requested_completed:
+        # Completing is a stop-rule decision made from these answers alone:
+        # the same lookahead the next-question endpoint applied to them
+        # before the client asked to complete (ADR-0005).
         progress = build_skill_assessment_progress(session, answers)
-        if not (progress['settled'] or progress['answered'] >= progress['ceiling']):
+        if not _may_complete(progress):
             if progress['answered'] < progress['floor']:
                 how_far = max(0, progress['floor'] - progress['answered'])
                 detail = f'{how_far} more answer(s) are needed before the suggestions can settle.'
@@ -305,14 +317,6 @@ def save_skill_assessment_state(*, session: AssessmentSession, state: dict[str, 
             msg = f'The Skill Assessment cannot be completed yet: {detail}'
             raise ValidationError({'completed': msg})
 
-    session.save(
-        update_fields=[
-            'skill_assessment_completed',
-            'skill_assessment_completed_at',
-            'skill_assessment_top_five',
-            'skill_assessment_stable',
-            'updated_at',
-        ],
-    )
+    session.save(update_fields=['skill_assessment_completed', 'skill_assessment_completed_at', 'updated_at'])
 
     return get_skill_assessment_state(session)

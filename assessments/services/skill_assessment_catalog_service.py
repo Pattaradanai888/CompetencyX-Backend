@@ -1,40 +1,18 @@
-from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
-from assessments.skill_assessment_seed_data import SKILL_ASSESSMENT_DIMENSIONS, SKILL_ASSESSMENT_QUESTIONS, SKILL_ASSESSMENT_ROLE_GUIDANCE
+"""Synchronise the Skill Assessment role guidance.
+
+The items and dimensions of the Skill Assessment are generated per role from
+its Assessable Topic Sets (see ``topic_skill_assessment_service``); the only
+authored content that still lives here is the per-role guidance shown beside
+the assessment. The role-independent PSP/SDLC items that used to be seeded
+alongside it were retired once every role had authored sets (ADR-0005).
+"""
+
+from assessments.models import SkillAssessmentRoleGuidance
+from assessments.skill_assessment_seed_data import SKILL_ASSESSMENT_ROLE_GUIDANCE
 from roadmaps.models import Role
 
 
 def sync_skill_assessment_catalog(*, stdout=None):
-    dimension_keys = []
-    for dimension in SKILL_ASSESSMENT_DIMENSIONS:
-        dimension_keys.append(dimension['dimension_key'])
-        SkillAssessmentDimension.objects.update_or_create(
-            dimension_key=dimension['dimension_key'],
-            defaults={
-                'label': dimension['label'],
-                'track': dimension['track'],
-                'low_score_action': dimension['low_score_action'],
-                'translations': dimension.get('translations', {}),
-                'display_order': dimension['display_order'],
-                'is_active': True,
-            },
-        )
-    SkillAssessmentDimension.objects.exclude(dimension_key__in=dimension_keys).update(is_active=False)
-
-    question_ids = []
-    for question in SKILL_ASSESSMENT_QUESTIONS:
-        question_ids.append(question['question_id'])
-        SkillAssessmentQuestion.objects.update_or_create(
-            question_id=question['question_id'],
-            defaults={
-                'prompt': question['prompt'],
-                'translations': question.get('translations', {}),
-                'dimension_key': question['dimension_key'],
-                'display_order': question['display_order'],
-                'is_active': True,
-            },
-        )
-    SkillAssessmentQuestion.objects.exclude(question_id__in=question_ids).update(is_active=False)
-
     guidance_count = 0
     guidance_ids = []
     role_slugs = [slug for slug in SKILL_ASSESSMENT_ROLE_GUIDANCE if slug]
@@ -57,7 +35,4 @@ def sync_skill_assessment_catalog(*, stdout=None):
     SkillAssessmentRoleGuidance.objects.exclude(id__in=guidance_ids).update(is_active=False)
 
     if stdout is not None:
-        stdout.write(
-            f'Synced Skill Assessment catalog: {len(SKILL_ASSESSMENT_DIMENSIONS)} dimensions, '
-            f'{len(SKILL_ASSESSMENT_QUESTIONS)} questions, and {guidance_count} guidance rows.'
-        )
+        stdout.write(f'Synced Skill Assessment guidance: {guidance_count} rows.')

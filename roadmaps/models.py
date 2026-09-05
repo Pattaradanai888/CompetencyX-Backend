@@ -5,6 +5,11 @@ class Role(models.Model):
     slug = models.SlugField(max_length=64, unique=True)
     name = models.CharField(max_length=128)
     description = models.TextField(blank=True)
+    # The role as a Thai respondent reads it. Written in the role's working
+    # vocabulary (ADR-0004): terms practitioners keep in English stay in
+    # English. Empty means the English name is shown in a Thai session too.
+    name_th = models.CharField(max_length=128, blank=True, default='')
+    description_th = models.TextField(blank=True, default='')
     top_ka_codes = models.JSONField(default=list, blank=True)
     core_tasks = models.JSONField(default=list, blank=True)
     swebok_source_version = models.CharField(max_length=32, blank=True)

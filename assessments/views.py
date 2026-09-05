@@ -375,7 +375,7 @@ class AssessmentSessionViewSet(
 
     @extend_schema(
         operation_id='getAssessmentSkillAssessmentCatalog',
-        summary='Get skill assessment PSP and SDLC questionnaire catalog for an assessment session',
+        summary="Get the skill assessment catalog for an assessment session's target role",
         tags=['Assessment Sessions'],
         parameters=[
             OpenApiParameter(
@@ -388,7 +388,7 @@ class AssessmentSessionViewSet(
         responses={
             200: OpenApiResponse(
                 response=SkillAssessmentCatalogSerializer,
-                description='Skill assessment question, dimension, scale, and role guidance catalog.',
+                description='Skill assessment items and radar axes from the target role Assessable Topic Sets, the rating scale, and role guidance.',
             ),
             404: OpenApiResponse(description='Assessment session was not found.'),
         },

@@ -1,9 +1,9 @@
 """Skill Assessment items are anchored to the chosen role's Assessable Topic Sets.
 
-These cover the claims ADR-0002 and ADR-0003 make: the instrument differs by
-role, the recommendation follows from the answers, and a role whose sets are
-not authored still gets a usable assessment -- from the role-independent
-items, never from anything read off its imported roadmap.
+These cover the claims ADR-0002, ADR-0003 and ADR-0005 make: the instrument
+differs by role, the recommendation follows from the answers, and a role whose
+sets are not authored has no assessment at all -- nothing is read off its
+imported roadmap, and nothing stands in.
 """
 
 from django.core.management import call_command
@@ -98,16 +98,15 @@ class TopicSkillAssessmentTests(TestCase):
     def test_a_role_without_authored_sets_is_not_assessed_from_its_roadmap(self):
         # The items once derived from the imported graph are gone: that
         # derivation is what asked Cyber Security six questions against 301
-        # nodes and never asked Backend Developer about Git (ADR-0003). A
-        # role whose sets are not authored falls back to the role-independent
-        # items.
+        # nodes and never asked Backend Developer about Git (ADR-0003). The
+        # role-independent items that then stood in are gone too (ADR-0005):
+        # a role whose sets are not authored has nothing to be asked.
         self.assertEqual(select_assessable_units(self.unauthored), [])
         self.assertFalse(SkillAssessmentQuestion.objects.filter(role=self.unauthored).exists())
 
-        questions = list_skill_assessment_questions('blockchain-developer')
-
-        self.assertTrue(questions)
-        self.assertTrue(all(question['topic_slug'] == '' for question in questions))
+        self.assertEqual(list_skill_assessment_questions('blockchain-developer'), [])
+        self.assertEqual(get_skill_assessment_catalog('blockchain-developer')['dimensions'], [])
+        self.assertEqual(list_skill_assessment_questions(None), [])
 
     def test_ratings_become_per_topic_mastery(self):
         answers = self._answers(self.backend, http=5, databases=3, caching=1)

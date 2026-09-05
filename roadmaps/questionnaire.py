@@ -58,6 +58,50 @@ CORE_ROLE_DIMENSIONS = {key for key, _label in SWEBOK_KNOWLEDGE_AREAS}
 
 ROLE_DIMENSION_LABELS = dict((*SWEBOK_KNOWLEDGE_AREAS, *ROLE_FAMILY_DIMENSIONS, *ROLE_SPECIALIZATION_DIMENSIONS))
 
+# The same dimensions as a Thai respondent reads them. Written in the working
+# vocabulary of the field (ADR-0004): names practitioners keep in English stay
+# in English. A key missing here falls back to the English label.
+ROLE_DIMENSION_LABELS_TH = {
+    'requirements': 'KA1 ความต้องการซอฟต์แวร์',
+    'architecture': 'KA2 สถาปัตยกรรมซอฟต์แวร์',
+    'design': 'KA3 การออกแบบซอฟต์แวร์',
+    'construction': 'KA4 การสร้างซอฟต์แวร์',
+    'testing': 'KA5 การทดสอบซอฟต์แวร์',
+    'operations': 'KA6 การปฏิบัติการด้านวิศวกรรมซอฟต์แวร์',
+    'maintenance': 'KA7 การบำรุงรักษาซอฟต์แวร์',
+    'configuration_management': 'KA8 การจัดการ configuration ของซอฟต์แวร์',
+    'management': 'KA9 การบริหารจัดการวิศวกรรมซอฟต์แวร์',
+    'process': 'KA10 กระบวนการวิศวกรรมซอฟต์แวร์',
+    'models_methods': 'KA11 โมเดลและวิธีการทางวิศวกรรมซอฟต์แวร์',
+    'quality': 'KA12 คุณภาพซอฟต์แวร์',
+    'security': 'KA13 ความปลอดภัยซอฟต์แวร์',
+    'professional_practice': 'KA14 การปฏิบัติวิชาชีพวิศวกรรมซอฟต์แวร์',
+    'economics': 'KA15 เศรษฐศาสตร์วิศวกรรมซอฟต์แวร์',
+    'computing_ai': 'KA16 พื้นฐานการคำนวณ',
+    'math': 'KA17 พื้นฐานคณิตศาสตร์',
+    'engineering': 'KA18 พื้นฐานวิศวกรรม',
+    'web_frontend': 'Web Frontend',
+    'server_backend': 'Server Backend',
+    'android_platform': 'แพลตฟอร์ม Android',
+    'ios_platform': 'แพลตฟอร์ม iOS',
+    'database_postgresql': 'ฐานข้อมูล PostgreSQL',
+    'blockchain_platform': 'แพลตฟอร์ม Blockchain',
+    'game_client': 'Game Client',
+    'game_server': 'Game Server',
+    'developer_community': 'ชุมชนนักพัฒนา',
+    'technical_documentation': 'เอกสารเทคนิค',
+    'business_intelligence': 'Business Intelligence',
+    'ml_platform': 'แพลตฟอร์ม ML',
+    'people_product': 'คนและผลิตภัณฑ์',
+    'application_build': 'การสร้างแอปพลิเคชัน',
+    'backend_platform': 'Backend และแพลตฟอร์ม',
+    'data_ai': 'ข้อมูลและ AI',
+    'operations_security': 'ปฏิบัติการและความปลอดภัย',
+    'leadership_process': 'ภาวะผู้นำและกระบวนการ',
+    'documentation_practice': 'เอกสารและแนวปฏิบัติ',
+    'game_family': 'การพัฒนาเกม',
+}
+
 
 # Signal-strength ladder for question authoring: questions declare ordinal
 # levels (primary/secondary/contrast) and seeds.py converts them to these
@@ -78,6 +122,7 @@ __all__ = [
     'CORE_ROLE_DIMENSIONS',
     'ROLE_DIMENSIONS',
     'ROLE_DIMENSION_LABELS',
+    'ROLE_DIMENSION_LABELS_TH',
     'ROLE_PROFILE_WEIGHTS',
     'SIGNAL_STRENGTH_WEIGHTS',
     'SWEBOK_KNOWLEDGE_AREAS',

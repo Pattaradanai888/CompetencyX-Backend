@@ -2,9 +2,11 @@
 
 ADR-0003 removed the Q-learning policy: its reward was a function of the chosen
 topic alone, so it converged on the topic the deterministic rule already picked,
-at the cost of a database write per answer. These tests hold the surface that
-removal left behind -- the results payload no longer carries a persisted
-per-path recommendation, and no Q-table survives to be written to.
+at the cost of a database write per answer. ADR-0005 then removed the
+``recommendations`` app that had housed it. These tests hold the surface those
+removals left behind -- the results payload carries neither a persisted
+per-path recommendation nor a catalog-derived gap list, and no Q-table survives
+to be written to.
 """
 
 from django.db import connection
@@ -39,6 +41,17 @@ class RecommendationRemovalTests(AssessmentFlowTestCase):
         self.assertNotIn('preferred_path_recommendation', results)
         self.assertNotIn('best_fit_path_recommendation', results)
 
+    def test_results_carry_no_gap_list_read_off_the_catalog(self):
+        # "Focus next on X, Y, Z" used to name the first three curated topics
+        # regardless of what was answered. A Recommendation is produced from
+        # the answers with a reason, and lives on the skill-assessment state.
+        session_id, _payload = self._complete_role_discovery()
+
+        results = self.client.get(reverse('assessment-session-results', kwargs={'pk': session_id})).json()
+
+        self.assertNotIn('preferred_role_gap_topics', results)
+        self.assertNotIn('Focus next on', results['guidance_summary'])
+
     def test_history_carries_no_recommendations(self):
         session_id, _payload = self._complete_role_discovery()
 
@@ -47,29 +60,7 @@ class RecommendationRemovalTests(AssessmentFlowTestCase):
         self.assertNotIn('recommendations', history_response.json())
 
     def test_a_full_assessment_leaves_no_q_learning_tables_to_write_to(self):
-        session_id, _payload = self._complete_role_discovery()
-
-        # Every item of the eleven-question role-independent catalog: that
-        # reaches the ceiling, which is what lets completion through the stop
-        # rule (ADR-0003).
-        answers = {
-            'psp-plan-estimate': 4,
-            'psp-plan-compare': 4,
-            'psp-quality-defects': 3,
-            'psp-quality-review': 4,
-            'sdlc-req-criteria': 4,
-            'sdlc-design-tradeoffs': 5,
-            'sdlc-dev-conventions': 4,
-            'sdlc-test-strategy': 3,
-            'sdlc-release-checklist': 3,
-            'sdlc-maintain-debug': 4,
-            'sdlc-collab-blockers': 4,
-        }
-        self.client.post(
-            reverse('assessment-session-skill-assessment', kwargs={'pk': session_id}),
-            {'completed': True, 'answers': answers},
-            format='json',
-        )
+        self._complete_role_discovery()
 
         with connection.cursor() as cursor:
             table_names = set(connection.introspection.table_names(cursor))

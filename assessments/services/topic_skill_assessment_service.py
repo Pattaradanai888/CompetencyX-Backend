@@ -2,25 +2,30 @@
 
 The previous instrument asked eleven general PSP/SDLC process statements that
 were identical for every role, so nothing it produced could be readiness *for a
-role* (ADR-0002). Items are now generated per role from the Assessable Topic
-Sets authored for it, and the rating a respondent gives a set is the mastery
-used to gate prerequisites and to choose what to recommend next.
+role* (ADR-0002). Items are generated per role from the Assessable Topic Sets
+authored for it, and the rating a respondent gives a set is the mastery used to
+gate prerequisites and to choose what to recommend next.
 
-Nothing is read off the imported roadmap graph any more. The derivation that
-did -- the first twelve nodes typed ``topic`` -- is what assessed Cyber
-Security Engineer/Analyst with six items against 301 nodes and never asked
-Backend Developer about Git, and it was retired once every role had authored
-sets (ADR-0003, issue #7). A role whose sets are not authored keeps the
-role-independent items, so the assessment never comes back empty.
+Authored sets are the only assessable unit. Nothing is read off the imported
+roadmap graph, and there is no role-independent fallback any more: every
+curated role has authored sets, a test guards that, and a role without them is
+served an empty assessment rather than items about nothing in particular
+(ADR-0005).
 
 Every assessable unit is in exactly one of three states (ADR-0003): **Held**
 (Self-placed Mastery at or above the threshold -- the respondent's own
 statement, never a verdict), an **assessed gap** (rated below it), or
 **Unassessed** (never asked and never marked). A unit nobody asked about is
 never reported as absent capability.
+
+Recommendation Stability is decided here too, by lookahead: the suggestions
+have settled when no single further answer, at any rating, could change the
+next topics (ADR-0005). It is a pure function of the answers, so the same rule
+applies whether the answers are saved or merely proposed.
 """
 
 from collections import defaultdict
+from dataclasses import dataclass
 
 from assessments.models import SkillAssessmentDimension, SkillAssessmentQuestion
 from assessments.services.assessable_topic_set_service import select_assessable_topic_sets
@@ -30,11 +35,15 @@ from roadmaps.models import ExternalRoadmapEdge, ExternalRoadmapNode, Role
 # A rating of 1..5 on the shared agreement scale maps onto 0.0..1.0 mastery.
 SCALE_MIN = 1
 SCALE_MAX = 5
+SCALE_VALUES = tuple(range(SCALE_MIN, SCALE_MAX + 1))
 
 PROMPT_TEMPLATE = 'I could work on "{topic}" in a real project without help.'
 PROMPT_TEMPLATE_TH = 'ฉันทำงานเรื่อง "{topic}" ในโปรเจกต์จริงได้เองโดยไม่ต้องมีคนช่วย'
 
-TOPIC_DIMENSION_TRACK = SkillAssessmentDimension.Track.SDLC
+# The post-assessment screen shows the next few topics, not the whole graph:
+# three to five is a place to start (ADR-0003). The same window is what
+# Recommendation Stability watches (ADR-0005).
+NEXT_TOPIC_COUNT = 5
 
 
 def scale_value_to_mastery(value) -> float:
@@ -51,8 +60,8 @@ def select_assessable_units(role: Role) -> list[dict]:
     """What this role is assessed on: its active Assessable Topic Sets.
 
     Authored sets are the only assessable unit (ADR-0003). A role with none
-    returns ``[]``, which is the signal to serve the role-independent items;
-    every curated role has authored sets, and a test guards that.
+    returns ``[]`` and is served an empty assessment; every curated role has
+    authored sets, and a test guards that.
     """
     return select_assessable_topic_sets(role)
 
@@ -99,7 +108,6 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
                 defaults={
                     'role': role,
                     'label': topic['title'][:255],
-                    'track': TOPIC_DIMENSION_TRACK,
                     'low_score_action': f'Start with "{topic["title"]}" on the {role.name} roadmap.',
                     # The axis label and its advice are read straight off this
                     # row, so a set with Canonical Thai Wording has to carry it
@@ -107,10 +115,7 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
                     'translations': {
                         'th': {
                             'label': thai_topic[:255],
-                            # The role has no Thai name, so the advice points
-                            # at "this role's roadmap" rather than mixing in
-                            # an English one.
-                            'low_score_action': f'เริ่มจาก "{thai_topic}" ในแผนพัฒนาของสายงานนี้',
+                            'low_score_action': f'เริ่มจาก "{thai_topic}" ใน roadmap ของ {role.name_th or role.name}',
                         },
                     } if thai_topic else {},
                     'display_order': display_order,
@@ -132,9 +137,8 @@ def sync_topic_skill_assessment_catalog(*, stdout=None) -> dict[str, int]:
             )
         synced[role.slug] = len(topics)
 
-    stale_questions = SkillAssessmentQuestion.objects.filter(role__isnull=False).exclude(question_id__in=live_question_ids)
-    stale_questions.update(is_active=False)
-    SkillAssessmentDimension.objects.filter(role__isnull=False).exclude(dimension_key__in=live_dimension_keys).update(is_active=False)
+    SkillAssessmentQuestion.objects.exclude(question_id__in=live_question_ids).update(is_active=False)
+    SkillAssessmentDimension.objects.exclude(dimension_key__in=live_dimension_keys).update(is_active=False)
 
     if stdout is not None:
         stdout.write(f'Synced topic Skill Assessment items for {len(synced)} roles ({sum(synced.values())} questions).')
@@ -262,6 +266,48 @@ def build_unit_layers(role: Role, units: list[dict], *, dependencies: dict[str, 
     return layers
 
 
+@dataclass(frozen=True)
+class AssessmentGraph:
+    """Everything about a role's assessment that does not depend on the answers.
+
+    Read from the database once per request; every derivation below -- the
+    states, the suggestion order, the readiness targets, and the stability
+    lookahead -- is then a pure function of this graph and the answers, so a
+    single response never re-reads the roadmap for each derived field.
+    """
+
+    units: list[dict]
+    unit_by_slug: dict[str, dict]
+    dependencies: dict[str, set[str]]
+    layers: dict[str, int]
+    targets: dict[str, float]
+
+    @property
+    def question_ids(self) -> list[str]:
+        return [unit['question_id'] for unit in self.units]
+
+
+def load_assessment_graph(role: Role) -> AssessmentGraph:
+    units = select_assessable_units(role)
+    dependencies = build_unit_dependencies(role, units)
+    return AssessmentGraph(
+        units=units,
+        unit_by_slug={unit['slug']: unit for unit in units},
+        dependencies=dependencies,
+        layers=build_unit_layers(role, units, dependencies=dependencies),
+        targets=build_topic_targets(role, units=units),
+    )
+
+
+def _unit_mastery(graph: AssessmentGraph, answers: dict[str, int]) -> dict[str, float]:
+    """Self-placed Mastery per unit, from the answers alone (no database read)."""
+    return {
+        unit['slug']: scale_value_to_mastery(answers[unit['question_id']])
+        for unit in graph.units
+        if unit['question_id'] in answers
+    }
+
+
 def _suggestion_reason(title: str, state: str, unmet_prerequisite_titles: list[str], *, language: str) -> str:
     """Why this unit is suggested, naming up to two outstanding prerequisites.
 
@@ -274,21 +320,11 @@ def _suggestion_reason(title: str, state: str, unmet_prerequisite_titles: list[s
     return template.format(title=title, named=named)
 
 
-def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> dict:
-    """Everything the three states and the suggestion order are derived from.
-
-    Computed once so a single response never re-reads the roadmap graph for
-    each derived field.
-    """
-    units = select_assessable_units(role)
-    mastery = get_topic_mastery(role, answers)
-    unit_by_slug = {unit['slug']: unit for unit in units}
-    dependencies = build_unit_dependencies(role, units)
-    layers = build_unit_layers(role, units, dependencies=dependencies)
-
+def _derive_states(graph: AssessmentGraph, answers: dict[str, int], held_keys: frozenset[str]) -> list[dict]:
+    """Every unit's state entry, in authored order."""
+    mastery = _unit_mastery(graph, answers)
     states: list[dict] = []
-    by_slug: dict[str, dict] = {}
-    for unit in units:
+    for unit in graph.units:
         unit_mastery = mastery.get(unit['slug'])
         marked = unit['slug'] in held_keys
         state = _unit_state(unit_mastery, marked_held=marked)
@@ -301,10 +337,14 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
             'topic_slug': unit['slug'],
             'topic_title': unit['title'],
             'topic_title_th': thai_title,
+            # Which imported roadmap nodes the set covers, so a page rendering
+            # the roadmap can mark the nodes a held set stands for by slug
+            # rather than guessing from titles.
+            'node_slugs': list(unit['node_slugs']),
             'state': state,
             'mastery': unit_mastery,
             'display_order': unit['display_order'],
-            'layer': layers[unit['slug']],
+            'layer': graph.layers[unit['slug']],
         }
         if state == STATE_HELD:
             entry['statement'] = HELD_STATEMENT_TEMPLATE.format(title=unit['title'])
@@ -315,46 +355,91 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
             # that undo would be a control that does nothing.
             entry['held_by_mark'] = marked and _unit_state(unit_mastery, marked_held=False) != STATE_HELD
         states.append(entry)
-        by_slug[unit['slug']] = entry
+    return states
+
+
+def _rank_suggestions(states: list[dict]) -> list[dict]:
+    """The suggestion order: prerequisite layer, then roadmap order, then mastery.
+
+    Prerequisites always win. Self-placed Mastery only breaks ties between
+    units at the same depth (ADR-0003). Assessed gaps are acted on before
+    unassessed units, which follow in the same order.
+    """
+    assessed_gaps = [entry for entry in states if entry['state'] == STATE_ASSESSED_GAP]
+    unassessed = [entry for entry in states if entry['state'] == STATE_UNASSESSED]
+    assessed_gaps.sort(key=lambda entry: (entry['layer'], entry['display_order'], entry['mastery']))
+    unassessed.sort(key=lambda entry: (entry['layer'], entry['display_order']))
+    return [*assessed_gaps, *unassessed]
+
+
+def top_suggestions(graph: AssessmentGraph, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> list[str]:
+    """The slugs of the next topics for these answers, in order."""
+    return [entry['topic_slug'] for entry in _rank_suggestions(_derive_states(graph, answers, held_keys))[:NEXT_TOPIC_COUNT]]
+
+
+def is_recommendation_settled(graph: AssessmentGraph, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> bool:
+    """Recommendation Stability: no further single answer could change the next topics.
+
+    Every unanswered, unmarked unit is tried at every rating on the scale; if
+    any of them would move the next topics, the assessment has more to learn
+    and is not settled. The rule reads only the answers it is given, so it
+    holds for answers a client proposes as much as for answers it has saved
+    (ADR-0005). A catalog with nothing left to ask is settled vacuously.
+    """
+    baseline = top_suggestions(graph, answers, held_keys=held_keys)
+    for unit in graph.units:
+        question_id = unit['question_id']
+        if question_id in answers or unit['slug'] in held_keys:
+            continue
+        for rating in SCALE_VALUES:
+            if top_suggestions(graph, {**answers, question_id: rating}, held_keys=held_keys) != baseline:
+                return False
+    return True
+
+
+def build_assessment_summary(
+    role: Role,
+    answers: dict[str, int],
+    *,
+    held_keys: frozenset[str] = frozenset(),
+    graph: AssessmentGraph | None = None,
+) -> dict:
+    """Everything the three states and the suggestion order are derived from.
+
+    Pass ``graph`` when the caller already loaded it, so one response reads
+    the roadmap once.
+    """
+    if graph is None:
+        graph = load_assessment_graph(role)
+    states = _derive_states(graph, answers, held_keys)
+    by_slug = {entry['topic_slug']: entry for entry in states}
 
     # A unit's prerequisites count as met only when the unit behind them is
     # held; naming a held prerequisite as outstanding would be a false reason.
     unmet: dict[str, list[str]] = {}
     unmet_th: dict[str, list[str]] = {}
-    for unit in units:
+    for unit in graph.units:
         prerequisite_units = sorted(
-            dependencies.get(unit['slug'], ()),
-            key=lambda slug: (unit_by_slug[slug]['display_order'], slug),
+            graph.dependencies.get(unit['slug'], ()),
+            key=lambda slug: (graph.unit_by_slug[slug]['display_order'], slug),
         )
-        outstanding = [
-            prereq_slug
-            for prereq_slug in prerequisite_units
-            if by_slug[prereq_slug]['state'] != STATE_HELD
-        ]
-        unmet[unit['slug']] = [unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding]
+        outstanding = [prereq_slug for prereq_slug in prerequisite_units if by_slug[prereq_slug]['state'] != STATE_HELD]
+        unmet[unit['slug']] = [graph.unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding]
         # A prerequisite with no Thai wording is still named, in English,
         # rather than the sentence losing the topic it points at.
         unmet_th[unit['slug']] = [
-            _unit_thai_title(unit_by_slug[prereq_slug]) or unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding
+            _unit_thai_title(graph.unit_by_slug[prereq_slug]) or graph.unit_by_slug[prereq_slug]['title'] for prereq_slug in outstanding
         ]
 
-    assessed_gaps = [entry for entry in states if entry['state'] == STATE_ASSESSED_GAP]
-    unassessed = [entry for entry in states if entry['state'] == STATE_UNASSESSED]
-
-    # Prerequisite layer first, then roadmap order; Self-placed Mastery only
-    # breaks ties between units at the same depth (ADR-0003). Assessed gaps are
-    # acted on before unassessed units, which follow in the same order.
-    assessed_gaps.sort(key=lambda entry: (entry['layer'], entry['display_order'], entry['mastery']))
-    unassessed.sort(key=lambda entry: (entry['layer'], entry['display_order']))
-
     recommendations = []
-    for entry in (*assessed_gaps, *unassessed):
+    for entry in _rank_suggestions(states):
         slug, state, thai_title = entry['topic_slug'], entry['state'], entry['topic_title_th']
         recommendations.append(
             {
                 'topic_slug': slug,
                 'topic_title': entry['topic_title'],
                 'topic_title_th': thai_title,
+                'node_slugs': entry['node_slugs'],
                 'state': state,
                 'mastery': entry['mastery'],
                 'reason': _suggestion_reason(entry['topic_title'], state, unmet[slug], language='en'),
@@ -362,7 +447,7 @@ def build_assessment_summary(role: Role, answers: dict[str, int], *, held_keys: 
             },
         )
 
-    return {'units': units, 'states': states, 'recommendations': recommendations, 'targets': build_topic_targets(role, units=units)}
+    return {'units': graph.units, 'states': states, 'recommendations': recommendations, 'targets': graph.targets}
 
 
 # A topic that other topics build on has to be solid before the roadmap makes
@@ -390,14 +475,21 @@ def build_topic_targets(role: Role, *, units: list[dict] | None = None) -> dict[
     }
 
 
-def build_readiness_summary(role: Role, answers: dict[str, int], *, held_keys: frozenset[str] = frozenset()) -> dict[str, object]:
+def build_readiness_summary(
+    role: Role,
+    answers: dict[str, int],
+    *,
+    held_keys: frozenset[str] = frozenset(),
+    summary: dict | None = None,
+) -> dict[str, object]:
     """As-is against the role's own target, over the assessed units only.
 
     An unasked remainder is no evidence either way, so it must not deflate the
     figure: readiness is the mean mastery of what was actually assessed, and
     the response says how many units that is.
     """
-    summary = build_assessment_summary(role, answers, held_keys=held_keys)
+    if summary is None:
+        summary = build_assessment_summary(role, answers, held_keys=held_keys)
     # A Held Topic mark is a statement, not a rating: it holds the set without
     # producing a Self-placed Mastery, so readiness counts only units that
     # were actually rated.

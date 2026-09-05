@@ -297,6 +297,8 @@ def _sync_roles(role_seeds: list[dict]):
             defaults={
                 'name': role_seed['name'],
                 'description': role_seed.get('description', ''),
+                'name_th': role_seed.get('name_th', ''),
+                'description_th': role_seed.get('description_th', ''),
                 'top_ka_codes': role_seed.get('top_ka_codes', []),
                 'core_tasks': role_seed.get('core_tasks', []),
                 'swebok_source_version': role_seed.get('swebok_source_version', ''),
