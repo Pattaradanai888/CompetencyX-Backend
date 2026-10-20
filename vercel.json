@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "django",
+  "regions": ["sin1"],
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "release": true
+    }
+  }
+}

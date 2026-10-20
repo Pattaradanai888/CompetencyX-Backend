@@ -29,6 +29,9 @@ dev = [
 package = false
 default-groups = ["dev"]
 
+[tool.vercel]
+entrypoint = "config.wsgi:application"
+
 [tool.pytest.ini_options]
 minversion = "8.3"
 # Coverage is opt-in to keep the dev loop fast; for a coverage run use:

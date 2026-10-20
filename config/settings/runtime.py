@@ -1,5 +1,5 @@
 import os
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -24,7 +24,9 @@ def _database_from_url(url: str) -> dict:
     if parsed.scheme not in {'postgres', 'postgresql', 'psql'}:
         msg = f'Unsupported DATABASE_URL scheme: {parsed.scheme!r}. Only PostgreSQL URLs are supported.'
         raise ImproperlyConfigured(msg)
-    return {
+    query = parse_qs(parsed.query)
+    options = {name: query[name][-1] for name in ('sslmode', 'channel_binding', 'connect_timeout') if name in query}
+    database = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': unquote(parsed.path.lstrip('/')) or 'competencyx',
         'USER': unquote(parsed.username or ''),
@@ -33,6 +35,9 @@ def _database_from_url(url: str) -> dict:
         'PORT': str(parsed.port or 5432),
         'CONN_MAX_AGE': int(os.getenv('POSTGRES_CONN_MAX_AGE', '60')),
     }
+    if options:
+        database['OPTIONS'] = options
+    return database
 
 
 DATABASES = {alias: config.copy() for alias, config in DATABASES.items()}
@@ -45,7 +50,19 @@ if not runtime_secret_key and not DEBUG:
 SECRET_KEY = runtime_secret_key or SECRET_KEY
 ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
 CORS_ALLOW_ALL_ORIGINS = _env_flag('DJANGO_CORS_ALLOW_ALL_ORIGINS', False)
+CORS_ALLOWED_ORIGINS = _env_list('DJANGO_CORS_ALLOWED_ORIGINS', '')
 CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in _env_list('DJANGO_CSRF_TRUSTED_HOSTS', '') if host]
+
+if os.getenv('VERCEL') == '1':
+    for name in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
+        vercel_host = os.getenv(name)
+        if vercel_host:
+            if vercel_host not in ALLOWED_HOSTS:
+                ALLOWED_HOSTS.append(vercel_host)
+            vercel_origin = f'https://{vercel_host}'
+            if vercel_origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(vercel_origin)
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Railway (and any PaaS behind a TLS-terminating proxy) publishes the service domain at runtime,
 # so the host is not known when the image is built.

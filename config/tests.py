@@ -7,6 +7,42 @@ from django.test import SimpleTestCase
 
 
 class RuntimeSettingsTests(SimpleTestCase):
+    def test_database_url_preserves_neon_tls_options(self):
+        env = {
+            'DJANGO_SECRET_KEY': 'runtime-test-secret',
+            'DATABASE_URL': ('postgresql://example:example@db.example.invalid/app?sslmode=require&channel_binding=require&connect_timeout=10'),
+            'POSTGRES_CONN_MAX_AGE': '0',
+        }
+        with patch.dict(os.environ, env, clear=True):
+            module = importlib.import_module('config.settings.runtime')
+            reloaded = importlib.reload(module)
+
+        assert reloaded.DATABASES['default']['OPTIONS'] == {
+            'sslmode': 'require',
+            'channel_binding': 'require',
+            'connect_timeout': '10',
+        }
+        assert reloaded.DATABASES['default']['CONN_MAX_AGE'] == 0
+
+    def test_vercel_hosts_proxy_and_explicit_cors_origins(self):
+        env = {
+            'DJANGO_SECRET_KEY': 'runtime-test-secret',
+            'VERCEL': '1',
+            'VERCEL_URL': 'api-preview.example.invalid',
+            'VERCEL_PROJECT_PRODUCTION_URL': 'api.example.invalid',
+            'DJANGO_CORS_ALLOWED_ORIGINS': 'https://web.example.invalid',
+        }
+        with patch.dict(os.environ, env, clear=True):
+            module = importlib.import_module('config.settings.runtime')
+            reloaded = importlib.reload(module)
+
+        assert 'api-preview.example.invalid' in reloaded.ALLOWED_HOSTS
+        assert 'api.example.invalid' in reloaded.ALLOWED_HOSTS
+        assert 'https://api.example.invalid' in reloaded.CSRF_TRUSTED_ORIGINS
+        assert reloaded.CORS_ALLOWED_ORIGINS == ['https://web.example.invalid']
+        assert reloaded.CORS_ALLOW_ALL_ORIGINS is False
+        assert reloaded.SECURE_PROXY_SSL_HEADER == ('HTTP_X_FORWARDED_PROTO', 'https')
+
     def test_runtime_settings_use_sqlite_by_default(self):
         with patch.dict(os.environ, {'DJANGO_DEBUG': 'true'}, clear=True):
             module = importlib.import_module('config.settings.runtime')
