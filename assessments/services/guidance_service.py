@@ -18,8 +18,9 @@ from roadmaps.models import Question
 from .role_inference_service import (
     get_role_inference_snapshot,
     get_role_resolution_status,
-    is_core_role_profile_complete,
+    is_role_discovery_complete,
 )
+from .scoring_service import ROLE_DISCOVERY_MAX_QUESTIONS
 
 
 ROLE_RESULT_AVAILABLE_STATUSES = {'resolved', 'low_confidence'}
@@ -84,11 +85,11 @@ def serialize_milestones(session: AssessmentSession):
             'pk',
             filter=role_stage & Q(question__item_group=Question.ItemGroup.TIE_BREAK),
         ),
-    )
+    ) | {'max_role_questions': ROLE_DISCOVERY_MAX_QUESTIONS}
 
 
 def get_role_alignment_status(session: AssessmentSession) -> str:
-    if not is_core_role_profile_complete(session):
+    if not is_role_discovery_complete(session):
         return 'unknown'
     if session.best_fit_role_id is None:
         return 'unknown'
@@ -146,7 +147,7 @@ def _fit_summary(session: AssessmentSession, *, resolution_status: str) -> str:
 
 
 def build_guidance_summary(session: AssessmentSession) -> str:
-    if not is_core_role_profile_complete(session):
+    if not is_role_discovery_complete(session):
         return _incomplete_profile_summary(session)
 
     resolution_status = get_role_resolution_status(session)
@@ -174,6 +175,7 @@ def get_role_insights(session: AssessmentSession) -> dict[str, object]:
         **get_visible_role_result(session),
         'answered_role_questions': serialize_milestones(session)['answered_role_questions'],
         'pillar_profile': snapshot['pillar_profile'],
-        'ranked_roles': snapshot['ranked_roles'] if is_core_role_profile_complete(session) else [],
+        'ranked_roles': snapshot['ranked_roles'] if snapshot['is_complete'] else [],
+        'role_candidates': snapshot['role_candidates'] if snapshot['is_complete'] else [],
         'guidance_summary': build_guidance_summary(session),
     }

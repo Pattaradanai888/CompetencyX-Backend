@@ -10,10 +10,11 @@ from django.core.management import call_command
 from rest_framework.test import APITestCase
 
 from assessments.services import scoring_service
-from assessments.services.assessment_service import create_assessment_session, submit_answer
+from assessments.services.assessment_service import create_assessment_session, get_current_question, submit_answer
 from assessments.services.role_inference_service import answer_to_signal_dict, get_role_inference_snapshot
 from roadmaps.models import Question, Role
-from simulation.engine import LIKERT_VALUES, CatalogContext, SimulationConfig, aggregate_results, run_single_sample
+from simulation.engine import LIKERT_VALUES, CatalogContext, SimulationConfig, _SampleState, aggregate_results, run_single_sample
+from simulation.loaders import load_questions
 
 
 class ScoringParityTests(APITestCase):
@@ -24,11 +25,7 @@ class ScoringParityTests(APITestCase):
         call_command('sync_content')
         cls.active_role_slugs = list(Role.objects.filter(is_active=True).values_list('slug', flat=True))
         cls.role_names = dict(Role.objects.filter(is_active=True).values_list('slug', 'name'))
-        cls.core_target = Question.objects.filter(
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.CORE,
-            is_active=True,
-        ).count()
+        cls.available_questions = Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).count()
 
     def _build_session_answer_dicts(self, session):
         return [
@@ -39,12 +36,8 @@ class ScoringParityTests(APITestCase):
 
     def test_db_snapshot_matches_pure_snapshot(self):
         session = create_assessment_session(profile={})
-        likert_questions = list(
-            Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).order_by('display_order', 'id'),
-        )
-        for index, question in enumerate(likert_questions[:12]):
-            scale_value = [2, -1, 1, 0, 2, -2, 1, -1, 2, 0, 1, -1][index]
-            submit_answer(session=session, question=question, scale_value=scale_value)
+        for scale_value in [2, -1, 1, 0, 2, -2, 1, -1, 2, 0, 1, -1]:
+            submit_answer(session=session, question=get_current_question(session), scale_value=scale_value)
             session.refresh_from_db()
 
         db_snapshot = get_role_inference_snapshot(session)
@@ -55,9 +48,8 @@ class ScoringParityTests(APITestCase):
             evidence,
             active_role_slugs=self.active_role_slugs,
             role_names=self.role_names,
-            answered_core=sum(1 for answer in answer_dicts),
-            core_target=self.core_target,
-            answered_tie_break=0,
+            answered_questions=len(answer_dicts),
+            available_questions=self.available_questions,
         )
 
         assert pure_snapshot['top_role_slug'] == db_snapshot['top_role_slug']
@@ -72,6 +64,7 @@ class ScoringParityTests(APITestCase):
         questions = [
             {
                 'id': question.id,
+                'code': question.code,
                 'display_order': question.display_order,
                 'item_group': question.item_group,
                 'discriminates_between': list(question.discriminates_between or []),
@@ -86,10 +79,11 @@ class ScoringParityTests(APITestCase):
             questions=questions,
             active_role_slugs=list(self.active_role_slugs),
             role_names=self.role_names,
-            core_target=self.core_target,
+            available_questions=self.available_questions,
         )
         result = run_single_sample(0, catalog, [], fixed_answers)
-        assert result['answered_role_questions'] >= self.core_target
+        assert scoring_service.ROLE_DISCOVERY_MIN_QUESTIONS <= result['answered_role_questions'] <= scoring_service.ROLE_DISCOVERY_MAX_QUESTIONS
+        assert len(result['role_candidates']) == scoring_service.ROLE_CANDIDATE_COUNT
         assert result['resolution_status'] in {'resolved', 'low_confidence', 'unknown'}
         assert result['best_fit_role'] is None or result['best_fit_role'] in self.active_role_slugs
 
@@ -118,7 +112,7 @@ class ScoringParityTests(APITestCase):
                 questions=questions,
                 active_role_slugs=list(self.active_role_slugs),
                 role_names=self.role_names,
-                core_target=self.core_target,
+                available_questions=self.available_questions,
             ),
             config=SimulationConfig(
                 samples=1,
@@ -131,3 +125,27 @@ class ScoringParityTests(APITestCase):
         assert summary['resolved_roles']['backend-developer'] == 1
         assert 'worst_case_95pct_margin_of_error' in summary
         questions.clear()
+
+    def test_live_flow_asks_the_same_items_as_the_pure_flow(self):
+        answers = [2, -1, 1, 0, 2, -2, 1, -1, 2, 0, 1, -1, -2, 2, 0, 1, -1, 2, 1, 0, -2, 1, 2, -1, 0]
+        session = create_assessment_session(profile={})
+        live_codes = []
+        while (question := get_current_question(session)) is not None:
+            submit_answer(session=session, question=question, scale_value=answers[len(live_codes)])
+            live_codes.append(question.code)
+            session.refresh_from_db()
+
+        questions = load_questions()
+        state = _SampleState(active_role_slugs=self.active_role_slugs, role_names=self.role_names, available_questions=len(questions))
+        snapshot = state.inference_snapshot()
+        pure_codes = []
+        while (question := scoring_service.select_next_role_question(questions, snapshot)) is not None:
+            state.apply_answer(question, answers[len(pure_codes)])
+            pure_codes.append(question['code'])
+            questions = [candidate for candidate in questions if candidate['id'] != question['id']]
+            snapshot = state.inference_snapshot()
+
+        assert live_codes == pure_codes
+        assert live_codes[: len(scoring_service.ROLE_DISCOVERY_WARMUP_CODES)] == list(scoring_service.ROLE_DISCOVERY_WARMUP_CODES)
+        live_snapshot = get_role_inference_snapshot(session)
+        assert [role['slug'] for role in live_snapshot['role_candidates']] == [role['slug'] for role in snapshot['role_candidates']]

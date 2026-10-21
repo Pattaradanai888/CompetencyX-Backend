@@ -129,6 +129,7 @@ ignore = ["S101", "COM812", "TRY003", "RUF012"]
 "**/test_*.py" = ["S105", "S106", "S107", "S311", "PLR2004", "PT009"]
 # Persona/Monte-Carlo simulation legitimately uses non-cryptographic RNG.
 "simulation/personas.py" = ["S311"]
+"simulation/realistic_personas.py" = ["S311"]
 "**/migrations/*.py" = ["ALL"]
 "manage.py" = ["INP001", "PLC0415", "EM101"]
 "config/settings/__init__.py" = ["F403"]

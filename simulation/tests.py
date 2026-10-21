@@ -26,10 +26,11 @@ from simulation.engine import (
 
 ACTIVE_ROLE_SLUGS = ['backend-developer', 'frontend-developer']
 ROLE_NAMES = {'backend-developer': 'Backend Developer', 'frontend-developer': 'Frontend Developer'}
-CORE_TARGET = 2
+AVAILABLE_QUESTIONS = 3
 
 CORE_QUESTION_BACKEND = {
     'id': 1,
+    'code': 'role-rd-test-backend',
     'display_order': 1,
     'item_group': 'core',
     'discriminates_between': [],
@@ -39,6 +40,7 @@ CORE_QUESTION_BACKEND = {
 }
 CORE_QUESTION_PLATFORM = {
     'id': 2,
+    'code': 'role-rd-test-platform',
     'display_order': 2,
     'item_group': 'core',
     'discriminates_between': [],
@@ -48,6 +50,7 @@ CORE_QUESTION_PLATFORM = {
 }
 TIE_BREAK_QUESTION = {
     'id': 3,
+    'code': 'role-rd-test-tie',
     'display_order': 3,
     'item_group': 'tie_break',
     'discriminates_between': ['backend-developer', 'frontend-developer'],
@@ -60,7 +63,7 @@ CATALOG_CTX = CatalogContext(
     questions=CATALOG,
     active_role_slugs=list(ACTIVE_ROLE_SLUGS),
     role_names=ROLE_NAMES,
-    core_target=CORE_TARGET,
+    available_questions=AVAILABLE_QUESTIONS,
 )
 
 EXPECTED_SAMPLE_RESULT_KEYS = {
@@ -70,6 +73,7 @@ EXPECTED_SAMPLE_RESULT_KEYS = {
     'resolution_status',
     'best_fit_role',
     'top_ranked_role',
+    'role_candidates',
     'answered_core_questions',
     'answered_tie_break_questions',
     'answered_role_questions',
@@ -134,7 +138,7 @@ def test_pre_generate_choices_degenerate_weights_always_pick_that_value():
 
 
 def test_apply_answer_counts_core_and_tie_break_separately():
-    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, core_target=CORE_TARGET)
+    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, available_questions=AVAILABLE_QUESTIONS)
     state.apply_answer(CORE_QUESTION_BACKEND, 1)
     state.apply_answer(TIE_BREAK_QUESTION, 1)
     assert state.answered_core == 1
@@ -144,7 +148,7 @@ def test_apply_answer_counts_core_and_tie_break_separately():
 
 
 def test_apply_answer_accumulates_dimension_and_role_scores():
-    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, core_target=CORE_TARGET)
+    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, available_questions=AVAILABLE_QUESTIONS)
     state.apply_answer(CORE_QUESTION_BACKEND, 2)
     # Agreement selects agree_dimension_signals: weight * |scale_value|.
     assert state.dimension_scores['server_backend'] == 2.0
@@ -155,14 +159,14 @@ def test_apply_answer_accumulates_dimension_and_role_scores():
 
 
 def test_apply_answer_disagreement_selects_disagree_signals():
-    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, core_target=CORE_TARGET)
+    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, available_questions=AVAILABLE_QUESTIONS)
     state.apply_answer(CORE_QUESTION_BACKEND, -2)
     assert state.dimension_scores == {'web_frontend': 2.0}
     assert state.role_scores['frontend-developer'] > state.role_scores['backend-developer']
 
 
 def test_apply_answer_neutral_adds_no_evidence_but_still_counts():
-    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, core_target=CORE_TARGET)
+    state = _SampleState(active_role_slugs=list(ACTIVE_ROLE_SLUGS), role_names=ROLE_NAMES, available_questions=AVAILABLE_QUESTIONS)
     state.apply_answer(CORE_QUESTION_BACKEND, 0)
     assert state.dimension_scores == {}
     assert state.dimension_evidence_counts == {}
@@ -184,23 +188,26 @@ def test_run_single_sample_result_has_stable_keys():
     assert set(result) == EXPECTED_SAMPLE_RESULT_KEYS
 
 
-def test_run_single_sample_strong_backend_prefix_resolves_without_tie_break():
+def test_run_single_sample_strong_backend_prefix_resolves():
     result = run_single_sample(0, CATALOG_CTX, [2, 2, 2], [])
     assert result['resolution_status'] == 'resolved'
     assert result['best_fit_role'] == 'backend-developer'
     assert result['top_ranked_role'] == 'backend-developer'
-    # Margin clears after the two core questions, so the tie-break is never asked.
-    assert result['answered_core_questions'] == 2
-    assert result['answered_tie_break_questions'] == 0
+    assert result['role_candidates'][0] == 'backend-developer'
+    assert result['answered_role_questions'] == AVAILABLE_QUESTIONS
     assert result['score_margin'] >= scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN
+
+
+def test_run_single_sample_asks_a_pool_smaller_than_the_floor_to_the_end():
+    result = run_single_sample(0, CATALOG_CTX, [2, 2, 2], [])
+    assert result['answered_core_questions'] == 2
+    assert result['answered_tie_break_questions'] == 1
 
 
 def test_run_single_sample_all_neutral_prefix_ends_low_confidence():
     result = run_single_sample(0, CATALOG_CTX, [0, 0, 0], [])
     assert result['resolution_status'] == 'low_confidence'
-    # Zero margin forces the tie-break question to be consumed too.
-    assert result['answered_core_questions'] == 2
-    assert result['answered_tie_break_questions'] == 1
+    assert result['answered_role_questions'] == AVAILABLE_QUESTIONS
     assert result['score_margin'] == 0.0
     # Zero vote margin means zero confidence under vote-based scoring.
     assert result['confidence'] == 0.0
@@ -209,7 +216,7 @@ def test_run_single_sample_all_neutral_prefix_ends_low_confidence():
 
 
 def test_run_single_sample_falls_back_to_pre_generated_choices_after_prefix():
-    from_prefix = run_single_sample(0, CATALOG_CTX, [2, 2], [])
+    from_prefix = run_single_sample(0, CATALOG_CTX, [2, 2, 2], [])
     from_choices = run_single_sample(0, CATALOG_CTX, [], [2, 2, 2])
     assert {key: from_prefix[key] for key in from_prefix if key != 'sample_index'} == {
         key: from_choices[key] for key in from_choices if key != 'sample_index'

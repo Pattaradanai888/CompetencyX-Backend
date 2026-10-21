@@ -11,6 +11,7 @@ from simulation.personas import (
     run_persona_suite,
     sample_noisy_answer,
 )
+from simulation.realistic_personas import PARAMS, make_persona, run_realistic_suite
 
 
 def _make_catalog():
@@ -18,6 +19,7 @@ def _make_catalog():
     questions = [
         {
             'id': 1,
+            'code': 'role-rd-test-build',
             'display_order': 1,
             'item_group': 'core',
             'discriminates_between': [],
@@ -27,6 +29,7 @@ def _make_catalog():
         },
         {
             'id': 2,
+            'code': 'role-rd-test-run',
             'display_order': 2,
             'item_group': 'core',
             'discriminates_between': [],
@@ -39,7 +42,7 @@ def _make_catalog():
         questions=questions,
         active_role_slugs=['backend-developer', 'ux-designer'],
         role_names={'backend-developer': 'Backend', 'ux-designer': 'UX'},
-        core_target=2,
+        available_questions=2,
     )
 
 
@@ -112,7 +115,31 @@ def test_content_digest_changes_with_question_signals():
             questions=mutated_questions,
             active_role_slugs=catalog.active_role_slugs,
             role_names=catalog.role_names,
-            core_target=catalog.core_target,
+            available_questions=catalog.available_questions,
         ),
     )
     assert digest_a != digest_b
+
+
+def test_zero_noise_persona_finds_its_role_among_the_candidates():
+    catalog = _make_catalog()
+    exact_noise = {2: ((2,), (1.0,)), 0: ((0,), (1.0,)), -2: ((-2,), (1.0,))}
+    sample = run_persona_sample('ux-designer', catalog, random.Random(1), noise_model=exact_noise)
+    assert sample['in_candidates'] is True
+
+
+def test_realistic_persona_ground_truth_is_a_known_role():
+    persona = make_persona(random.Random(3), dict(PARAMS))
+    assert persona['truth'] in persona['truth_top2']
+    assert persona['kind'] in {'pure', 'blend', 'undecided'}
+
+
+def test_realistic_suite_reports_per_scenario_and_is_deterministic():
+    catalog = _make_catalog()
+    report_a = run_realistic_suite(catalog, samples=6, seed=5, scenarios=['base'])
+    report_b = run_realistic_suite(catalog, samples=6, seed=5, scenarios=['base'])
+    assert report_a == report_b
+    base = report_a['scenarios']['base']
+    assert 0.0 <= base['top3_accuracy'] <= 1.0
+    assert base['avg_answered_questions'] == 2
+    assert report_a['summary']['top3_accuracy_worst'] == base['top3_accuracy']

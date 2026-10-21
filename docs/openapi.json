@@ -189,7 +189,8 @@
                                                     "milestones": {
                                                         "answered_role_questions": 0,
                                                         "answered_core_role_questions": 0,
-                                                        "answered_tie_break_questions": 0
+                                                        "answered_tie_break_questions": 0,
+                                                        "max_role_questions": 25
                                                     },
                                                     "role_alignment_status": "unknown",
                                                     "role_resolution_status": "in_progress",
@@ -311,7 +312,8 @@
                                             "milestones": {
                                                 "answered_role_questions": 0,
                                                 "answered_core_role_questions": 0,
-                                                "answered_tie_break_questions": 0
+                                                "answered_tie_break_questions": 0,
+                                                "max_role_questions": 25
                                             },
                                             "role_alignment_status": "unknown",
                                             "role_resolution_status": "in_progress",
@@ -486,7 +488,8 @@
                                             "milestones": {
                                                 "answered_role_questions": 0,
                                                 "answered_core_role_questions": 0,
-                                                "answered_tie_break_questions": 0
+                                                "answered_tie_break_questions": 0,
+                                                "max_role_questions": 25
                                             },
                                             "role_alignment_status": "unknown",
                                             "role_resolution_status": "in_progress",
@@ -726,7 +729,41 @@
                                                     ]
                                                 }
                                             ],
-                                            "guidance_summary": "Your current answers align best with Backend Engineer."
+                                            "guidance_summary": "Your current answers align best with Backend Engineer.",
+                                            "role_candidates": [
+                                                {
+                                                    "slug": "backend-engineer",
+                                                    "name": "Backend Engineer",
+                                                    "name_th": "นักพัฒนา Backend",
+                                                    "fit_score": 0.71,
+                                                    "fit_share": 0.18,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Reliability and Automation",
+                                                        "Data Reasoning"
+                                                    ],
+                                                    "top_supporting_pillars_th": [
+                                                        "การออกแบบระบบ",
+                                                        "ความเชื่อถือได้และระบบอัตโนมัติ",
+                                                        "การใช้เหตุผลกับข้อมูล"
+                                                    ]
+                                                },
+                                                {
+                                                    "slug": "system-architect",
+                                                    "name": "System Architect",
+                                                    "name_th": "สถาปนิกระบบ",
+                                                    "fit_score": 0.58,
+                                                    "fit_share": 0.16,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Risk and Security"
+                                                    ],
+                                                    "top_supporting_pillars_th": [
+                                                        "การออกแบบระบบ",
+                                                        "ความเสี่ยงและความปลอดภัย"
+                                                    ]
+                                                }
+                                            ]
                                         },
                                         "summary": "Insights response"
                                     }
@@ -909,7 +946,8 @@
                                             "milestones": {
                                                 "answered_role_questions": 2,
                                                 "answered_core_role_questions": 2,
-                                                "answered_tie_break_questions": 0
+                                                "answered_tie_break_questions": 0,
+                                                "max_role_questions": 25
                                             },
                                             "role_alignment_status": "aligned",
                                             "role_resolution_status": "resolved",
@@ -925,6 +963,25 @@
                                                 }
                                             ],
                                             "ranked_roles": [
+                                                {
+                                                    "slug": "backend-engineer",
+                                                    "name": "Backend Engineer",
+                                                    "name_th": "นักพัฒนา Backend",
+                                                    "fit_score": 0.71,
+                                                    "fit_share": 0.18,
+                                                    "top_supporting_pillars": [
+                                                        "Systems Design",
+                                                        "Reliability and Automation",
+                                                        "Data Reasoning"
+                                                    ],
+                                                    "top_supporting_pillars_th": [
+                                                        "การออกแบบระบบ",
+                                                        "ความเชื่อถือได้และระบบอัตโนมัติ",
+                                                        "การใช้เหตุผลกับข้อมูล"
+                                                    ]
+                                                }
+                                            ],
+                                            "role_candidates": [
                                                 {
                                                     "slug": "backend-engineer",
                                                     "name": "Backend Engineer",
@@ -1993,6 +2050,13 @@
                             "$ref": "#/components/schemas/RankedRoleInsight"
                         },
                         "readOnly": true
+                    },
+                    "role_candidates": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RankedRoleInsight"
+                        },
+                        "readOnly": true
                     }
                 },
                 "required": [
@@ -2007,6 +2071,7 @@
                     "profile",
                     "ranked_roles",
                     "role_alignment_status",
+                    "role_candidates",
                     "role_resolution_status",
                     "started_at",
                     "updated_at"
@@ -2706,6 +2771,13 @@
                         },
                         "readOnly": true
                     },
+                    "role_candidates": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/RankedRoleInsight"
+                        },
+                        "readOnly": true
+                    },
                     "guidance_summary": {
                         "type": "string",
                         "readOnly": true
@@ -2718,6 +2790,7 @@
                     "guidance_summary",
                     "pillar_profile",
                     "ranked_roles",
+                    "role_candidates",
                     "role_resolution_status"
                 ]
             },

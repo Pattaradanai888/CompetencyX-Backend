@@ -77,9 +77,10 @@ same moment, since running out of role questions is what completes a session. Th
 being asked next?"; read `phase` and `status` from the session payload to tell *why* nothing is being asked. The GET
 writes nothing, so it is safe to poll, retry, or replay on a page refresh.
 
-The envelope is `{"next_question": ...}` alone. Skill Assessment adds a `progress` object to its envelope because it
-has a stop rule to report against; Role Discovery has no equivalent, and its progress is already in the session
-payload as `milestones`, so it is deliberately not duplicated here.
+The envelope is `{"next_question": ...}` alone. Role Discovery's progress is in the session payload as `milestones`:
+`answered_role_questions` so far and `max_role_questions`, the most it will ask (25). It usually stops before that,
+so show progress as "question N of at most 25" or as an indeterminate bar, and treat `next_question: null` as the end
+(ADR-0006).
 
 `current_question` stays in the session payload for now, carrying exactly the same value, so no client has to move in
 the same release. Plan: it is deprecated from this release, clients migrate to `GET /next-question/`, and the field is
@@ -123,6 +124,7 @@ Response fields:
 - `answered_role_questions`
 - `pillar_profile`
 - `ranked_roles`
+- `role_candidates`
 - `guidance_summary`
 
 `pillar_profile` items contain:
@@ -144,11 +146,16 @@ Response fields:
 - `top_supporting_pillars`
 - `top_supporting_pillars_th`
 
+`role_candidates` is the first three `ranked_roles`, with the same fields: the Role Candidates to show the respondent.
+Show all three. Most sessions finish `low_confidence`, and three plausible directions are the honest result for them;
+`resolved` means the first candidate leads the second by at least 3.5 votes.
+
 ### Final results payload
 `GET /api/v1/assessment-sessions/{id}/results/` returns the role analysis:
 
 - `pillar_profile`
 - `ranked_roles`
+- `role_candidates`
 - `role_resolution_status`
 
 Nothing in it names topics to learn. `preferred_role_gap_topics` and the "Focus next on …" sentence, which listed the first
@@ -274,11 +281,13 @@ Relevant session fields:
 
 Important implications:
 
-- `best_fit_role` remains `null` while the 46 core role questions are still in progress
-- `best_fit_confidence` remains `0.0` while the 46 core role questions are still in progress
-- `role_alignment_status` remains `unknown` while the 46 core role questions are still in progress
-- the insights endpoint returns an empty `ranked_roles` list until the 46 core role questions are complete
-- after the 46th core role answer, the backend either resolves to one best-fit role or asks targeted tie-break questions
+- `best_fit_role` remains `null` while Role Discovery is still in progress
+- `best_fit_confidence` remains `0.0` while Role Discovery is still in progress
+- `role_alignment_status` remains `unknown` while Role Discovery is still in progress
+- the insights endpoint returns empty `ranked_roles` and `role_candidates` lists until Role Discovery is complete
+- Role Discovery asks eight fixed warm-up items, then picks each next item from the answers so far; it ends after 12 to
+  25 answers, when the three candidates stand clear of the rest or at the cap (ADR-0006). Item order differs between
+  respondents, so never assume a question code or position
 - once role discovery completes the session enters `recommendation_ready`; Skill Assessment is available at any time via its own endpoints
 
 ### SWEBOK role metadata

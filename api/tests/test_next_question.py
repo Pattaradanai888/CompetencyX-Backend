@@ -53,7 +53,7 @@ class RoleDiscoveryNextQuestionTests(AssessmentFlowTestCase):
         session = self._create_session()
         first = self.client.get(self._next_question_url(session['id'])).json()['next_question']
 
-        self.client.post(
+        answer_response = self.client.post(
             reverse('assessment-session-answers', kwargs={'pk': session['id']}),
             {'question_id': first['id'], 'scale_value': 2},
             format='json',
@@ -61,7 +61,7 @@ class RoleDiscoveryNextQuestionTests(AssessmentFlowTestCase):
 
         second = self.client.get(self._next_question_url(session['id'])).json()['next_question']
         self.assertNotEqual(second['id'], first['id'])
-        self.assertEqual(second['code'], 'role-core-02')
+        self.assertEqual(second, answer_response.json()['current_question'])
 
     def test_an_exhausted_role_stage_serves_a_null_question(self):
         session = self._create_session()

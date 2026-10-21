@@ -2,8 +2,8 @@
 
 For every active role this module simulates "noisy personas": respondents
 whose ideal answers are derived from the role's profile, perturbed by a fixed
-noise model. Each sample runs the REAL question-selection flow (core in
-display order, then margin-gated tie-breaks) through ``scoring_service``.
+noise model. Each sample runs the REAL question-selection flow (warm-up, then
+the adaptive pick until the stop rule, ADR-0006) through ``scoring_service``.
 
 This measures self-consistency — whether the question bank plus the derived
 weights can recover the role a persona was generated from — not human
@@ -50,6 +50,15 @@ def compute_content_digest(catalog: CatalogContext) -> str:
         'profiles': {slug: dict(sorted(profile.items())) for slug, profile in sorted(ROLE_PROFILE_WEIGHTS.items())},
         'active_role_slugs': sorted(catalog.active_role_slugs),
         'min_score_margin': scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
+        'flow': {
+            'codes': [question.get('code') for question in catalog.questions],
+            'warmup': list(scoring_service.ROLE_DISCOVERY_WARMUP_CODES),
+            'min_questions': scoring_service.ROLE_DISCOVERY_MIN_QUESTIONS,
+            'max_questions': scoring_service.ROLE_DISCOVERY_MAX_QUESTIONS,
+            'candidate_count': scoring_service.ROLE_CANDIDATE_COUNT,
+            'candidate_stop_margin': scoring_service.ROLE_CANDIDATE_STOP_MARGIN,
+            'pick_window': scoring_service.ROLE_PICK_WINDOW,
+        },
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode('utf-8')).hexdigest()
 
@@ -81,30 +90,23 @@ def run_persona_sample(
     state = _SampleState(
         active_role_slugs=list(catalog.active_role_slugs),
         role_names=catalog.role_names,
-        core_target=catalog.core_target,
+        available_questions=catalog.available_questions,
     )
     unanswered = list(catalog.questions)
     snapshot = state.inference_snapshot()
     answered_questions: list[tuple[dict, int]] = []
-    is_resolved = False
 
-    while True:
-        candidates = scoring_service.select_role_candidates(unanswered, snapshot)
-        if not candidates:
-            break
-        question = candidates[0]
+    while (question := scoring_service.select_next_role_question(unanswered, snapshot)) is not None:
         scale_value = sample_noisy_answer(ideal_scale_value(question, profile), rng, noise_model)
         state.apply_answer(question, scale_value)
         answered_questions.append((question, scale_value))
         unanswered = [candidate for candidate in unanswered if candidate['id'] != question['id']]
         snapshot = state.inference_snapshot()
-        has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
-        is_resolved = scoring_service.is_role_resolution_exhausted_with_viable_winner(
-            snapshot,
-            has_remaining_tie_breaks_for_top_pair=has_remaining,
-        )
-        if is_resolved:
-            break
+    is_resolved = scoring_service.get_role_resolution_status(
+        is_complete=bool(snapshot['is_complete']),
+        best_fit_role_slug=snapshot['top_role_slug'],
+        score_margin=float(snapshot['score_margin']),
+    ) == 'resolved'
 
     ranked = snapshot['ranked_roles']
     predicted = snapshot['top_role_slug']
@@ -114,6 +116,7 @@ def run_persona_sample(
         'predicted_role': predicted,
         'runner_up_role': runner_up,
         'correct': predicted == role_slug,
+        'in_candidates': role_slug in [role['slug'] for role in snapshot['role_candidates']],
         'resolved': is_resolved,
         'score_margin': float(snapshot['score_margin']),
         'confidence': float(snapshot['confidence']),
@@ -141,7 +144,7 @@ def run_persona_suite(
     confusion: Counter = Counter()
     question_discrimination_counts: dict[object, int] = defaultdict(int)
     question_seen_counts: dict[object, int] = defaultdict(int)
-    total = correct = resolved = correct_resolved = 0
+    total = correct = in_candidates = resolved = correct_resolved = 0
     answered_total_sum = tie_break_used = 0
 
     for role_slug in role_slugs:
@@ -150,6 +153,7 @@ def run_persona_suite(
             total += 1
             answered_total_sum += sample['answered_total']
             tie_break_used += bool(sample['answered_tie_break'])
+            in_candidates += sample['in_candidates']
             if sample['correct']:
                 correct += 1
                 per_role_correct[role_slug] += 1
@@ -176,6 +180,7 @@ def run_persona_suite(
         'seed': seed,
         'total_samples': total,
         'top1_accuracy': round(correct / total, 4) if total else 0.0,
+        'top3_accuracy': round(in_candidates / total, 4) if total else 0.0,
         'resolved_rate': round(resolved / total, 4) if total else 0.0,
         'precision_resolved': round(correct_resolved / resolved, 4) if resolved else 0.0,
         'avg_answered_questions': round(answered_total_sum / total, 2) if total else 0.0,
@@ -199,6 +204,7 @@ def build_baseline(summary: dict[str, object], *, content_digest: str) -> dict[s
         'samples_per_role': summary['samples_per_role'],
         'metrics': {
             'top1_accuracy': summary['top1_accuracy'],
+            'top3_accuracy': summary['top3_accuracy'],
             'resolved_rate': summary['resolved_rate'],
             'precision_resolved': summary['precision_resolved'],
         },

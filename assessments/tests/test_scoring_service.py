@@ -56,69 +56,118 @@ def test_compute_role_evidence_snapshot_neutral_answer_is_no_evidence():
     assert evidence.dimension_scores == {}
 
 
-def test_build_role_inference_snapshot_shape():
-    evidence = scoring_service.compute_role_evidence_snapshot([{**SAMPLE_QUESTION, 'scale_value': 2}])
-    snapshot = scoring_service.build_role_inference_snapshot(
+def _snapshot(answered, available=44, answers=None):
+    evidence = scoring_service.compute_role_evidence_snapshot(answers or [{**SAMPLE_QUESTION, 'scale_value': 2}])
+    return scoring_service.build_role_inference_snapshot(
         evidence,
         active_role_slugs=list(ROLE_PROFILE_WEIGHTS),
         role_names={},
-        answered_core=1,
-        core_target=46,
-        answered_tie_break=0,
+        answered_questions=answered,
+        available_questions=available,
     )
+
+
+def _ranked(*scores):
+    return [{'slug': slug, 'fit_score': score} for slug, score in scores]
+
+
+def _question(question_id, code, agree, *, display_order=1):
+    return {
+        'id': question_id,
+        'code': code,
+        'display_order': display_order,
+        'agree_dimension_signals': agree,
+        'disagree_dimension_signals': {'people_product': 0.3},
+    }
+
+
+def test_build_role_inference_snapshot_shape():
+    snapshot = _snapshot(1)
     assert snapshot['top_role_slug'] is not None
-    assert snapshot['answered_core_questions'] == 1
-    assert snapshot['core_question_target'] == 46
+    assert snapshot['answered_questions'] == 1
+    assert snapshot['question_target'] == scoring_service.ROLE_DISCOVERY_MAX_QUESTIONS
+    assert snapshot['is_complete'] is False
     assert isinstance(snapshot['ranked_roles'], list)
     assert len(snapshot['ranked_roles']) == len(ROLE_PROFILE_WEIGHTS)
+    assert snapshot['role_candidates'] == snapshot['ranked_roles'][: scoring_service.ROLE_CANDIDATE_COUNT]
     assert 'fit_share' in snapshot['ranked_roles'][0]
 
 
-def test_select_role_candidates_returns_core_first():
+def test_question_target_is_the_cap_or_the_whole_pool_when_smaller():
+    assert _snapshot(1, available=44)['question_target'] == scoring_service.ROLE_DISCOVERY_MAX_QUESTIONS
+    assert _snapshot(1, available=7)['question_target'] == 7
+
+
+def test_snapshot_is_complete_at_the_cap():
+    snapshot = _snapshot(scoring_service.ROLE_DISCOVERY_MAX_QUESTIONS)
+    assert snapshot['is_complete'] is True
+    assert snapshot['confidence'] == min(1.0, snapshot['score_margin'] / scoring_service.ROLE_CONFIDENCE_FULL_MARGIN)
+
+
+def test_survey_never_stops_before_the_floor():
+    floor = scoring_service.ROLE_DISCOVERY_MIN_QUESTIONS
+    assert not scoring_service.is_role_discovery_complete(answered_questions=floor - 1, question_target=25, candidate_margin=100.0)
+
+
+def test_survey_stops_after_the_floor_once_the_candidates_stand_apart():
+    floor = scoring_service.ROLE_DISCOVERY_MIN_QUESTIONS
+    gap = scoring_service.ROLE_CANDIDATE_STOP_MARGIN
+    assert scoring_service.is_role_discovery_complete(answered_questions=floor, question_target=25, candidate_margin=gap)
+    assert not scoring_service.is_role_discovery_complete(answered_questions=floor, question_target=25, candidate_margin=gap - 0.5)
+
+
+def test_survey_stops_at_the_cap_whatever_the_margin():
+    assert scoring_service.is_role_discovery_complete(answered_questions=25, question_target=25, candidate_margin=0.0)
+
+
+def test_a_pool_smaller_than_the_floor_is_asked_to_the_end():
+    assert not scoring_service.is_role_discovery_complete(answered_questions=4, question_target=5, candidate_margin=100.0)
+    assert scoring_service.is_role_discovery_complete(answered_questions=5, question_target=5, candidate_margin=0.0)
+
+
+def test_warm_up_items_come_first_in_their_fixed_order():
+    first, second = scoring_service.ROLE_DISCOVERY_WARMUP_CODES[:2]
     questions = [
-        {'id': 10, 'item_group': 'tie_break', 'display_order': 1, 'discriminates_between': ['a', 'b']},
-        {'id': 5, 'item_group': 'core', 'display_order': 3, 'discriminates_between': []},
-        {'id': 6, 'item_group': 'core', 'display_order': 1, 'discriminates_between': []},
+        _question(1, 'role-rd-other', {'web_frontend': 1.0}, display_order=1),
+        _question(2, second, {'android_platform': 1.0}, display_order=2),
+        _question(3, first, {'web_frontend': 1.0}, display_order=3),
     ]
-    selected = scoring_service.select_role_candidates(questions, snapshot=None)
-    assert [q['id'] for q in selected] == [6, 5]
+    snapshot = {'is_complete': False, 'ranked_roles': _ranked(('frontend-developer', 1.0), ('backend-developer', 1.0))}
+    assert scoring_service.select_next_role_question(questions, snapshot)['code'] == first
+    assert scoring_service.select_next_role_question([q for q in questions if q['code'] != first], snapshot)['code'] == second
 
 
-def test_select_role_candidates_tie_break_filters_top_pair():
-    snapshot = {
-        'ranked_roles': [{'slug': 'a'}, {'slug': 'b'}],
-        'score_margin': 0.01,
-    }
+def test_after_warm_up_the_item_separating_close_leaders_is_asked():
     questions = [
-        {'id': 1, 'item_group': 'tie_break', 'display_order': 2, 'discriminates_between': ['a', 'b']},
-        {'id': 2, 'item_group': 'tie_break', 'display_order': 1, 'discriminates_between': ['a', 'c']},
-        {'id': 3, 'item_group': 'tie_break', 'display_order': 3, 'discriminates_between': ['a', 'b']},
+        _question(1, 'role-rd-shared', {'construction': 1.0}, display_order=1),
+        _question(2, 'role-rd-splits', {'web_frontend': 1.0}, display_order=2),
     ]
-    selected = scoring_service.select_role_candidates(questions, snapshot=snapshot)
-    assert [q['id'] for q in selected] == [1, 3]
-
-
-def test_select_role_candidates_empty_when_margin_already_clear():
     snapshot = {
-        'ranked_roles': [{'slug': 'a'}, {'slug': 'b'}],
-        'score_margin': scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN + 0.01,
+        'is_complete': False,
+        'ranked_roles': _ranked(('frontend-developer', 3.0), ('backend-developer', 3.0), ('full-stack-developer', 2.0), ('qa-engineer', 0.0)),
     }
-    questions = [{'id': 1, 'item_group': 'tie_break', 'display_order': 1, 'discriminates_between': ['a', 'b']}]
-    assert scoring_service.select_role_candidates(questions, snapshot=snapshot) == []
+    assert scoring_service.select_next_role_question(questions, snapshot)['code'] == 'role-rd-splits'
 
 
-def test_is_role_resolution_gate_requires_all_conditions():
-    base_snapshot = {
-        'top_role_slug': 'a',
-        'answered_core_questions': 46,
-        'core_question_target': 46,
-        'score_margin': scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN,
-    }
-    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=False) is True
-    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(base_snapshot, has_remaining_tie_breaks_for_top_pair=True) is False
+def test_equally_informative_items_go_in_display_order():
+    questions = [
+        _question(1, 'role-rd-later', {'web_frontend': 1.0}, display_order=9),
+        _question(2, 'role-rd-earlier', {'web_frontend': 1.0}, display_order=4),
+    ]
+    snapshot = {'is_complete': False, 'ranked_roles': _ranked(('frontend-developer', 1.0), ('backend-developer', 1.0))}
+    assert scoring_service.select_next_role_question(questions, snapshot)['code'] == 'role-rd-earlier'
 
-    low_margin = {**base_snapshot, 'score_margin': 0.01}
-    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(low_margin, has_remaining_tie_breaks_for_top_pair=False) is False
 
-    no_top_role = {**base_snapshot, 'top_role_slug': None}
-    assert scoring_service.is_role_resolution_exhausted_with_viable_winner(no_top_role, has_remaining_tie_breaks_for_top_pair=False) is False
+def test_no_next_item_once_complete_or_the_pool_is_empty():
+    questions = [_question(1, 'role-rd-any', {'web_frontend': 1.0})]
+    assert scoring_service.select_next_role_question(questions, {'is_complete': True, 'ranked_roles': []}) is None
+    assert scoring_service.select_next_role_question([], {'is_complete': False, 'ranked_roles': []}) is None
+
+
+def test_role_resolution_status():
+    margin = scoring_service.ROLE_DISCOVERY_MIN_SCORE_MARGIN
+    status = scoring_service.get_role_resolution_status
+    assert status(is_complete=False, best_fit_role_slug='a', score_margin=margin) == 'in_progress'
+    assert status(is_complete=True, best_fit_role_slug=None, score_margin=margin) == 'unknown'
+    assert status(is_complete=True, best_fit_role_slug='a', score_margin=margin) == 'resolved'
+    assert status(is_complete=True, best_fit_role_slug='a', score_margin=margin - 0.5) == 'low_confidence'

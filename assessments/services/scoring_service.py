@@ -7,7 +7,7 @@ signal side and the role profile) or against it? The role receives a vote of
 ``+strength`` or ``-strength`` (strength is 0.5 for a mild answer, 1.0 for a
 strong one). The best-fit role is the one with the most votes, and every
 threshold below is expressed in vote units, so "the winner must lead the
-runner-up by at least 2.5 votes" means literally that.
+runner-up by at least 3.5 votes" means literally that.
 
 This replaced an IDF + log-sigmoid + tuned-scale pipeline in 2026-07: ablation
 with the noisy-persona harness showed plain sign votes were both simpler and
@@ -16,22 +16,39 @@ confused outcomes (median margin 5.0 when right vs 0.5 when wrong), which the
 old score margins never did. Recalibrate with `manage.py tune_scoring`.
 """
 
+import math
 from collections import defaultdict
 from dataclasses import dataclass
+from functools import lru_cache
 
 from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_DIMENSION_LABELS_TH, ROLE_PROFILE_WEIGHTS
 
 
 # Minimum vote lead over the runner-up to declare the role resolved.
-# Calibrated on the noisy-persona harness: at 2.5 votes, 99% of resolved
-# sessions name the persona's true role while ~2/3 of sessions resolve at all
-# (the rest finish as low_confidence, which is honest for confusable roles).
-ROLE_DISCOVERY_MIN_SCORE_MARGIN = 2.5
+# Calibrated on the realistic-respondent harness: at 3.5 votes, fewer than 1%
+# of sessions resolve to a role outside the respondent's top two while ~8% of
+# sessions resolve at all (the rest finish as low_confidence, which is honest
+# for most respondents).
+ROLE_DISCOVERY_MIN_SCORE_MARGIN = 3.5
 
 # Vote lead treated as full confidence (median winning margin on the harness).
 ROLE_CONFIDENCE_FULL_MARGIN = 5.0
 
-ROLE_DISCOVERY_TOP_PAIR_COUNT = 2
+ROLE_DISCOVERY_WARMUP_CODES = (
+    'role-rd-web',
+    'role-rd-mobile',
+    'role-rd-games',
+    'role-rd-ai',
+    'role-rd-numbers',
+    'role-rd-security',
+    'role-rd-writing',
+    'role-rd-product',
+)
+ROLE_DISCOVERY_MIN_QUESTIONS = 12
+ROLE_DISCOVERY_MAX_QUESTIONS = 25
+ROLE_CANDIDATE_COUNT = 3
+ROLE_CANDIDATE_STOP_MARGIN = 4.0
+ROLE_PICK_WINDOW = 6
 
 
 @dataclass(frozen=True)
@@ -165,9 +182,8 @@ def build_role_inference_snapshot(  # noqa: PLR0913
     active_role_slugs: list[str],
     role_names: dict[str, str] | None = None,
     role_names_th: dict[str, str] | None = None,
-    answered_core: int,
-    core_target: int,
-    answered_tie_break: int = 0,
+    answered_questions: int,
+    available_questions: int,
 ) -> dict[str, object]:
     role_names = {} if role_names is None else role_names
     role_names_th = {} if role_names_th is None else role_names_th
@@ -180,7 +196,18 @@ def build_role_inference_snapshot(  # noqa: PLR0913
     winner_share = role_shares.get(top_slug, 0.0) if top_slug else 0.0
     score_margin = top_score - runner_up_score
     has_evidence = bool(evidence.role_scores)
-    progress = min(1.0, answered_core / max(core_target, 1))
+    question_target = min(ROLE_DISCOVERY_MAX_QUESTIONS, available_questions)
+    candidate_margin = (
+        sorted_scores[ROLE_CANDIDATE_COUNT - 1][1] - sorted_scores[ROLE_CANDIDATE_COUNT][1]
+        if len(sorted_scores) > ROLE_CANDIDATE_COUNT
+        else float('inf')
+    )
+    is_complete = is_role_discovery_complete(
+        answered_questions=answered_questions,
+        question_target=question_target,
+        candidate_margin=candidate_margin,
+    )
+    progress = 1.0 if is_complete else min(1.0, answered_questions / max(question_target, 1))
     margin_confidence = min(1.0, max(score_margin, 0.0) / ROLE_CONFIDENCE_FULL_MARGIN)
     confidence = margin_confidence * progress if has_evidence else 0.0
     total_dimension_score = sum(max(score, 0.0) for score in evidence.dimension_scores.values())
@@ -220,70 +247,73 @@ def build_role_inference_snapshot(  # noqa: PLR0913
         'margin_share': winner_share - role_shares.get(runner_up_slug, 0.0),
         'score_margin': score_margin,
         'confidence': confidence,
-        'core_question_target': core_target,
+        'candidate_margin': candidate_margin,
+        'question_target': question_target,
+        'answered_questions': answered_questions,
+        'is_complete': is_complete,
         'dimension_scores': evidence.dimension_scores,
         'observed_pillars': sum(1 for score in evidence.dimension_scores.values() if score > 0),
-        'answered_core_questions': answered_core,
         'pillar_profile': pillar_profile,
         'ranked_roles': ranked_roles,
+        'role_candidates': ranked_roles[:ROLE_CANDIDATE_COUNT],
     }
 
 
-def select_role_candidates(
-    unanswered_questions: list[dict],
-    snapshot: dict[str, object] | None = None,
-    *,
-    top_pair_count: int | None = None,
-) -> list[dict]:
-    top_pair_count = ROLE_DISCOVERY_TOP_PAIR_COUNT if top_pair_count is None else top_pair_count
-
-    core_candidates = [question for question in unanswered_questions if question.get('item_group') == 'core']
-    if core_candidates:
-        return sorted(core_candidates, key=lambda question: (question.get('display_order', 0), question.get('id', 0)))
-
-    if snapshot is None:
-        return []
-    ranked_roles = snapshot.get('ranked_roles') or []
-    if len(ranked_roles) < top_pair_count or float(snapshot.get('score_margin', 0.0)) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN:
-        return []
-    top_pair = {str(ranked_roles[0]['slug']), str(ranked_roles[1]['slug'])}
-
-    tie_break_candidates = [
-        question
-        for question in unanswered_questions
-        if question.get('item_group') == 'tie_break'
-        and top_pair.issubset(set(question.get('discriminates_between') or []))
-    ]
-    return sorted(tie_break_candidates, key=lambda question: (question.get('display_order', 0), question.get('id', 0)))
-
-
-def is_role_resolution_exhausted_with_viable_winner(
-    snapshot: dict[str, object],
-    *,
-    has_remaining_tie_breaks_for_top_pair: bool,
-) -> bool:
-    if snapshot['top_role_slug'] is None:
+def is_role_discovery_complete(*, answered_questions: int, question_target: int, candidate_margin: float) -> bool:
+    if question_target <= 0:
         return False
-    if int(snapshot['answered_core_questions']) < int(snapshot['core_question_target']):
-        return False
-    if has_remaining_tie_breaks_for_top_pair:
-        return False
-    return float(snapshot['score_margin']) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN
+    if answered_questions >= question_target:
+        return True
+    floor = min(ROLE_DISCOVERY_MIN_QUESTIONS, question_target)
+    return answered_questions >= floor and candidate_margin >= ROLE_CANDIDATE_STOP_MARGIN
 
 
-def get_role_resolution_status(
-    *,
-    is_core_complete: bool,
-    best_fit_role_slug: str | None,
-    is_resolved: bool,
-    has_remaining_role_questions: bool,
-) -> str:
-    if not is_core_complete:
+def _pick_weights(ranked_roles: list[dict]) -> list[tuple[str, str, float]]:
+    window = ranked_roles[:ROLE_PICK_WINDOW]
+    pairs = []
+    for i, first in enumerate(window):
+        for j in range(i + 1, len(window)):
+            second = window[j]
+            if i < ROLE_CANDIDATE_COUNT <= j:
+                level = 1.0
+            elif j < ROLE_CANDIDATE_COUNT:
+                level = 0.5
+            else:
+                continue
+            closeness = math.exp(-abs(float(first['fit_score']) - float(second['fit_score'])) / 2.0)
+            pairs.append((str(first['slug']), str(second['slug']), level * closeness))
+    return pairs
+
+
+@lru_cache(maxsize=1024)
+def _strong_agree_votes(agree: tuple, disagree: tuple) -> dict[str, float]:
+    return _score_roles_for_answer({'agree_dimension_signals': dict(agree), 'disagree_dimension_signals': dict(disagree)}, 2)
+
+
+def select_next_role_question(unanswered_questions: list[dict], snapshot: dict[str, object]) -> dict | None:
+    if not unanswered_questions or snapshot.get('is_complete'):
+        return None
+    by_code = {question.get('code'): question for question in unanswered_questions}
+    for code in ROLE_DISCOVERY_WARMUP_CODES:
+        if code in by_code:
+            return by_code[code]
+    pairs = _pick_weights(snapshot.get('ranked_roles') or [])
+
+    def separation(question: dict) -> float:
+        votes = _strong_agree_votes(
+            tuple(sorted((question.get('agree_dimension_signals') or {}).items())),
+            tuple(sorted((question.get('disagree_dimension_signals') or {}).items())),
+        )
+        return round(sum(weight * abs(votes.get(a, 0.0) - votes.get(b, 0.0)) for a, b, weight in pairs), 9)
+
+    return min(unanswered_questions, key=lambda question: (-separation(question), question.get('display_order', 0), question.get('id', 0)))
+
+
+def get_role_resolution_status(*, is_complete: bool, best_fit_role_slug: str | None, score_margin: float) -> str:
+    if not is_complete:
         return 'in_progress'
     if best_fit_role_slug is None:
         return 'unknown'
-    if is_resolved:
+    if score_margin >= ROLE_DISCOVERY_MIN_SCORE_MARGIN:
         return 'resolved'
-    if has_remaining_role_questions:
-        return 'in_progress'
     return 'low_confidence'
