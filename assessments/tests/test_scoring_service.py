@@ -56,6 +56,23 @@ def test_compute_role_evidence_snapshot_neutral_answer_is_no_evidence():
     assert evidence.dimension_scores == {}
 
 
+SECURITY_ITEM = {'agree_dimension_signals': {'security': 1.0}, 'disagree_dimension_signals': {}}
+
+
+def test_an_answer_gives_a_full_vote_only_to_the_roles_it_is_most_about():
+    votes = scoring_service._score_roles_for_answer(SECURITY_ITEM, 2)
+    assert votes['cyber-security-engineer-analyst'] == 1.0
+    assert 0.5 < votes['postgresql-developer-dba'] < 1.0
+    assert votes['frontend-developer'] == 0.0
+
+
+def test_a_mild_answer_moves_every_role_half_as_far_as_a_strong_one():
+    strong = scoring_service._score_roles_for_answer(SECURITY_ITEM, -2)
+    mild = scoring_service._score_roles_for_answer(SECURITY_ITEM, -1)
+    assert strong['cyber-security-engineer-analyst'] == -1.0
+    assert all(abs(mild[slug] - strong[slug] / 2) < 1e-12 for slug in strong)
+
+
 def _snapshot(answered, available=44, answers=None):
     evidence = scoring_service.compute_role_evidence_snapshot(answers or [{**SAMPLE_QUESTION, 'scale_value': 2}])
     return scoring_service.build_role_inference_snapshot(

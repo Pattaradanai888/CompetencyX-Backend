@@ -40,6 +40,7 @@ PARAMS = {
     'fatigue_start': 20,
     'fatigue_noise_per_item': 0.03,
     'fatigue_mid_per_item': 0.01,
+    'desirable_codes': 'default',
 }
 
 SCENARIOS = {
@@ -51,11 +52,20 @@ SCENARIOS = {
     'acquiescent': {'p_ars': 0.5, 'ars_shift': (0.3, 0.7)},
     'desirability': {'desirability_shift': 0.8},
     'jargon': {'familiarity_bias': 2.0},
+    'best_practice': {'desirability_shift': 0.8, 'desirable_codes': 'best_practice'},
+    'acquiescent_heavy': {'p_ars': 0.6, 'ars_shift': (0.4, 0.9)},
 }
 
-DESIRABLE_CODES = frozenset({
-    'role-rd-explaining', 'role-rd-leading', 'role-rd-process', 'role-rd-requirements', 'role-rd-coordination', 'role-rd-evidence',
-})
+DESIRABLE_CODES = {
+    'default': frozenset({
+        'role-rd-explaining', 'role-rd-leading', 'role-rd-process', 'role-rd-requirements', 'role-rd-coordination', 'role-rd-evidence',
+    }),
+    'best_practice': frozenset({
+        'role-rd-automation', 'role-rd-evidence', 'role-rd-data-store', 'role-rd-testing', 'role-rd-requirements', 'role-rd-cost-value',
+        'role-rd-architecture', 'role-rd-tie-secure-pipeline', 'role-rd-tie-model-in-production', 'role-rd-tie-explore-data',
+        'role-rd-explaining', 'role-rd-ai', 'role-rd-efficiency', 'role-rd-process',
+    }),
+}
 JARGON_TH = ('เซิร์ฟเวอร์', 'ฐานข้อมูล', 'โมเดล', 'เครือข่าย', 'บล็อกเชน', 'ช่องโหว่', 'อัตโนมัติ', 'โค้ด', 'เบราว์เซอร์', 'ทรัพยากร')
 
 ROLES = sorted(ROLE_PROFILE_WEIGHTS)
@@ -74,7 +84,7 @@ NEIGHBORS = {
 }
 
 
-def prepare_items(questions: list[dict]) -> dict[object, dict]:
+def prepare_items(questions: list[dict], desirable_codes: frozenset[str] = DESIRABLE_CODES['default']) -> dict[object, dict]:
     raw_difficulty = {}
     items = {}
     for question in questions:
@@ -86,7 +96,7 @@ def prepare_items(questions: list[dict]) -> dict[object, dict]:
         items[question['id']] = {
             'mu': statistics.mean(scores),
             'sd': statistics.pstdev(scores) or 1.0,
-            'desirable': question.get('code') in DESIRABLE_CODES,
+            'desirable': question.get('code') in desirable_codes,
         }
     low, high = min(raw_difficulty.values(), default=0.0), max(raw_difficulty.values(), default=0.0)
     for question_id, value in raw_difficulty.items():
@@ -214,9 +224,9 @@ def run_session(persona: dict, catalog: CatalogContext, items: dict, rng: random
 
 def _run_scenario(args: tuple) -> tuple[str, dict]:
     catalog, name, samples, seed = args
-    items = prepare_items(catalog.questions)
     params = dict(PARAMS)
     params.update(SCENARIOS[name])
+    items = prepare_items(catalog.questions, DESIRABLE_CODES[params['desirable_codes']])
     rng = random.Random(seed)
     top1 = top3 = resolved = wrong_confident = 0
     answered, retest = [], []

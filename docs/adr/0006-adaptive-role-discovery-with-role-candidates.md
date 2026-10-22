@@ -1,6 +1,6 @@
 # Role Discovery is adaptive, asks at most 25 short items, and shows three Role Candidates
 
-**Status:** Accepted (2026-10-21)
+**Status:** Accepted (2026-10-21); the scoring rule and the 3.5-vote resolve margin are amended by ADR-0007
 
 ## Context
 

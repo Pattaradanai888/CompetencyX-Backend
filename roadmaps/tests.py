@@ -379,7 +379,7 @@ class SyncContentTests(TestCase):
         assert role_questions.count() == 44
         thai_translated = [q for q in role_questions if q.translations.get('th', {}).get('prompt')]
         assert len(thai_translated) == 44
-        assert role_questions.get(code='role-rd-requirements').translations['th']['prompt'] == 'ชอบถามให้ชัดก่อนว่าคนที่จะใช้งานต้องการอะไรจริง ๆ'
+        assert role_questions.get(code='role-rd-requirements').translations['th']['prompt'] == 'ชอบนั่งคุยกับคนที่จะใช้งานนาน ๆ เพื่อถามว่าเขาต้องการอะไร'
         assert Question.objects.filter(stage='skill').count() == 0
 
     def test_question_catalog_rejects_unsupported_translation_language(self):

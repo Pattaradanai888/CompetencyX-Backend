@@ -148,7 +148,7 @@ Response fields:
 
 `role_candidates` is the first three `ranked_roles`, with the same fields: the Role Candidates to show the respondent.
 Show all three. Most sessions finish `low_confidence`, and three plausible directions are the honest result for them;
-`resolved` means the first candidate leads the second by at least 3.5 votes.
+`resolved` means the first candidate leads the second by at least 2.5 votes.
 
 ### Final results payload
 `GET /api/v1/assessment-sessions/{id}/results/` returns the role analysis:

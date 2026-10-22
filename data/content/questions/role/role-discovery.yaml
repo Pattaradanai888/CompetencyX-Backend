@@ -13,10 +13,10 @@ role_questions:
 - code: role-rd-requirements
   item_group: core
   question_type: likert_5
-  prompt: I like to find out first what the people who will use something really need.
+  prompt: I like sitting down with the people who will use something and talking at length about what they need.
   translations:
     th:
-      prompt: ชอบถามให้ชัดก่อนว่าคนที่จะใช้งานต้องการอะไรจริง ๆ
+      prompt: ชอบนั่งคุยกับคนที่จะใช้งานนาน ๆ เพื่อถามว่าเขาต้องการอะไร
   construct: requirements
   agree_signals:
     requirements: primary
@@ -29,7 +29,7 @@ role_questions:
       ka: KA1
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 1
 - code: role-rd-architecture
   item_group: core
@@ -78,10 +78,10 @@ role_questions:
 - code: role-rd-construction
   item_group: core
   question_type: likert_5
-  prompt: I like writing code that makes an idea actually work.
+  prompt: I would like most of my working time to be spent writing code.
   translations:
     th:
-      prompt: ชอบเขียนโค้ดให้สิ่งที่คิดไว้ใช้งานได้จริง
+      prompt: อยากให้เวลาส่วนใหญ่ของงานคือการนั่งเขียนโค้ด
   construct: construction
   agree_signals:
     construction: primary
@@ -94,15 +94,15 @@ role_questions:
       ka: KA4
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 4
 - code: role-rd-testing
   item_group: core
   question_type: likert_5
-  prompt: I like finding where a program might break before anyone else does.
+  prompt: I like poking at an app in odd ways to find where it breaks.
   translations:
     th:
-      prompt: ชอบลองหาว่าโปรแกรมจะพังตรงไหน ก่อนที่คนอื่นจะเจอ
+      prompt: ชอบลองกดแอปแบบแปลก ๆ เพื่อหาว่าตรงไหนพัง
   construct: testing
   agree_signals:
     testing: primary
@@ -116,15 +116,15 @@ role_questions:
       file: qa-engineer.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 5
 - code: role-rd-operations
   item_group: core
   question_type: likert_5
-  prompt: I like keeping a website or app that people use running without hiccups.
+  prompt: I like watching that a website or app is still working and fixing it fast when something goes down.
   translations:
     th:
-      prompt: ชอบดูแลให้เว็บหรือแอปที่คนใช้อยู่ทำงานได้ไม่สะดุด
+      prompt: ชอบงานเฝ้าดูว่าเว็บหรือแอปยังทำงานปกติ แล้วรีบแก้เมื่อมีอะไรล่ม
   construct: operations
   agree_signals:
     operations: primary
@@ -139,36 +139,36 @@ role_questions:
       file: devops-engineer.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 6
 - code: role-rd-maintenance
   item_group: core
   question_type: likert_5
-  prompt: I like reorganising old code so it is easier to read.
+  prompt: I like picking apart old work someone else made to see how it works before changing it.
   translations:
     th:
-      prompt: ชอบเอาโค้ดเก่ามาจัดใหม่ให้อ่านง่ายขึ้น
+      prompt: ชอบแกะงานเก่าที่คนอื่นทำไว้ ว่ามันทำงานยังไง ก่อนจะแก้ต่อ
   construct: maintenance
   agree_signals:
     maintenance: primary
     quality: secondary
   disagree_signals:
     construction: contrast
-  rationale: Improving existing work is KA7 maintenance, and making code easier to read serves KA12 quality; disagreeing leans toward building new things.
+  rationale: Working out how existing work functions before changing it is KA7 maintenance (program comprehension), with KA12 quality secondary; disagreeing leans toward building new things.
   sources:
   - swebok:
       ka: KA7
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 7
 - code: role-rd-automation
   item_group: core
   question_type: likert_5
-  prompt: When a task is repetitive, I want to find a way to make it run by itself.
+  prompt: I like making a program install and configure itself with a single command.
   translations:
     th:
-      prompt: ถ้างานไหนต้องทำซ้ำ ๆ จะอยากหาวิธีให้มันทำเองอัตโนมัติ
+      prompt: ชอบทำให้การติดตั้งและตั้งค่าโปรแกรมเสร็จได้ในคำสั่งเดียว
   construct: configuration_management
   agree_signals:
     configuration_management: primary
@@ -182,7 +182,7 @@ role_questions:
       file: devops-engineer.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 8
 - code: role-rd-coordination
   item_group: core
@@ -210,10 +210,10 @@ role_questions:
 - code: role-rd-process
   item_group: core
   question_type: likert_5
-  prompt: I like coming up with new ways of working that make the whole group run smoother.
+  prompt: I like setting how a group works, such as who checks whose work before it is handed in.
   translations:
     th:
-      prompt: ชอบคิดหาขั้นตอนทำงานใหม่ ๆ ที่ช่วยให้ทั้งกลุ่มทำงานลื่นขึ้น
+      prompt: ชอบตั้งกติกาการทำงานของกลุ่ม เช่น ใครตรวจงานใครก่อนส่ง
   construct: process
   agree_signals:
     process: primary
@@ -226,15 +226,15 @@ role_questions:
       ka: KA10
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 10
 - code: role-rd-evidence
   item_group: core
   question_type: likert_5
-  prompt: I like trying two approaches and seeing which works better.
+  prompt: I like running the same experiment many times and comparing the numbers until I know which way is better.
   translations:
     th:
-      prompt: ชอบลองสองวิธีแล้วดูว่าวิธีไหนได้ผลดีกว่า
+      prompt: ชอบทดลองซ้ำหลายรอบ จดตัวเลขเทียบกัน จนรู้ว่าแบบไหนดีกว่า
   construct: models_methods
   agree_signals:
     models_methods: primary
@@ -250,22 +250,22 @@ role_questions:
       file: ai-data-scientist.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 11
 - code: role-rd-security
   item_group: core
   question_type: likert_5
-  prompt: I am curious how hackers break into systems.
+  prompt: If I could pick a project topic, I would pick protecting systems from hackers.
   translations:
     th:
-      prompt: อยากรู้ว่าแฮกเกอร์เจาะระบบกันได้อย่างไร
+      prompt: ถ้าได้เลือกหัวข้อโปรเจกต์ อยากทำเรื่องการป้องกันระบบจากแฮกเกอร์
   construct: security
   agree_signals:
     security: primary
     operations_security: secondary
   disagree_signals:
     design: contrast
-  rationale: Thinking like an attacker to defend a system is the KA13 security activity.
+  rationale: Choosing to work on defending systems from attackers is the KA13 security domain.
   sources:
   - swebok:
       ka: KA13
@@ -273,7 +273,7 @@ role_questions:
       file: cyber-security.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 12
 - code: role-rd-explaining
   item_group: core
@@ -301,10 +301,10 @@ role_questions:
 - code: role-rd-cost-value
   item_group: core
   question_type: likert_5
-  prompt: I like thinking about which ideas are worth the effort.
+  prompt: I like being the one who weighs budget and time to decide which projects are worth doing.
   translations:
     th:
-      prompt: ชอบคิดว่าไอเดียไหนคุ้มกับการลงแรงทำ
+      prompt: ชอบเป็นคนคิดเรื่องงบและเวลา ว่าโปรเจกต์ไหนคุ้มที่จะทำ
   construct: economics
   agree_signals:
     economics: primary
@@ -319,7 +319,7 @@ role_questions:
       file: product-manager.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 14
 - code: role-rd-efficiency
   item_group: core
@@ -488,10 +488,10 @@ role_questions:
 - code: role-rd-reports
   item_group: core
   question_type: likert_5
-  prompt: I like making charts that help other people decide.
+  prompt: I like trying several kinds of chart to find the one that tells the data most clearly.
   translations:
     th:
-      prompt: ชอบทำกราฟที่ช่วยให้คนอื่นตัดสินใจได้ง่ายขึ้น
+      prompt: ชอบลองทำกราฟหลายแบบ เพื่อเลือกแบบที่เล่าข้อมูลได้ชัดที่สุด
   construct: business_intelligence
   agree_signals:
     business_intelligence: primary
@@ -506,15 +506,15 @@ role_questions:
       ka: KA15
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 22
 - code: role-rd-data-store
   item_group: core
   question_type: likert_5
-  prompt: I like organising large amounts of data so it is easy to find.
+  prompt: I like working out how data should be laid out in tables so it can be searched quickly.
   translations:
     th:
-      prompt: ชอบจัดข้อมูลจำนวนมากให้เป็นระเบียบ จะได้ค้นหาได้ง่าย
+      prompt: ชอบนั่งออกแบบว่าจะเก็บข้อมูลเป็นตารางแบบไหน ให้ค้นได้เร็ว
   construct: database_postgresql
   agree_signals:
     database_postgresql: primary
@@ -529,7 +529,7 @@ role_questions:
       ka: KA6
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 23
 - code: role-rd-blockchain
   item_group: core
@@ -694,10 +694,10 @@ role_questions:
 - code: role-rd-infrastructure
   item_group: core
   question_type: likert_5
-  prompt: I am curious how data travels across the internet from one machine to another.
+  prompt: I would like to try setting up a network so several computers can send data to each other.
   translations:
     th:
-      prompt: สนใจว่าข้อมูลเดินทางผ่านอินเทอร์เน็ตจากเครื่องหนึ่งไปอีกเครื่องได้อย่างไร
+      prompt: อยากลองตั้งเครือข่ายให้คอมหลายเครื่องส่งข้อมูลถึงกันได้
   construct: operations_security
   agree_signals:
     operations_security: primary
@@ -711,15 +711,15 @@ role_questions:
       ka: KA6
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 31
 - code: role-rd-tie-screen-vs-server
   item_group: tie_break
   question_type: likert_5
-  prompt: I like work where I see the result on screen straight away.
+  prompt: I like adjusting colours, fonts and button positions on a screen and seeing the result straight away.
   translations:
     th:
-      prompt: ชอบงานที่เห็นผลบนหน้าจอได้ทันที
+      prompt: ชอบปรับสี ตัวอักษร และตำแหน่งปุ่มบนหน้าจอ แล้วดูผลทันที
   construct: web_frontend
   agree_signals:
     web_frontend: primary
@@ -737,7 +737,7 @@ role_questions:
       file: backend.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 101
   discriminates_between:
   - frontend-developer
@@ -798,10 +798,10 @@ role_questions:
 - code: role-rd-tie-secure-pipeline
   item_group: tie_break
   question_type: likert_5
-  prompt: I would like a security check every time before an app is released to people.
+  prompt: I would like to be the one who sets up automatic security checks that run before every app release.
   translations:
     th:
-      prompt: อยากให้มีการตรวจความปลอดภัยทุกครั้งก่อนปล่อยแอปให้คนใช้
+      prompt: อยากเป็นคนตั้งระบบตรวจความปลอดภัยอัตโนมัติ ก่อนเปิดแอปให้คนใช้ทุกครั้ง
   construct: security
   agree_signals:
     security: primary
@@ -816,7 +816,7 @@ role_questions:
       file: devops-engineer.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 104
   discriminates_between:
   - devsecops-engineer
@@ -902,10 +902,10 @@ role_questions:
 - code: role-rd-tie-train-own-model
   item_group: tie_break
   question_type: likert_5
-  prompt: I would like to try training an AI model myself from scratch.
+  prompt: I would like to try training an AI on data myself.
   translations:
     th:
-      prompt: อยากลองฝึกโมเดล AI ขึ้นมาเองตั้งแต่ต้น
+      prompt: อยากลองนำข้อมูลมาฝึก AI ให้เรียนรู้ด้วยตัวเอง
   construct: data_ai
   agree_signals:
     data_ai: primary
@@ -920,7 +920,7 @@ role_questions:
       file: ai-engineer.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 108
   discriminates_between:
   - machine-learning-engineer
@@ -929,10 +929,10 @@ role_questions:
 - code: role-rd-tie-business-questions
   item_group: tie_break
   question_type: likert_5
-  prompt: I would like to use data to answer what a business should do next.
+  prompt: I like looking at a shop's sales figures and suggesting what it should change.
   translations:
     th:
-      prompt: อยากใช้ข้อมูลช่วยตอบว่าธุรกิจควรทำอะไรต่อ
+      prompt: ชอบดูตัวเลขยอดขายของร้าน แล้วเสนอว่าควรปรับอะไร
   construct: business_intelligence
   agree_signals:
     business_intelligence: primary
@@ -947,7 +947,7 @@ role_questions:
       file: ai-data-scientist.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 109
   discriminates_between:
   - data-analyst
@@ -1032,10 +1032,10 @@ role_questions:
 - code: role-rd-tie-predict
   item_group: tie_break
   question_type: likert_5
-  prompt: I would like to build models that predict what will happen next.
+  prompt: I would like to build a program that learns from past data and guesses the next result by itself.
   translations:
     th:
-      prompt: อยากสร้างโมเดลที่ทำนายได้ว่าจะเกิดอะไรขึ้นต่อไป
+      prompt: อยากสร้างโปรแกรมที่เรียนจากข้อมูลเก่า แล้วทายผลครั้งต่อไปได้เอง
   construct: models_methods
   agree_signals:
     models_methods: primary
@@ -1051,7 +1051,7 @@ role_questions:
       file: data-analyst.json
   review:
     status: draft
-    date: '2026-10-21'
+    date: '2026-10-22'
   display_order: 113
   discriminates_between:
   - ai-data-scientist

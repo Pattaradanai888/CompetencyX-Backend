@@ -2,9 +2,9 @@
 
 Ticket 004: Skill Assessment already has an explicit next-question endpoint, so
 Role Discovery burying ``current_question`` inside the session payload made the
-two surveys different shapes for the same idea. Selection is a pure function --
-the first eligible unanswered question by ``display_order`` -- so the endpoint is
-a safe GET, and these tests hold that it stays one.
+two surveys different shapes for the same idea. Selection is a pure function of
+the answers so far (the adaptive pick of ADR-0006), so the endpoint is a safe
+GET, and these tests hold that it stays one.
 """
 
 import json
@@ -15,6 +15,8 @@ from django.urls import reverse
 from rest_framework import status
 
 from assessments.models import AssessmentSession
+from assessments.services.role_inference_service import get_next_role_question
+from roadmaps.models import Question
 
 from .base import AssessmentFlowTestCase
 
@@ -39,7 +41,7 @@ class RoleDiscoveryNextQuestionTests(AssessmentFlowTestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         payload = response.json()
         self.assertEqual(payload['next_question'], session['current_question'])
-        self.assertEqual(payload['next_question']['code'], 'role-core-01')
+        self.assertEqual(payload['next_question']['code'], get_next_role_question(AssessmentSession.objects.get(pk=session['id'])).code)
         self.assertEqual([choice['value'] for choice in payload['next_question']['response_scale']], [2, 1, 0, -1, -2])
 
     def test_the_question_follows_the_session_language(self):
@@ -47,7 +49,9 @@ class RoleDiscoveryNextQuestionTests(AssessmentFlowTestCase):
 
         payload = self.client.get(self._next_question_url(session['id'])).json()
 
-        self.assertEqual(payload['next_question']['prompt'], 'คำถามบทบาท 1')
+        question = Question.objects.get(pk=payload['next_question']['id'])
+        self.assertEqual(payload['next_question']['prompt'], question.translations['th']['prompt'])
+        self.assertNotEqual(payload['next_question']['prompt'], question.prompt)
 
     def test_the_question_advances_as_answers_are_submitted(self):
         session = self._create_session()
@@ -104,7 +108,7 @@ class RoleDiscoveryNextQuestionTests(AssessmentFlowTestCase):
         detail = self.client.get(reverse('assessment-session-detail', kwargs={'pk': session['id']})).json()
 
         self.assertIn('current_question', detail)
-        self.assertEqual(detail['current_question']['code'], 'role-core-01')
+        self.assertEqual(detail['current_question']['code'], get_next_role_question(AssessmentSession.objects.get(pk=session['id'])).code)
 
     def test_the_endpoint_is_documented_in_the_openapi_schema(self):
         schema_payload = json.loads(self.client.get(reverse('api-schema'), HTTP_ACCEPT='application/json').content)

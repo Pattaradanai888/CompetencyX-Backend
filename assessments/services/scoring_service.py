@@ -1,19 +1,24 @@
 """Pure-Python role-discovery scoring — single source of truth shared by
 production (``role_inference``) and the in-memory simulator. No Django imports.
 
-The model is vote counting. For each answer and each role, ask one question:
-does this answer side with the role (positive overlap between the chosen
-signal side and the role profile) or against it? The role receives a vote of
-``+strength`` or ``-strength`` (strength is 0.5 for a mild answer, 1.0 for a
-strong one). The best-fit role is the one with the most votes, and every
-threshold below is expressed in vote units, so "the winner must lead the
-runner-up by at least 3.5 votes" means literally that.
+The model is vote counting with a relevance share. For each answer and each
+role, take the overlap between the chosen signal side and the role profile
+minus the overlap with the rejected side. Half of the role's vote is the sign
+of that signal (does the answer side with the role or against it?); the other
+half is the signal relative to the largest one any role gets from the same
+answer, so the role the item is most about gets the full half and a role that
+only brushes the item gets a sliver. Both halves are scaled by strength (0.5
+for a mild answer, 1.0 for a strong one), so one answer moves a role by at
+most one vote, and every threshold below is expressed in those vote units.
 
 This replaced an IDF + log-sigmoid + tuned-scale pipeline in 2026-07: ablation
 with the noisy-persona harness showed plain sign votes were both simpler and
 more accurate (0.947 vs 0.887 top-1), and vote margins separate correct from
 confused outcomes (median margin 5.0 when right vs 0.5 when wrong), which the
-old score margins never did. Recalibrate with `manage.py tune_scoring`.
+old score margins never did. Pure sign votes let a role collect a full vote
+from any item it barely touches, so broadly profiled roles won for people who
+agreed with most items; the relevance share was added in 2026-10 (ADR-0007).
+Recalibrate with `manage.py tune_scoring`.
 """
 
 import math
@@ -25,14 +30,16 @@ from roadmaps.questionnaire import ROLE_DIMENSION_LABELS, ROLE_DIMENSION_LABELS_
 
 
 # Minimum vote lead over the runner-up to declare the role resolved.
-# Calibrated on the realistic-respondent harness: at 3.5 votes, fewer than 1%
-# of sessions resolve to a role outside the respondent's top two while ~8% of
-# sessions resolve at all (the rest finish as low_confidence, which is honest
-# for most respondents).
-ROLE_DISCOVERY_MIN_SCORE_MARGIN = 3.5
+# Calibrated on the realistic-respondent harness: at 2.5 votes, about 1% of
+# sessions in the worst scenario resolve to a role outside the respondent's top
+# two while ~5% of sessions resolve at all (the rest finish as low_confidence,
+# which is honest for most respondents).
+ROLE_DISCOVERY_MIN_SCORE_MARGIN = 2.5
 
-# Vote lead treated as full confidence (median winning margin on the harness).
-ROLE_CONFIDENCE_FULL_MARGIN = 5.0
+ROLE_SIGN_VOTE_SHARE = 0.5
+
+# Vote lead treated as full confidence: 1.4x the resolve margin, the ratio the two thresholds have always had.
+ROLE_CONFIDENCE_FULL_MARGIN = 3.5
 
 ROLE_DISCOVERY_WARMUP_CODES = (
     'role-rd-web',
@@ -87,16 +94,17 @@ def _score_roles_for_answer(question: dict, scale_value: int | None) -> dict[str
     if answer_strength <= 0 or (not selected_signals and not rejected_signals):
         return {}
 
-    role_scores: dict[str, float] = {}
-    for role_slug, profile in ROLE_PROFILE_WEIGHTS.items():
-        role_signal = score_dimension_overlap(selected_signals, profile) - score_dimension_overlap(rejected_signals, profile)
-        if role_signal > 0:
-            role_scores[role_slug] = answer_strength
-        elif role_signal < 0:
-            role_scores[role_slug] = -answer_strength
-        else:
-            role_scores[role_slug] = 0.0
-    return role_scores
+    role_signals = {
+        role_slug: score_dimension_overlap(selected_signals, profile) - score_dimension_overlap(rejected_signals, profile)
+        for role_slug, profile in ROLE_PROFILE_WEIGHTS.items()
+    }
+    largest_signal = max((abs(signal) for signal in role_signals.values()), default=0.0)
+    if largest_signal <= 0:
+        return dict.fromkeys(role_signals, 0.0)
+    return {
+        role_slug: answer_strength * (ROLE_SIGN_VOTE_SHARE * ((signal > 0) - (signal < 0)) + (1 - ROLE_SIGN_VOTE_SHARE) * signal / largest_signal)
+        for role_slug, signal in role_signals.items()
+    }
 
 
 def get_sorted_role_scores(role_scores: dict[str, float]) -> list[tuple[str, float]]:
