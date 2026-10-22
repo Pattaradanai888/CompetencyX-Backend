@@ -7,6 +7,9 @@ def load_questions() -> list[dict]:
     return [
         {
             'id': question.id,
+            'code': question.code,
+            'prompt': question.prompt,
+            'th': (question.translations or {}).get('th', {}).get('prompt'),
             'display_order': question.display_order,
             'item_group': question.item_group,
             'discriminates_between': list(question.discriminates_between or []),
@@ -19,6 +22,9 @@ def load_questions() -> list[dict]:
             .order_by('display_order', 'id')
             .only(
                 'id',
+                'code',
+                'prompt',
+                'translations',
                 'display_order',
                 'item_group',
                 'discriminates_between',
@@ -33,7 +39,3 @@ def load_questions() -> list[dict]:
 def load_roles() -> tuple[list[str], dict[str, str]]:
     rows = list(Role.objects.filter(is_active=True).values_list('slug', 'name'))
     return [slug for slug, _name in rows], dict(rows)
-
-
-def count_core_questions(questions: list[dict]) -> int:
-    return sum(1 for question in questions if question['item_group'] == 'core')

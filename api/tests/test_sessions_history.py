@@ -1,7 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
-from assessments.models import AssessmentSession
+from assessments.models import Answer, AssessmentSession
+from assessments.services.scoring_service import ROLE_DISCOVERY_MIN_QUESTIONS
 from roadmaps.models import Question
 
 from .base import AssessmentFlowTestCase
@@ -33,8 +34,9 @@ class SessionHistoryTests(AssessmentFlowTestCase):
         history_response = self.client.get(reverse('assessment-session-history', kwargs={'pk': session_id}))
         self.assertEqual(history_response.status_code, status.HTTP_200_OK)
         self.assertEqual(history_response.json()['status'], AssessmentSession.Status.COMPLETED)
-        self.assertEqual(len(history_response.json()['answers']), Question.objects.filter(stage=Question.Stage.ROLE).count())
-        self.assertEqual(history_response.json()['answers'][0]['scale_value'], 0)
+        answers = history_response.json()['answers']
+        self.assertEqual(len(answers), Answer.objects.filter(session_id=session_id).count())
+        self.assertEqual(len(answers), ROLE_DISCOVERY_MIN_QUESTIONS)
 
     def test_results_and_history_require_completed_session(self):
         create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')

@@ -45,7 +45,7 @@ class Command(BaseCommand):
             questions=[],
             active_role_slugs=sorted(ROLE_PROFILE_WEIGHTS),
             role_names={},
-            core_target=0,
+            available_questions=0,
         )
         config = SimulationConfig(
             samples=samples,

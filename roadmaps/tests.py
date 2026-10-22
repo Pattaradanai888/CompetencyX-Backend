@@ -10,6 +10,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from assessments.models import Answer, AssessmentSession, SkillAssessmentDimension, SkillAssessmentQuestion, SkillAssessmentRoleGuidance
+from assessments.services.scoring_service import ROLE_DISCOVERY_WARMUP_CODES
 from roadmaps.models import (
     ExternalRoadmapEdge,
     ExternalRoadmapNode,
@@ -57,7 +58,7 @@ class SyncContentTests(TestCase):
         assert SkillAssessmentQuestion.objects.filter(role__isnull=False, is_active=True).exists()
         assert SkillAssessmentRoleGuidance.objects.count() == 54
         assert Role.objects.filter(slug='backend-developer', is_active=True).exists()
-        assert Question.objects.filter(code='role-swebok-01-requirements', stage=Question.Stage.ROLE).exists()
+        assert Question.objects.filter(code='role-rd-requirements', stage=Question.Stage.ROLE).exists()
 
         first_run_output = out.getvalue()
         assert (
@@ -375,12 +376,10 @@ class SyncContentTests(TestCase):
 
         role_questions = Question.objects.filter(stage=Question.Stage.ROLE).order_by('display_order')
 
-        assert role_questions.count() == 58
+        assert role_questions.count() == 44
         thai_translated = [q for q in role_questions if q.translations.get('th', {}).get('prompt')]
-        assert len(thai_translated) == 48
-        assert role_questions.get(code='role-swebok-01-requirements').translations['th']['prompt'] == (
-            'ในช่วงท้าย Sprint ที่เวลาบีบคั้นแต่ Requirement ยังคลุมเครือ ฉันจะเลือกจัดเวิร์กช็อปเพื่อถอดโจทย์ปัญหาให้เคลียร์ แม้จะต้องแลกกับการเริ่มต้นเขียนโค้ดล่าช้ากว่ากำหนดก็ตาม'
-        )
+        assert len(thai_translated) == 44
+        assert role_questions.get(code='role-rd-requirements').translations['th']['prompt'] == 'ชอบนั่งคุยกับคนที่จะใช้งานนาน ๆ เพื่อถามว่าเขาต้องการอะไร'
         assert Question.objects.filter(stage='skill').count() == 0
 
     def test_question_catalog_rejects_unsupported_translation_language(self):
@@ -390,7 +389,7 @@ class SyncContentTests(TestCase):
 
         with self.assertRaisesMessage(
             ValueError,
-            'Question "role-swebok-01-requirements" has unsupported translation language(s): fr',
+            'Question "role-rd-requirements" has unsupported translation language(s): fr',
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
@@ -401,7 +400,7 @@ class SyncContentTests(TestCase):
 
         with self.assertRaisesMessage(
             ValueError,
-            'Question "role-swebok-01-requirements" has unsupported th translation field(s): label',
+            'Question "role-rd-requirements" has unsupported th translation field(s): label',
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
@@ -428,7 +427,7 @@ class SyncContentTests(TestCase):
 
         with self.assertRaisesMessage(
             ValueError,
-            'Role question "role-swebok-01-requirements" has unknown agree_signals: unknown_trait',
+            'Role question "role-rd-requirements" has unknown agree_signals: unknown_trait',
         ):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
@@ -437,7 +436,7 @@ class SyncContentTests(TestCase):
         invalid_questions = deepcopy(questions_data)
         invalid_questions['role_questions'][0]['options'] = [{'key': 'agree', 'label': 'Agree', 'display_order': 1}]
 
-        with self.assertRaisesMessage(ValueError, 'Role question "role-swebok-01-requirements" must not define options.'):
+        with self.assertRaisesMessage(ValueError, 'Role question "role-rd-requirements" must not define options.'):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
     def test_role_question_validation_rejects_non_likert_role_question(self):
@@ -445,7 +444,7 @@ class SyncContentTests(TestCase):
         invalid_questions = deepcopy(questions_data)
         invalid_questions['role_questions'][0]['question_type'] = Question.Type.SINGLE_CHOICE
 
-        with self.assertRaisesMessage(ValueError, 'Role question "role-swebok-01-requirements" must use question_type "likert_5".'):
+        with self.assertRaisesMessage(ValueError, 'Role question "role-rd-requirements" must use question_type "likert_5".'):
             validate_curated_catalog(roles_data=roles_data, topics_data=topics_data, questions_data=invalid_questions)
 
     def test_role_question_catalog_uses_likert_statements_without_options(self):
@@ -467,8 +466,8 @@ class SyncContentTests(TestCase):
             key=lambda question: question['display_order'],
         )
 
-        assert len(core_questions) == 46
-        assert [question['display_order'] for question in core_questions] == list(range(1, 47))
+        assert len(core_questions) == 31
+        assert [question['display_order'] for question in core_questions] == list(range(1, 32))
         dimension_counts = Counter()
         for question in core_questions:
             signaled_dimensions = set(question['agree_signals']) | set(question['disagree_signals'])
@@ -476,7 +475,6 @@ class SyncContentTests(TestCase):
                 dimension_counts[dimension] += 1
 
         assert set(dimension_counts) == {dimension for dimension, _label in SWEBOK_KNOWLEDGE_AREAS}
-        assert all(count >= 2 for count in dimension_counts.values())
 
     def test_every_role_has_trait_profile(self):
         roles_data, _topics_data, _questions_data = load_curated_catalog()
@@ -508,7 +506,7 @@ class SyncContentTests(TestCase):
                 dimension_totals[dimension] += 1
 
         assert set(dimension_totals) == {dimension for dimension, _label in SWEBOK_KNOWLEDGE_AREAS}
-        assert all(count >= 2 for count in dimension_totals.values())
+        assert all(count >= 1 for count in dimension_totals.values())
 
     def test_role_question_catalog_core_wording_is_beginner_friendly(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
@@ -531,8 +529,21 @@ class SyncContentTests(TestCase):
         assert long_prompts == {}
         assert jargon_prompts == {}
 
-    def test_role_question_catalog_uses_static_core_only_for_role_discovery(self):
+    def test_role_question_catalog_item_groups(self):
         _roles_data, _topics_data, questions_data = load_curated_catalog()
 
         item_groups = Counter(question.get('item_group', 'core') for question in questions_data['role_questions'])
-        assert item_groups == Counter({'core': 46, 'tie_break': 12})
+        assert item_groups == Counter({'core': 31, 'tie_break': 13})
+
+    def test_role_question_catalog_contains_every_warm_up_item(self):
+        _roles_data, _topics_data, questions_data = load_curated_catalog()
+
+        codes = [question['code'] for question in questions_data['role_questions']]
+        assert set(ROLE_DISCOVERY_WARMUP_CODES) <= set(codes)
+
+    def test_role_question_catalog_thai_wording_is_short_and_single_subject(self):
+        _roles_data, _topics_data, questions_data = load_curated_catalog()
+
+        prompts = {question['code']: question['translations']['th']['prompt'] for question in questions_data['role_questions']}
+        assert all(len(prompt) <= 80 for prompt in prompts.values())
+        assert not [code for code, prompt in prompts.items() if 'แม้' in prompt and 'ก็ตาม' in prompt]

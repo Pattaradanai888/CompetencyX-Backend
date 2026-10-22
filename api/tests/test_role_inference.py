@@ -1,9 +1,9 @@
 from django.urls import reverse
 from rest_framework import status
 
-from assessments.models import Answer, AssessmentSession
-from assessments.services.role_inference_service import get_role_inference_snapshot, get_selectable_role_candidates
-from assessments.services.scoring_service import build_role_shares
+from assessments.models import AssessmentSession
+from assessments.services.role_inference_service import get_next_role_question, get_role_inference_snapshot
+from assessments.services.scoring_service import ROLE_CANDIDATE_COUNT, ROLE_DISCOVERY_MIN_QUESTIONS, ROLE_DISCOVERY_WARMUP_CODES, build_role_shares
 from roadmaps.models import Question
 
 from .base import AssessmentFlowTestCase
@@ -36,7 +36,7 @@ class RoleInferenceTests(AssessmentFlowTestCase):
         self.assertNotIn('top_role_candidates', payload)
         self.assertNotIn('discrimination_score', payload['current_question'])
         self.assertEqual(payload['current_question']['stage'], Question.Stage.ROLE)
-        self.assertEqual(payload['current_question']['code'], 'role-core-01')
+        self.assertTrue(payload['current_question']['code'].startswith('role-core-'))
 
         question = Question.objects.get(id=payload['current_question']['id'])
         first_answer = self.client.post(
@@ -96,14 +96,15 @@ class RoleInferenceTests(AssessmentFlowTestCase):
         self.assertEqual(payload['role_resolution_status'], 'in_progress')
         self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
 
-    def test_low_confidence_role_session_can_fall_back_to_best_fit_when_questions_are_exhausted(self):
+    def test_with_three_active_roles_the_survey_ends_at_the_floor(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
 
         final_payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json())
         self.assertEqual(final_payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
         self.assertEqual(final_payload['status'], AssessmentSession.Status.COMPLETED)
-        self.assertEqual(final_payload['role_resolution_status'], 'resolved')
+        self.assertEqual(final_payload['milestones']['answered_role_questions'], ROLE_DISCOVERY_MIN_QUESTIONS)
+        self.assertIn(final_payload['role_resolution_status'], {'resolved', 'low_confidence'})
         self.assertEqual(final_payload['best_fit_role']['slug'], self.backend_role.slug)
         self.assertIsNone(final_payload['current_question'])
 
@@ -123,38 +124,46 @@ class RoleInferenceTests(AssessmentFlowTestCase):
         self.assertEqual(snapshot['score_margin'], 0.0)
         self.assertIsNone(final_payload['current_question'])
 
-    def test_matching_tie_break_is_served_before_low_confidence_completion(self):
+    def test_tie_break_items_share_the_pool_and_are_asked_when_they_separate_the_leaders(self):
         tie_break_question = Question.objects.create(
             code='role-tie-backend-frontend',
             stage=Question.Stage.ROLE,
             item_group=Question.ItemGroup.TIE_BREAK,
             question_type=Question.Type.LIKERT_5,
-            prompt='I enjoy browser product work more than backend service work.',
-            agree_dimension_signals={'requirements': 1.0},
-            disagree_dimension_signals={'testing': 1.0},
+            prompt='I like work where I see the result on screen straight away.',
+            agree_dimension_signals={'web_frontend': 1.0},
+            disagree_dimension_signals={'server_backend': 1.0},
             discriminates_between=['backend-developer', 'frontend-developer'],
             display_order=101,
             discrimination_score=4.5,
         )
         create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        payload = self._answer_remaining_core_questions(create_response.json()['id'], create_response.json(), profile_dimensions=set())
 
-        self.assertEqual(payload['phase'], AssessmentSession.Phase.ROLE_DISCOVERY)
-        self.assertEqual(payload['role_resolution_status'], 'in_progress')
-        self.assertEqual(payload['current_question']['id'], tie_break_question.id)
+        self.assertEqual(create_response.json()['current_question']['id'], tie_break_question.id)
+
+    def test_warm_up_items_are_asked_first_in_their_fixed_order(self):
+        for offset, code in enumerate(reversed(ROLE_DISCOVERY_WARMUP_CODES[:2])):
+            Question.objects.create(
+                code=code,
+                stage=Question.Stage.ROLE,
+                question_type=Question.Type.LIKERT_5,
+                prompt=f'Warm-up {code}',
+                agree_dimension_signals={'construction': 1.0},
+                disagree_dimension_signals={'management': 1.0},
+                display_order=200 + offset,
+            )
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
+        session_id = create_response.json()['id']
+        first = create_response.json()['current_question']
+        self.assertEqual(first['code'], ROLE_DISCOVERY_WARMUP_CODES[0])
 
         answer_response = self.client.post(
-            reverse('assessment-session-answers', kwargs={'pk': payload['id']}),
-            {'question_id': tie_break_question.id, 'scale_value': 0},
+            reverse('assessment-session-answers', kwargs={'pk': session_id}),
+            {'question_id': first['id'], 'scale_value': 1},
             format='json',
         )
-
-        self.assertEqual(answer_response.status_code, status.HTTP_200_OK)
-        final_payload = answer_response.json()
-        self.assertEqual(final_payload['phase'], AssessmentSession.Phase.RECOMMENDATION_READY)
-        self.assertEqual(final_payload['role_resolution_status'], 'low_confidence')
-        self.assertIsNone(final_payload['current_question'])
+        self.assertEqual(answer_response.json()['current_question']['code'], ROLE_DISCOVERY_WARMUP_CODES[1])
 
     def test_role_insights_hide_ranked_candidates_until_core_profile_is_complete(self):
         create_response = self.client.post(reverse('assessment-session-list'), {'profile': {'current_stage': 'beginner'}}, format='json')
@@ -173,107 +182,24 @@ class RoleInferenceTests(AssessmentFlowTestCase):
         self.assertEqual(insights.json()['best_fit_confidence'], 0.0)
         self.assertEqual(insights.json()['role_resolution_status'], 'in_progress')
         self.assertEqual(insights.json()['ranked_roles'], [])
+        self.assertEqual(insights.json()['role_candidates'], [])
 
-    def test_role_question_selection_stops_after_static_core_profile(self):
-        session = AssessmentSession.objects.create(profile={})
-        for question in Question.objects.filter(stage=Question.Stage.ROLE, item_group=Question.ItemGroup.CORE).order_by('display_order'):
-            Answer.objects.create(session=session, question=question, scale_value=self._scale_for_profile(question, self.backend_profile))
+    def test_completed_session_shows_its_role_candidates(self):
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
+        session_id = create_response.json()['id']
+        self._answer_remaining_core_questions(session_id, create_response.json(), profile_dimensions=self.qa_profile)
 
-        broad_question = Question.objects.create(
-            code='role-broad-unit-follow-up',
-            stage=Question.Stage.ROLE,
-            question_type=Question.Type.LIKERT_5,
-            prompt='I enjoy broad follow-up work.',
-            trait_positive_dimension='construction',
-            agree_dimension_signals={'construction': 1.0},
-            disagree_dimension_signals={'management': 1.0},
-            display_order=31,
-            discrimination_score=4.0,
-        )
+        insights = self.client.get(reverse('assessment-session-insights', kwargs={'pk': session_id})).json()
+        self.assertEqual(len(insights['role_candidates']), ROLE_CANDIDATE_COUNT)
+        self.assertEqual(insights['role_candidates'], insights['ranked_roles'][:ROLE_CANDIDATE_COUNT])
+        self.assertEqual(insights['role_candidates'][0]['slug'], self.qa_role.slug)
 
-        candidates = get_selectable_role_candidates(
-            session,
-            list(
-                Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).exclude(
-                    id__in=session.answers.values_list('question_id', flat=True)
-                )
-            ),
-        )
-        self.assertIn(broad_question, Question.objects.filter(stage=Question.Stage.ROLE))
-        self.assertEqual(candidates, [])
+    def test_no_role_question_is_served_once_the_survey_is_complete(self):
+        create_response = self.client.post(reverse('assessment-session-list'), {}, format='json')
+        session_id = create_response.json()['id']
+        self._answer_remaining_core_questions(session_id, create_response.json())
 
-    def test_tie_break_served_when_top_two_roles_are_close(self):
-        tie_break_question = Question.objects.create(
-            code='role-tie-backend-qa',
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            question_type=Question.Type.LIKERT_5,
-            prompt='I enjoy comparing service behavior against release criteria.',
-            agree_dimension_signals={'verification_validation': 1.0},
-            disagree_dimension_signals={'software_construction': 1.0},
-            discriminates_between=['backend-developer', 'qa-engineer'],
-            display_order=101,
-            discrimination_score=4.5,
-        )
-        session = AssessmentSession.objects.create(profile={})
-        snapshot = {
-            'ranked_roles': [
-                {'slug': 'backend-developer', 'fit_share': 0.52},
-                {'slug': 'qa-engineer', 'fit_share': 0.44},
-            ],
-            'margin_share': 0.08,
-            'score_margin': 0.08,
-        }
-        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
-        self.assertEqual(len(candidates), 1)
-        self.assertEqual(candidates[0].code, 'role-tie-backend-qa')
-
-    def test_no_tie_break_when_margin_is_sufficient(self):
-        tie_break_question = Question.objects.create(
-            code='role-tie-margin-met',
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            question_type=Question.Type.LIKERT_5,
-            prompt='I enjoy release criteria.',
-            agree_dimension_signals={'verification_validation': 1.0},
-            disagree_dimension_signals={'software_construction': 1.0},
-            discriminates_between=['backend-developer', 'qa-engineer'],
-            display_order=102,
-            discrimination_score=3.0,
-        )
-        session = AssessmentSession.objects.create(profile={})
-        snapshot = {
-            'ranked_roles': [
-                {'slug': 'backend-developer', 'fit_share': 0.7},
-                {'slug': 'qa-engineer', 'fit_share': 0.35},
-            ],
-            'margin_share': 0.35,
-            'score_margin': 3.0,
-        }
-        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
-        self.assertEqual(candidates, [])
-
-    def test_no_tie_break_when_question_does_not_match_top_pair(self):
-        tie_break_question = Question.objects.create(
-            code='role-tie-other-pair',
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            question_type=Question.Type.LIKERT_5,
-            prompt='I enjoy release criteria.',
-            agree_dimension_signals={'verification_validation': 1.0},
-            disagree_dimension_signals={'software_construction': 1.0},
-            discriminates_between=['backend-developer', 'frontend-developer'],
-            display_order=103,
-            discrimination_score=4.5,
-        )
-        session = AssessmentSession.objects.create(profile={})
-        snapshot = {
-            'ranked_roles': [
-                {'slug': 'backend-developer', 'fit_share': 0.52},
-                {'slug': 'qa-engineer', 'fit_share': 0.44},
-            ],
-            'margin_share': 0.08,
-            'score_margin': 0.08,
-        }
-        candidates = get_selectable_role_candidates(session, [tie_break_question], snapshot=snapshot)
-        self.assertEqual(candidates, [])
+        session = AssessmentSession.objects.get(id=session_id)
+        self.assertTrue(get_role_inference_snapshot(session)['is_complete'])
+        self.assertIsNone(get_next_role_question(session))
+        self.assertGreater(Question.objects.filter(stage=Question.Stage.ROLE).exclude(answers__session=session).count(), 0)

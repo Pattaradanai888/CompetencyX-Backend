@@ -131,12 +131,17 @@ class RoleInsightsFieldsMixin(ContextMemoMixin):
     def get_ranked_roles(self, obj):
         return self._insights(obj)['ranked_roles']
 
+    @extend_schema_field(RankedRoleInsightSerializer(many=True))
+    def get_role_candidates(self, obj):
+        return self._insights(obj)['role_candidates']
+
 
 class RoleInsightsSerializer(RoleInsightsFieldsMixin, serializers.ModelSerializer):
     role_resolution_status = serializers.SerializerMethodField()
     answered_role_questions = serializers.SerializerMethodField()
     pillar_profile = serializers.SerializerMethodField()
     ranked_roles = serializers.SerializerMethodField()
+    role_candidates = serializers.SerializerMethodField()
     guidance_summary = serializers.SerializerMethodField()
     best_fit_role = serializers.SerializerMethodField()
     best_fit_confidence = serializers.SerializerMethodField()
@@ -150,6 +155,7 @@ class RoleInsightsSerializer(RoleInsightsFieldsMixin, serializers.ModelSerialize
             'answered_role_questions',
             'pillar_profile',
             'ranked_roles',
+            'role_candidates',
             'guidance_summary',
         )
 
@@ -326,6 +332,7 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
     guidance_summary = serializers.SerializerMethodField()
     pillar_profile = serializers.SerializerMethodField()
     ranked_roles = serializers.SerializerMethodField()
+    role_candidates = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentSession
@@ -347,6 +354,7 @@ class AssessmentResultSerializer(RoleInsightsFieldsMixin, serializers.ModelSeria
             'guidance_summary',
             'pillar_profile',
             'ranked_roles',
+            'role_candidates',
         )
 
     def _visible_role_result(self, obj):

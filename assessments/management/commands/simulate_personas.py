@@ -6,6 +6,7 @@ Examples:
     python manage.py simulate_personas --samples-per-role 100 --format json
     python manage.py simulate_personas --write-baseline data/simulation/persona_baseline.json
     python manage.py simulate_personas --check-baseline data/simulation/persona_baseline.json
+    python manage.py simulate_personas --model realistic --samples-per-scenario 1500
 """
 
 import json
@@ -14,8 +15,9 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from simulation.engine import CatalogContext
-from simulation.loaders import count_core_questions, load_questions, load_roles
+from simulation.loaders import load_questions, load_roles
 from simulation.personas import build_baseline, compare_to_baseline, compute_content_digest, run_persona_suite
+from simulation.realistic_personas import SCENARIOS, run_realistic_suite
 
 
 CONFUSION_REPORT_LIMIT = 12
@@ -33,6 +35,15 @@ class Command(BaseCommand):
         parser.add_argument('--write-baseline', metavar='PATH', help='Write the run summary as the new baseline JSON.')
         parser.add_argument('--check-baseline', metavar='PATH', help='Compare this run against a baseline JSON; exit 1 on regression.')
         parser.add_argument('--tolerance', type=float, default=0.02, help='Allowed metric drop vs baseline (default 0.02).')
+        parser.add_argument(
+            '--model',
+            choices=['noisy', 'realistic'],
+            default='noisy',
+            help='noisy: personas answer from their role profile with fixed noise (baseline-gated). '
+            'realistic: blended people with response styles, careless answers and fatigue, swept over assumption scenarios.',
+        )
+        parser.add_argument('--samples-per-scenario', type=int, default=1500, help='Realistic model: respondents per scenario.')
+        parser.add_argument('--scenario', action='append', choices=sorted(SCENARIOS), help='Realistic model: limit to these scenarios.')
 
     def handle(self, *args, **options):
         questions = load_questions()
@@ -44,8 +55,12 @@ class Command(BaseCommand):
             questions=questions,
             active_role_slugs=active_role_slugs,
             role_names=role_names,
-            core_target=count_core_questions(questions),
+            available_questions=len(questions),
         )
+
+        if options['model'] == 'realistic':
+            self._run_realistic(catalog, options)
+            return
 
         baseline = None
         if options['check_baseline']:
@@ -84,12 +99,25 @@ class Command(BaseCommand):
                 raise CommandError(msg)
             self.stdout.write(self.style.SUCCESS('Baseline check passed.'))
 
+    def _run_realistic(self, catalog: CatalogContext, options: dict) -> None:
+        report = run_realistic_suite(
+            catalog,
+            samples=options['samples_per_scenario'],
+            seed=options['random_seed'],
+            scenarios=options['scenario'],
+        )
+        if options['format'] == 'json':
+            self.stdout.write(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            self._write_realistic_report(report)
+
     def _write_text_report(self, summary: dict) -> None:
         write = self.stdout.write
         write(self.style.MIGRATE_HEADING(
             f'\n=== Persona Fidelity (N={summary["samples_per_role"]}/role, seed={summary["seed"]}) ===',
         ))
         write(f'Top-1 accuracy:       {summary["top1_accuracy"]:.4f}')
+        write(f'Top-3 accuracy:       {summary["top3_accuracy"]:.4f}')
         write(f'Resolved rate:        {summary["resolved_rate"]:.4f}')
         write(f'Precision | resolved: {summary["precision_resolved"]:.4f}')
         write(f'Avg questions asked:  {summary["avg_answered_questions"]:.2f}')
@@ -111,3 +139,23 @@ class Command(BaseCommand):
             ))
         else:
             write('\nNo dead questions detected.')
+
+    def _write_realistic_report(self, report: dict) -> None:
+        write = self.stdout.write
+        write(self.style.MIGRATE_HEADING(
+            f'\n=== Realistic respondents (N={report["samples_per_scenario"]}/scenario, seed={report["seed"]}) ===',
+        ))
+        write(f'{"scenario":14s} {"top1":>6s} {"top3":>6s} {"resolved":>9s} {"wrongConf":>9s} {"avgQ":>6s} {"p90Q":>5s} {"retest":>7s}')
+        for name, row in report['scenarios'].items():
+            write(
+                f'{name:14s} {row["top1_accuracy"]:6.3f} {row["top3_accuracy"]:6.3f} {row["resolved_rate"]:9.3f} '
+                f'{row["wrong_confident_rate"]:9.3f} {row["avg_answered_questions"]:6.1f} {row["p90_answered_questions"]:5d} '
+                f'{row["retest_candidate_overlap"]:7.3f}',
+            )
+        summary = report['summary']
+        write(self.style.MIGRATE_HEADING('\n--- Across scenarios ---'))
+        write(f'Top-3 accuracy (mean / worst): {summary["top3_accuracy"]:.4f} / {summary["top3_accuracy_worst"]:.4f}')
+        write(f'Top-1 accuracy (mean):         {summary["top1_accuracy"]:.4f}')
+        write(f'Wrong-but-resolved (worst):    {summary["wrong_confident_rate_worst"]:.4f}')
+        write(f'Avg questions asked:           {summary["avg_answered_questions"]:.2f}')
+        write(f'Retest candidate overlap:      {summary["retest_candidate_overlap"]:.4f}')

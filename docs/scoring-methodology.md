@@ -67,10 +67,12 @@ The 38 scoring dimensions are defined in `roadmaps/questionnaire.py`:
 | `contrast` | 0.3 | The dimension the statement trades against (usually on the disagree side). |
 
 Rationale for three steps: scoring is vote-based
-(`assessments/services/scoring_service.py`) — per answer per role only the
-**sign** of `overlap(chosen side) − overlap(rejected side)` matters, so finer
-ladders add authoring burden without measurable benefit (verified by the
-ablation that led to vote scoring, 2026-07).
+(`assessments/services/scoring_service.py`). Half of each role's vote is the
+**sign** of `overlap(chosen side) − overlap(rejected side)`; the other half is
+that signal relative to the largest any role gets from the same answer
+(ADR-0007), so the levels decide how much of that half a secondary or contrast
+dimension carries. Three steps were chosen when only the sign mattered
+(ablation, 2026-07); finer ladders have not been tried since.
 
 ## Derivation pipeline
 
@@ -84,7 +86,7 @@ roadmaps/role_weights_generated.py           (GENERATED — never hand-edited)
 roadmaps/questionnaire.py ROLE_PROFILE_WEIGHTS
         │  import (Django-free)
         ▼
-assessments/services/scoring_service.py      (vote counting)
+assessments/services/scoring_service.py      (votes with a relevance share)
 ```
 
 Guards:
@@ -109,6 +111,15 @@ Every question in `data/content/questions/role/role-discovery.yaml` must:
 5. Carry at least one `sources` reference (`swebok: {ka, topic}` or
    `roadmap_sh: {file, node}`) resolvable against the committed extracts.
 6. Carry `review: {status: draft|reviewed, date}`.
+7. Be easy to disagree with without losing face: name a concrete activity the
+   respondent would or would not want to do ("ชอบลองกดแอปแบบแปลก ๆ เพื่อหาว่าตรงไหนพัง",
+   "อยากให้เวลาส่วนใหญ่ของงานคือ…"), not whether something is good practice. A
+   statement nearly everyone agrees with (testing before release, automating
+   repetitive work, helping users) carries no role evidence, and respondents
+   who studied software agree with all of them. Avoid stamina words ("ทั้งวัน",
+   "ตั้งแต่ศูนย์", "นาน ๆ"), which trade that bias for a measure of endurance,
+   and prefer "would like to do X" over "curious how X works", which an
+   onlooker can agree with (ADR-0007).
 
 ## Review workflow (solo maintainer)
 
@@ -131,10 +142,14 @@ manage.py simulate_personas --check-baseline data/simulation/persona_baseline.js
 ```
 
 - The harness simulates noisy respondents for all 26 roles and reports top-1
-  accuracy, precision-when-resolved, per-role accuracy, confusion pairs,
-  tie-break utilization, and dead questions.
-- Acceptance floor (full selection flow, 46 core + gated tie-breaks):
-  top-1 ≥ 0.88, precision|resolved ≥ 0.99.
+  and top-3 accuracy, precision-when-resolved, per-role accuracy, confusion
+  pairs, and dead questions.
+- Acceptance floor (full adaptive flow, ADR-0006/0007): top-1 ≥ 0.88,
+  precision|resolved ≥ 0.99.
+- Also run `manage.py simulate_personas --model realistic` and compare its
+  top-3 (mean and worst scenario), wrong-but-resolved rate and retest overlap
+  against the figures in ADR-0007. It is not baseline-gated: its answers come
+  from assumptions, and a content change can trade one scenario for another.
 - If the change is intentional and metrics are acceptable, re-pin with
   `--write-baseline` and commit the baseline diff together with the content
   change, quoting the report in the commit message.
@@ -147,6 +162,11 @@ manage.py simulate_personas --check-baseline data/simulation/persona_baseline.js
 - The persona harness measures **self-consistency** (personas are generated
   from the same profiles being scored), not human validity. It catches
   structural regressions, not badly-worded prompts.
+- The two harnesses are circular in opposite directions: noisy personas
+  answer by the sign of the profile overlap (what sign votes count) and
+  realistic ones by its magnitude (what magnitude scoring counts). A change to
+  the scoring rule needs evidence from outside both, such as the role-play
+  panel and real session behind ADR-0007.
 - The initial relevance mapping was reverse-engineered from the previous
   hand-typed weights; cells remain `draft` until individually reviewed
   against sources. `review.status` is the boundary between "laundered" and

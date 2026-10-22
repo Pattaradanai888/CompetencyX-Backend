@@ -6,21 +6,12 @@ from roadmaps.models import Question, Role
 from . import scoring_service
 
 
-def _get_answered_core_role_question_count(session: AssessmentSession) -> int:
-    return session.answers.filter(question__stage=Question.Stage.ROLE, question__item_group=Question.ItemGroup.CORE).count()
+def _active_role_questions():
+    return Question.objects.filter(stage=Question.Stage.ROLE, is_active=True)
 
 
-def _get_active_core_role_question_count() -> int:
-    return Question.objects.filter(stage=Question.Stage.ROLE, item_group=Question.ItemGroup.CORE, is_active=True).count()
-
-
-def _get_answered_tie_break_question_count(session: AssessmentSession) -> int:
-    return session.answers.filter(question__stage=Question.Stage.ROLE, question__item_group=Question.ItemGroup.TIE_BREAK).count()
-
-
-def is_core_role_profile_complete(session: AssessmentSession) -> bool:
-    core_question_count = _get_active_core_role_question_count()
-    return core_question_count > 0 and _get_answered_core_role_question_count(session) >= core_question_count
+def _get_answered_role_question_count(session: AssessmentSession) -> int:
+    return session.answers.filter(question__stage=Question.Stage.ROLE).count()
 
 
 def answer_to_signal_dict(answer) -> dict:
@@ -30,6 +21,16 @@ def answer_to_signal_dict(answer) -> dict:
         'disagree_dimension_signals': question.disagree_dimension_signals or {},
         'trait_positive_dimension': question.trait_positive_dimension,
         'scale_value': answer.scale_value,
+    }
+
+
+def question_to_pick_dict(question: Question) -> dict:
+    return {
+        'id': question.id,
+        'code': question.code,
+        'display_order': question.display_order,
+        'agree_dimension_signals': question.agree_dimension_signals or {},
+        'disagree_dimension_signals': question.disagree_dimension_signals or {},
     }
 
 
@@ -57,93 +58,31 @@ def get_role_inference_snapshot(session: AssessmentSession) -> dict[str, object]
         active_role_slugs=active_role_slugs,
         role_names=role_names,
         role_names_th=role_names_th,
-        answered_core=_get_answered_core_role_question_count(session),
-        core_target=_get_active_core_role_question_count(),
-        answered_tie_break=_get_answered_tie_break_question_count(session),
+        answered_questions=_get_answered_role_question_count(session),
+        available_questions=_active_role_questions().count(),
     )
 
 
-def is_role_resolution_exhausted_with_viable_winner(
-    session: AssessmentSession,
-    *,
-    snapshot: dict[str, object] | None = None,
-) -> bool:
+def is_role_discovery_complete(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> bool:
     snapshot = snapshot or get_role_inference_snapshot(session)
-    if snapshot['top_role_slug'] is None:
-        return False
-    if int(snapshot['answered_core_questions']) < int(snapshot['core_question_target']):
-        return False
-
-    remaining_tie_breaks = get_remaining_tie_break_questions(session)
-    has_remaining_tie_breaks = bool(get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot))
-    return scoring_service.is_role_resolution_exhausted_with_viable_winner(
-        snapshot,
-        has_remaining_tie_breaks_for_top_pair=has_remaining_tie_breaks,
-    )
+    return bool(snapshot['is_complete'])
 
 
-def is_role_inference_resolved(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> bool:
+def get_next_role_question(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> Question | None:
     snapshot = snapshot or get_role_inference_snapshot(session)
-    return is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot)
+    if snapshot['is_complete']:
+        return None
+    answered_question_ids = session.answers.values_list('question_id', flat=True)
+    unanswered = list(_active_role_questions().exclude(id__in=answered_question_ids))
+    by_id = {question.id: question for question in unanswered}
+    chosen = scoring_service.select_next_role_question([question_to_pick_dict(question) for question in unanswered], snapshot)
+    return by_id[chosen['id']] if chosen else None
 
 
-def get_role_resolution_status(session: AssessmentSession) -> str:
-    is_core_complete = is_core_role_profile_complete(session)
-    has_remaining_questions = has_remaining_role_questions(session) if is_core_complete else False
-    is_resolved = (
-        is_role_resolution_exhausted_with_viable_winner(session)
-        if session.best_fit_role_id is not None and is_core_complete
-        else False
-    )
+def get_role_resolution_status(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> str:
+    snapshot = snapshot or get_role_inference_snapshot(session)
     return scoring_service.get_role_resolution_status(
-        is_core_complete=is_core_complete,
+        is_complete=bool(snapshot['is_complete']),
         best_fit_role_slug=session.best_fit_role.slug if session.best_fit_role_id else None,
-        is_resolved=is_resolved,
-        has_remaining_role_questions=has_remaining_questions,
+        score_margin=float(snapshot['score_margin']),
     )
-
-
-def get_remaining_tie_break_questions(session: AssessmentSession) -> list[Question]:
-    answered_question_ids = session.answers.values_list('question_id', flat=True)
-    return list(
-        Question.objects.filter(
-            stage=Question.Stage.ROLE,
-            item_group=Question.ItemGroup.TIE_BREAK,
-            is_active=True,
-        ).exclude(id__in=answered_question_ids),
-    )
-
-
-def has_remaining_role_questions(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> bool:
-    answered_question_ids = session.answers.values_list('question_id', flat=True)
-    unanswered_role_questions = list(
-        Question.objects.filter(stage=Question.Stage.ROLE, is_active=True).exclude(id__in=answered_question_ids),
-    )
-    return bool(get_selectable_role_candidates(session, unanswered_role_questions, snapshot=snapshot))
-
-
-def get_selectable_role_candidates(
-    session: AssessmentSession,
-    candidates: list[Question],
-    *,
-    snapshot: dict[str, object] | None = None,
-) -> list[Question]:
-    core_candidates = [question for question in candidates if question.item_group == Question.ItemGroup.CORE]
-    if core_candidates:
-        return sorted(core_candidates, key=lambda question: (question.display_order, question.id))
-    if not candidates:
-        return []
-
-    snapshot = snapshot or get_role_inference_snapshot(session)
-    question_index = {question.id: question for question in candidates}
-    candidate_dicts = [
-        {
-            'id': question.id,
-            'item_group': question.item_group,
-            'display_order': question.display_order,
-            'discriminates_between': list(question.discriminates_between or []),
-        }
-        for question in candidates
-    ]
-    selected_dicts = scoring_service.select_role_candidates(candidate_dicts, snapshot)
-    return [question_index[question_dict['id']] for question_dict in selected_dicts]

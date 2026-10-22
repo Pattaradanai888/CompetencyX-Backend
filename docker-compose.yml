@@ -5,10 +5,12 @@
 #   docker compose down                # ปิด
 #   docker compose down -v             # ปิดและลบข้อมูลใน database ทิ้ง
 #   docker compose run --rm cli manage.py <command>   # รันคำสั่ง Django ครั้งเดียวแล้วจบ
+#   docker compose run --rm cli manage.py setup --reset --noinput   # ล้าง DB แล้ว setup ใหม่
 #
 # ประกอบด้วย services:
 #   db  – PostgreSQL 16 (persistent volume `postgres_data`)
-#   web – Gunicorn บน :8000 (docker/entrypoint.sh: migrate + sync_content + collectstatic + gunicorn)
+#   setup – รัน manage.py setup (wait_for_db + migrate + sync_content) ครั้งเดียวแล้วจบ ก่อน web start
+#   web – Gunicorn บน :8000 (docker/entrypoint.sh: collectstatic + gunicorn)
 #   cli – profile `tools`: image เดียวกับ web ไว้ยิงคำสั่ง management ไม่ได้ start เองตอน `up`
 #
 # web กับ cli ใช้ image เดียวกัน (build จาก ./Dockerfile) และต่อ DB ผ่าน DATABASE_URL
@@ -61,10 +63,20 @@ services:
       timeout: 5s
       retries: 10
 
+  setup:
+    <<: *app
+    entrypoint: ['python']
+    command: ['manage.py', 'setup']
+    restart: 'no'
+
   web:
     <<: *app
-    # ใช้ CMD เดิมของ image (docker/entrypoint.sh) — bootstrap แล้ว exec gunicorn
-    # ไม่แยก service `migrate` แบบ project อื่นเพราะ stack นี้มี consumer เดียว จึงไม่มี race ให้กัน
+    # ใช้ CMD เดิมของ image (docker/entrypoint.sh) — collectstatic แล้ว exec gunicorn
+    depends_on:
+      db:
+        condition: service_healthy
+      setup:
+        condition: service_completed_successfully
     ports:
       - '${WEB_PORT:-8000}:8000'
 

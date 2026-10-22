@@ -9,6 +9,7 @@ Use `uv` for local Python workflows and Docker for the runtime stack.
 - `docker compose up --build`: start PostgreSQL and the Django app, run migrations, and seed MVP content.
 - `uv run pytest -n auto`: run the full test suite in parallel with coverage using `config.settings.test`.
 - `uv run ruff check .`: run lint checks across the repository.
+- `.venv\Scripts\python.exe manage.py setup`: wait for the database, migrate, and sync all curated content in one step; `--reset` drops the local database first (DEBUG only).
 - `.venv\Scripts\python.exe manage.py sync_content`: synchronize all curated Role Discovery, roadmap, and Skill Assessment content.
 
 ## Coding Style & Naming Conventions

@@ -29,13 +29,10 @@ uv sync
 # 2.2 สร้างไฟล์ .env สำหรับเครื่องตัวเอง
 Copy-Item .env.example .env
 
-# 2.3 สร้าง/อัปเดตตารางในฐานข้อมูล
-.\.venv\Scripts\python.exe manage.py migrate
+# 2.3 สร้างตาราง + โหลดเนื้อหาทั้งหมด (roles, roadmap, คำถาม, Skill Assessment) ในคำสั่งเดียว
+.\.venv\Scripts\python.exe manage.py setup
 
-# 2.4 โหลดเนื้อหา (roles, roadmap topics, คำถาม, Skill Assessment catalog) เข้า DB
-.\.venv\Scripts\python.exe manage.py sync_content
-
-# 2.5 สตาร์ทเซิร์ฟเวอร์
+# 2.4 สตาร์ทเซิร์ฟเวอร์
 .\.venv\Scripts\python.exe manage.py runserver
 ```
 
@@ -45,8 +42,9 @@ Copy-Item .env.example .env
 
 - ไม่ต้องใส่ `--env-file` เพราะ `manage.py` โหลด `.env` ให้เองผ่าน `config/env.py`
 - ค่าใน `.env.example` เป็นค่าสำหรับ dev เท่านั้น (`DJANGO_SECRET_KEY` เป็นค่าปลอม) ถ้าจะเอาไปใช้ที่อื่นต้องเปลี่ยนก่อน
-- ค่าเริ่มต้นคือ SQLite ที่ไฟล์ `db.sqlite3` (ไฟล์นี้ถูก gitignore ไว้ `migrate` + `sync_content` จะสร้างให้เอง) ถ้าตั้ง `POSTGRES_HOST` หรือ `DATABASE_URL` ระบบจะสลับไปใช้ PostgreSQL อัตโนมัติ
-- `sync_content` รันซ้ำได้ทุกเมื่อ ใช้ตอนที่แก้ไฟล์ใต้ `data/content/` แล้วอยากให้ DB ตรงกับไฟล์
+- ค่าเริ่มต้นคือ SQLite ที่ไฟล์ `db.sqlite3` (ไฟล์นี้ถูก gitignore ไว้ `setup` จะสร้างให้เอง) ถ้าตั้ง `POSTGRES_HOST` หรือ `DATABASE_URL` ระบบจะสลับไปใช้ PostgreSQL อัตโนมัติ
+- `setup` = `wait_for_db` → `migrate` → `sync_content` รันซ้ำได้ทุกเมื่อ ใช้ตอน pull โค้ดใหม่หรือแก้ไฟล์ใต้ `data/content/` แล้วอยากให้ DB ตรงกับไฟล์
+- อยากล้าง DB แล้วเริ่มใหม่หมด: `manage.py setup --reset` (ถามยืนยันก่อน ใส่ `--noinput` เพื่อข้าม) ใช้ได้เฉพาะตอน `DJANGO_DEBUG=true` ถ้าใช้ SQLite ต้องปิด `runserver` ก่อน
 
 ### ทำไมใช้ `.\.venv\Scripts\python.exe` แทน `uv run`
 
@@ -72,7 +70,7 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-คำสั่งเดียวจบ: ยก PostgreSQL 16 + Django ขึ้นมา รัน migration และ seed เนื้อหาให้ แอปอยู่ที่ `http://localhost:8000`
+คำสั่งเดียวจบ: ยก PostgreSQL 16 ขึ้นมา service `setup` รัน `manage.py setup` (migration + seed เนื้อหา) จนเสร็จ แล้ว `web` จึง start แอปอยู่ที่ `http://localhost:8000`
 
 ```powershell
 docker compose down        # ปิด
@@ -83,11 +81,11 @@ docker compose logs -f web # ดู log ของแอป
 ยิงคำสั่ง management ด้วย image เดียวกันได้ผ่าน service `cli` (อยู่ใน profile `tools` จึงไม่ start เองตอน `up`)
 
 ```powershell
-docker compose run --rm cli manage.py sync_content
+docker compose run --rm cli manage.py setup --reset --noinput   # ล้าง DB แล้ว setup ใหม่
 docker compose run --rm cli manage.py validate_question_catalog
 ```
 
-คอนเทนเนอร์รันด้วย **gunicorn** (ไม่ใช่ `runserver`) ตาม `docker/entrypoint.sh` ซึ่งจะ `migrate` → `sync_content` → `collectstatic` ให้ก่อนเสมอ
+คอนเทนเนอร์ `web` รันด้วย **gunicorn** (ไม่ใช่ `runserver`) ตาม `docker/entrypoint.sh` ซึ่ง `collectstatic` ให้ก่อนเสมอ ส่วน migration + seed อยู่ที่ service `setup`
 และต่อ DB ผ่าน `DATABASE_URL` เหมือนที่ Railway ใช้ — stack นี้จึงทดสอบ config ชุดเดียวกับ production
 เปลี่ยนพอร์ตที่เปิดออกมาได้ด้วย `WEB_PORT` / `POSTGRES_PORT` ใน `.env`
 ถ้าอยากได้ auto-reload ตอน dev ให้ใช้ `manage.py runserver` ในหัวข้อ 2 แทน
@@ -129,7 +127,7 @@ repo นี้พร้อม deploy ขึ้น [Railway](https://railway.com)
 curl.exe -s https://<your-app>.up.railway.app/api/v1/health/
 ```
 
-ตัว entrypoint รัน `migrate` และ `sync_content` ทุกครั้งที่ deploy ดังนั้น content ใน DB จะตามไฟล์ใน `data/content/` อัตโนมัติ ไม่ต้องเข้าไปรันเอง
+`railway.json` สั่ง `docker/pre-deploy.sh` (= `manage.py setup`) ครั้งเดียวก่อนทุก deploy ดังนั้น schema และ content ใน DB จะตามไฟล์ใน `data/content/` อัตโนมัติ ไม่ต้องเข้าไปรันเอง
 
 ### 4.4 ใช้ Railway CLI (ถ้าไม่อยาก deploy ผ่าน GitHub)
 
@@ -234,7 +232,10 @@ curl.exe -s http://localhost:8000/api/v1/assessment-sessions/<session-id>/result
 ### จัดการ content / ข้อมูล
 
 ```powershell
-# ซิงก์เนื้อหาจาก data/content/ เข้า DB
+# migrate + ซิงก์เนื้อหาทั้งหมด (--reset = ล้าง DB ก่อน, เฉพาะ DEBUG)
+.\.venv\Scripts\python.exe manage.py setup
+
+# ซิงก์เนื้อหาจาก data/content/ เข้า DB อย่างเดียว
 .\.venv\Scripts\python.exe manage.py sync_content
 
 # ตรวจ YAML คำถามโดยไม่แตะ DB

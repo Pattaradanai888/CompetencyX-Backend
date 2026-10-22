@@ -30,7 +30,7 @@ from simulation.engine import (
     _pre_generate_choices,
     run_trial,
 )
-from simulation.loaders import count_core_questions, load_questions, load_roles
+from simulation.loaders import load_questions, load_roles
 
 
 VALID_METRICS = sorted(METRIC_HIGHER_IS_BETTER | METRIC_LOWER_IS_BETTER)
@@ -63,7 +63,7 @@ class Command(BaseCommand):
             questions=questions,
             active_role_slugs=active_role_slugs,
             role_names=role_names,
-            core_target=count_core_questions(questions),
+            available_questions=len(questions),
         )
         config = SimulationConfig(
             samples=options['samples'],

@@ -162,7 +162,9 @@ class CoreFlowTests(AssessmentFlowTestCase):
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         payload = create_response.json()
         self.assertEqual(payload['language'], AssessmentSession.Language.TH)
-        self.assertEqual(payload['current_question']['prompt'], 'คำถามบทบาท 1')
+        question = Question.objects.get(pk=payload['current_question']['id'])
+        self.assertEqual(payload['current_question']['prompt'], question.translations['th']['prompt'])
+        self.assertNotEqual(payload['current_question']['prompt'], question.prompt)
         self.assertEqual(
             [choice['label'] for choice in payload['current_question']['response_scale']],
             ['เห็นด้วยอย่างยิ่ง', 'เห็นด้วย', 'เป็นกลาง', 'ไม่เห็นด้วย', 'ไม่เห็นด้วยอย่างยิ่ง'],

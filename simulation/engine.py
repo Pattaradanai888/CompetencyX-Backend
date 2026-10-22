@@ -22,7 +22,7 @@ class CatalogContext:
     questions: list[dict]
     active_role_slugs: list[str]
     role_names: dict[str, str]
-    core_target: int
+    available_questions: int
 
 
 @dataclass(frozen=True)
@@ -41,7 +41,7 @@ class SimulationConfig:
 class _SampleState:
     active_role_slugs: list[str]
     role_names: dict[str, str]
-    core_target: int
+    available_questions: int
     role_scores: dict[str, float] = field(default_factory=dict)
     dimension_scores: dict[str, float] = field(default_factory=dict)
     dimension_evidence_counts: dict[str, int] = field(default_factory=dict)
@@ -89,8 +89,8 @@ class _SampleState:
             self.evidence_snapshot(),
             active_role_slugs=self.active_role_slugs,
             role_names=self.role_names,
-            answered_core=self.answered_core,
-            core_target=self.core_target,
+            answered_questions=self.answered_total,
+            available_questions=self.available_questions,
         )
 
 
@@ -100,43 +100,30 @@ def run_single_sample(
     prefix_answers: list[int],
     pre_generated_choices: list[int],
 ) -> dict[str, object]:
-    core_target = catalog.core_target
     state = _SampleState(
         active_role_slugs=list(catalog.active_role_slugs),
         role_names=catalog.role_names,
-        core_target=core_target,
+        available_questions=catalog.available_questions,
     )
 
     choice_index = 0
     snapshot = state.inference_snapshot()
     unanswered = list(catalog.questions)
-    is_resolved = False
-    has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
-
-    while has_remaining and not is_resolved:
-        question = scoring_service.select_role_candidates(unanswered, snapshot)[0]
+    while (question := scoring_service.select_next_role_question(unanswered, snapshot)) is not None:
         if state.answered_total < len(prefix_answers):
             scale_value = prefix_answers[state.answered_total]
         else:
             scale_value = pre_generated_choices[choice_index]
             choice_index += 1
-
         state.apply_answer(question, scale_value)
         snapshot = state.inference_snapshot()
         unanswered = [question_dict for question_dict in unanswered if question_dict['id'] != question['id']]
-        has_remaining = bool(scoring_service.select_role_candidates(unanswered, snapshot))
-        is_resolved = scoring_service.is_role_resolution_exhausted_with_viable_winner(
-            snapshot,
-            has_remaining_tie_breaks_for_top_pair=has_remaining,
-        )
 
-    is_core_complete = state.answered_core >= core_target > 0
     best_fit_role_slug = snapshot['top_role_slug'] or None
     resolution_status = scoring_service.get_role_resolution_status(
-        is_core_complete=is_core_complete,
+        is_complete=bool(snapshot['is_complete']),
         best_fit_role_slug=best_fit_role_slug,
-        is_resolved=is_resolved,
-        has_remaining_role_questions=has_remaining,
+        score_margin=float(snapshot['score_margin']),
     )
 
     return {
@@ -146,6 +133,7 @@ def run_single_sample(
         'resolution_status': resolution_status,
         'best_fit_role': best_fit_role_slug if resolution_status in {'resolved', 'low_confidence'} else None,
         'top_ranked_role': best_fit_role_slug,
+        'role_candidates': [role['slug'] for role in snapshot['role_candidates']],
         'answered_core_questions': state.answered_core,
         'answered_tie_break_questions': state.answered_tie_break,
         'answered_role_questions': state.answered_total,

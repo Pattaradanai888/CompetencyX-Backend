@@ -3,9 +3,9 @@
 The top layer of the assessments service: it wires together question selection,
 role inference, and phase transitions.
 
-Role Discovery question selection is deterministic: the next question is always the
-first eligible unanswered question ordered by ``display_order``. The adaptive
-bandit / info-gain selector and the selection-event log have been removed.
+Role Discovery question selection is deterministic but adaptive (ADR-0006): fixed
+warm-up items first, then the item that best separates the leading roles, until
+the stop rule in ``scoring_service`` says the survey is complete.
 """
 
 import logging
@@ -24,15 +24,8 @@ from .guidance_service import (
     get_visible_role_result,
     serialize_milestones,
 )
-from .role_inference_service import (
-    get_remaining_tie_break_questions,
-    get_role_inference_snapshot,
-    get_selectable_role_candidates,
-    has_remaining_role_questions,
-    is_role_inference_resolved,
-    is_role_resolution_exhausted_with_viable_winner,
-)
-from .scoring_service import ROLE_DISCOVERY_MIN_SCORE_MARGIN, get_sorted_role_scores
+from .role_inference_service import get_next_role_question, get_role_inference_snapshot
+from .scoring_service import ROLE_CANDIDATE_STOP_MARGIN, ROLE_DISCOVERY_MIN_SCORE_MARGIN, get_sorted_role_scores
 
 
 logger = logging.getLogger('assessments.services')
@@ -75,8 +68,9 @@ def get_current_question(session: AssessmentSession):
     if session.status == AssessmentSession.Status.COMPLETED:
         return None
 
-    candidates = _eligible_questions_for_session(session)
-    return candidates[0] if candidates else None
+    if session.phase != AssessmentSession.Phase.ROLE_DISCOVERY:
+        return None
+    return get_next_role_question(session)
 
 
 def ensure_question_is_expected(session: AssessmentSession, question: Question) -> None:
@@ -175,23 +169,6 @@ def build_session_state(session: AssessmentSession) -> dict[str, object]:
     }
 
 
-def _eligible_questions_for_session(session: AssessmentSession) -> list[Question]:
-    base_queryset = _get_unanswered_questions(session)
-    if session.phase == AssessmentSession.Phase.ROLE_DISCOVERY:
-        return get_selectable_role_candidates(session, list(base_queryset.filter(stage=Question.Stage.ROLE)))
-    return []
-
-
-def _get_unanswered_questions(session: AssessmentSession):
-    answered_question_ids = session.answers.values_list('question_id', flat=True)
-    return (
-        Question.objects.filter(is_active=True)
-        .exclude(id__in=answered_question_ids)
-        .select_related('role', 'topic')
-        .prefetch_related('options__topic_signals__topic', 'topic__prerequisites')
-    )
-
-
 def _recompute_best_fit_role(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> None:
     snapshot = snapshot or get_role_inference_snapshot(session)
     role_scores = {candidate['slug']: candidate['fit_score'] for candidate in snapshot['ranked_roles']}
@@ -247,13 +224,10 @@ def _format_dimension_scores(snapshot: dict[str, object]) -> dict[str, float]:
 
 
 def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[str, object]) -> list[str]:
-    if is_role_resolution_exhausted_with_viable_winner(session, snapshot=snapshot):
-        return []
-    remaining_tie_breaks = get_remaining_tie_break_questions(session)
     gates = {
         'top_role_exists': snapshot['top_role_slug'] is not None,
-        'answered_core_questions': int(snapshot['answered_core_questions']) >= int(snapshot['core_question_target']),
-        'tie_breaks_exhausted': not get_selectable_role_candidates(session, remaining_tie_breaks, snapshot=snapshot),
+        'survey_complete': bool(snapshot['is_complete']),
+        'candidate_margin': float(snapshot['candidate_margin']) >= ROLE_CANDIDATE_STOP_MARGIN,
         'score_margin': float(snapshot['score_margin']) >= ROLE_DISCOVERY_MIN_SCORE_MARGIN,
     }
     return [name for name, passed in gates.items() if not passed]
@@ -262,8 +236,9 @@ def _format_failed_resolution_gates(session: AssessmentSession, snapshot: dict[s
 def _update_phase(session: AssessmentSession, *, snapshot: dict[str, object] | None = None) -> None:
     previous_phase = session.phase
     previous_status = session.status
-    has_remaining_questions = has_remaining_role_questions(session, snapshot=snapshot)
-    is_completed = is_role_inference_resolved(session, snapshot=snapshot) or not has_remaining_questions
+    snapshot = snapshot or get_role_inference_snapshot(session)
+    is_completed = bool(snapshot['is_complete'])
+    has_remaining_questions = not is_completed
 
     if is_completed:
         session.phase = AssessmentSession.Phase.RECOMMENDATION_READY

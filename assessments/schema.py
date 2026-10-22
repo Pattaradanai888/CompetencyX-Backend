@@ -35,6 +35,7 @@ SESSION_RESPONSE_EXAMPLE = {
         'answered_role_questions': 0,
         'answered_core_role_questions': 0,
         'answered_tie_break_questions': 0,
+        'max_role_questions': 25,
     },
     'role_alignment_status': 'unknown',
     'role_resolution_status': 'in_progress',
@@ -147,6 +148,7 @@ INSIGHTS_RESPONSE_EXAMPLE = {
     ],
     'guidance_summary': 'Your current answers align best with Backend Engineer.',
 }
+INSIGHTS_RESPONSE_EXAMPLE['role_candidates'] = INSIGHTS_RESPONSE_EXAMPLE['ranked_roles'][:3]
 
 ANSWER_REQUEST_EXAMPLE = {
     'question_id': 101,
@@ -187,6 +189,7 @@ RESULT_RESPONSE_EXAMPLE = {
         'answered_role_questions': 2,
         'answered_core_role_questions': 2,
         'answered_tie_break_questions': 0,
+        'max_role_questions': 25,
     },
     'role_alignment_status': 'aligned',
     'role_resolution_status': 'resolved',
@@ -213,6 +216,7 @@ RESULT_RESPONSE_EXAMPLE = {
         }
     ],
 }
+RESULT_RESPONSE_EXAMPLE['role_candidates'] = RESULT_RESPONSE_EXAMPLE['ranked_roles'][:3]
 
 HISTORY_RESPONSE_EXAMPLE = {
     'id': '2b39d41d-8de9-4b9b-b2ef-2a278b3f3770',
