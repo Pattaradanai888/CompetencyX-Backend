@@ -49,9 +49,7 @@ jobs:
         run: uv run python manage.py makemigrations --check --dry-run
 
       - name: Migrate and seed a fresh database
-        run: |
-          uv run python manage.py migrate --noinput
-          uv run python manage.py sync_content
+        run: uv run python manage.py setup
 
       - name: Curated content validates
         run: |
@@ -138,10 +136,7 @@ jobs:
           python-version-file: .python-version
       - run: uv sync
       - name: Pre-deploy path (what Railway runs once per deployment)
-        run: |
-          uv run python manage.py wait_for_db --timeout 60
-          uv run python manage.py migrate --noinput
-          uv run python manage.py sync_content
+        run: uv run sh docker/pre-deploy.sh
       - name: pytest against PostgreSQL
         run: uv run pytest -n auto --ds=config.settings.runtime --create-db
 
